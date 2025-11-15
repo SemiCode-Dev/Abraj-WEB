@@ -32,6 +32,19 @@
     background: #2563eb;
 }
 
+/* Dark-mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+    background: #0f172a; /* gray-900 */
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #1f2937; /* gray-800 */
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #374151; /* gray-700 */
+}
+
 /* Smooth transitions */
 * {
     transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;

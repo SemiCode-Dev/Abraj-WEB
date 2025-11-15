@@ -37,11 +37,11 @@
         <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-20"></div>
         <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60"></div>
     </div>
-    
+
     <!-- Floating Elements -->
     <div class="absolute top-20 right-20 w-72 h-72 bg-orange-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
     <div class="absolute bottom-20 left-20 w-72 h-72 bg-blue-900 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-    
+
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-10">
             <h1 class="text-5xl md:text-7xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-cyan-200">
@@ -50,52 +50,52 @@
             <p class="text-xl md:text-2xl text-slate-300 mb-2">أفضل العروض والخدمات في مكان واحد</p>
             <p class="text-slate-400">احجز الآن ووفر حتى 40% على إقامتك</p>
         </div>
-        
-        <!-- Enhanced Search Box -->
-        <div class="bg-white rounded-3xl shadow-2xl p-6 max-w-6xl mx-auto">
+
+    <!-- Enhanced Search Box -->
+    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 max-w-6xl mx-auto">
             <!-- Search Form -->
             <form action="{{ route('hotels.search') }}" method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-3">
                 <!-- Destination with Autocomplete -->
                 <div class="md:col-span-2 relative">
-                    <label class="block text-gray-700 text-xs font-bold mb-2 uppercase">
+                    <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                         <i class="fas fa-map-marker-alt text-orange-500 ml-1"></i>
                         الوجهة / الفندق
                     </label>
-                    <input type="text" name="destination" placeholder="أين تريد الذهاب؟" required
-                           class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg transition">
+              <input type="text" name="destination" placeholder="أين تريد الذهاب؟" required
+                  class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg transition">
                     <div class="absolute left-4 top-11 text-gray-400">
                         <i class="fas fa-search"></i>
                     </div>
                 </div>
-                
+
                 <!-- Check-in -->
                 <div class="relative">
-                    <label class="block text-gray-700 text-xs font-bold mb-2 uppercase">
+                    <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                         <i class="fas fa-calendar-alt text-orange-500 ml-1"></i>
                         الوصول
                     </label>
-                    <input type="date" name="check_in" required
-                           class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg">
+              <input type="date" name="check_in" required
+                  class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg">
                 </div>
-                
+
                 <!-- Check-out -->
                 <div class="relative">
-                    <label class="block text-gray-700 text-xs font-bold mb-2 uppercase">
+                    <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                         <i class="fas fa-calendar-check text-orange-500 ml-1"></i>
                         المغادرة
                     </label>
-                    <input type="date" name="check_out" required
-                           class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg">
+              <input type="date" name="check_out" required
+                  class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg">
                 </div>
-                
+
                 <!-- Guests & Rooms -->
                 <div class="relative">
-                    <label class="block text-gray-700 text-xs font-bold mb-2 uppercase">
+                    <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                         <i class="fas fa-users text-orange-500 ml-1"></i>
                         الضيوف / الغرف
                     </label>
                     <div class="relative">
-                        <select name="guests" class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg">
+                        <select name="guests" class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg">
                             <option value="1">1 ضيف</option>
                             <option value="2" selected>2 ضيوف</option>
                             <option value="3">3 ضيوف</option>
@@ -104,7 +104,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <!-- Search Button -->
                 <div class="flex items-end">
                     <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-105 shadow-lg flex items-center justify-center">
@@ -113,20 +113,20 @@
                     </button>
                 </div>
             </form>
-            
+
             <!-- Quick Filters -->
-            <div class="px-4 pb-4 flex flex-wrap gap-2">
-                <span class="text-xs text-gray-500 font-semibold">ابحث بسرعة:</span>
-                <a href="#" class="px-3 py-1 bg-gray-100 hover:bg-orange-50 text-gray-700 hover:text-orange-600 rounded-full text-xs font-medium transition">
+                <div class="px-4 pb-4 flex flex-wrap gap-2">
+                <span class="text-xs text-gray-500 dark:text-gray-300 font-semibold">ابحث بسرعة:</span>
+                <a href="#" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900 text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full text-xs font-medium transition">
                     <i class="fas fa-fire text-orange-500 ml-1"></i> عروض اليوم
                 </a>
-                <a href="#" class="px-3 py-1 bg-gray-100 hover:bg-orange-50 text-gray-700 hover:text-orange-600 rounded-full text-xs font-medium transition">
+                <a href="#" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900 text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full text-xs font-medium transition">
                     <i class="fas fa-star text-yellow-500 ml-1"></i> فنادق 5 نجوم
                 </a>
-                <a href="#" class="px-3 py-1 bg-gray-100 hover:bg-orange-50 text-gray-700 hover:text-orange-600 rounded-full text-xs font-medium transition">
+                <a href="#" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900 text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full text-xs font-medium transition">
                     <i class="fas fa-swimming-pool text-blue-500 ml-1"></i> مع مسبح
                 </a>
-                <a href="#" class="px-3 py-1 bg-gray-100 hover:bg-orange-50 text-gray-700 hover:text-orange-600 rounded-full text-xs font-medium transition">
+                <a href="#" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900 text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full text-xs font-medium transition">
                     <i class="fas fa-wifi text-purple-500 ml-1"></i> واي فاي مجاني
                 </a>
             </div>
@@ -135,14 +135,14 @@
 </section>
 
 <!-- Trust Badges -->
-<section class="bg-white border-b border-gray-200 py-6">
+<section class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-wrap items-center justify-center gap-8 md:gap-12">
             <div class="flex items-center text-gray-600">
                 <i class="fas fa-shield-check text-2xl text-orange-600 ml-3"></i>
                 <div>
                     <div class="font-bold text-sm">حجز آمن</div>
-                    <div class="text-xs text-gray-500">SSL مشفر</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-300">SSL مشفر</div>
                 </div>
             </div>
             <div class="flex items-center text-gray-600">
@@ -175,21 +175,21 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between mb-8">
             <div>
-                <h2 class="text-4xl font-extrabold text-gray-900 mb-2">عروض فلاش</h2>
-                <p class="text-gray-600">عروض محدودة بوقت - احجز قبل فوات الأوان!</p>
+                <h2 class="text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-2">عروض فلاش</h2>
+                <p class="text-gray-600 dark:text-gray-300">عروض محدودة بوقت - احجز قبل فوات الأوان!</p>
             </div>
             <div class="hidden md:flex items-center bg-white px-6 py-3 rounded-full shadow-lg">
                 <i class="fas fa-clock text-red-600 ml-2"></i>
-                <span class="text-sm font-bold text-gray-700">ينتهي خلال:</span>
+                <span class="text-sm font-bold text-gray-700 dark:text-gray-200">ينتهي خلال:</span>
                 <span class="text-xl font-bold text-red-600 mr-3" id="countdown">23:45:12</span>
             </div>
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Deal 1 -->
-            <div class="group relative bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div class="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                 <div class="relative h-56 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    <img src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                          alt="عرض دبي" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute top-0 right-0 bg-gradient-to-br from-red-600 to-pink-600 text-white px-4 py-2 rounded-bl-2xl font-bold text-lg shadow-lg">
                         -40%
@@ -200,18 +200,18 @@
                 </div>
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xl font-bold text-gray-900">فندق برج العرب</h3>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">فندق برج العرب</h3>
                         <div class="flex items-center bg-yellow-100 px-2 py-1 rounded-lg">
                             <i class="fas fa-star text-yellow-500 text-xs ml-1"></i>
                             <span class="text-xs font-bold text-gray-900">4.9</span>
                         </div>
                     </div>
-                    <div class="flex items-center mb-4">
+                            <div class="flex items-center mb-4">
                         <span class="text-3xl font-extrabold text-orange-600">250</span>
-                        <span class="text-gray-500 text-sm mr-2">ريال</span>
-                        <span class="text-gray-400 line-through text-sm">420 ريال</span>
+                        <span class="text-gray-500 dark:text-gray-300 text-sm mr-2">ريال</span>
+                        <span class="text-gray-400 dark:text-gray-500 line-through text-sm">420 ريال</span>
                     </div>
-                    <div class="flex items-center text-xs text-gray-600 mb-4">
+                    <div class="flex items-center text-xs text-gray-600 dark:text-gray-300 mb-4">
                         <i class="fas fa-map-marker-alt ml-1"></i>
                         <span>وسط المدينة • 2.5 كم من الشاطئ</span>
                     </div>
@@ -220,11 +220,11 @@
                     </a>
                 </div>
             </div>
-            
+
             <!-- Deal 2 -->
             <div class="group relative bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                 <div class="relative h-56 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                          alt="عرض الرياض" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute top-0 right-0 bg-gradient-to-br from-green-600 to-orange-600 text-white px-4 py-2 rounded-bl-2xl font-bold text-lg shadow-lg">
                         -35%
@@ -255,11 +255,11 @@
                     </a>
                 </div>
             </div>
-            
+
             <!-- Deal 3 -->
             <div class="group relative bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                 <div class="relative h-56 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                          alt="عرض جدة" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute top-0 right-0 bg-gradient-to-br from-purple-600 to-pink-600 text-white px-4 py-2 rounded-bl-2xl font-bold text-lg shadow-lg">
                         -45%
@@ -290,11 +290,11 @@
                     </a>
                 </div>
             </div>
-            
+
             <!-- Deal 4 -->
             <div class="group relative bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                 <div class="relative h-56 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                          alt="عرض أبوظبي" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute top-0 right-0 bg-gradient-to-br from-blue-600 to-cyan-600 text-white px-4 py-2 rounded-bl-2xl font-bold text-lg shadow-lg">
                         -30%
@@ -336,11 +336,11 @@
             <h2 class="text-4xl font-extrabold text-gray-900 mb-3">الوجهات الأكثر شعبية</h2>
             <p class="text-gray-600 text-lg">اكتشف أفضل الوجهات السياحية مع أفضل الأسعار</p>
         </div>
-        
+
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             <div class="group relative cursor-pointer">
                 <div class="relative h-80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                          alt="مكة المكرمة" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6">
@@ -356,10 +356,10 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="group relative cursor-pointer">
                 <div class="relative h-80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                    <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                          alt="المدينة المنورة" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6">
@@ -372,10 +372,10 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="group relative cursor-pointer">
                 <div class="relative h-80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                    <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                          alt="الطائف" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6">
@@ -388,10 +388,10 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="group relative cursor-pointer">
                 <div class="relative h-80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                          alt="أبها" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6">
@@ -423,12 +423,12 @@
                 <button class="px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-100">3 نجوم</button>
             </div>
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Hotel 1 -->
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
                 <div class="relative h-64 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                          alt="فندق" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute top-4 left-4 flex gap-2">
                         <div class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-900 shadow-lg">
@@ -452,7 +452,7 @@
                             </p>
                         </div>
                     </div>
-                    
+
                     <div class="flex flex-wrap gap-2 mb-4">
                         <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
                             <i class="fas fa-wifi ml-1"></i> واي فاي
@@ -464,7 +464,7 @@
                             <i class="fas fa-utensils ml-1"></i> مطعم
                         </span>
                     </div>
-                    
+
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center">
                             <div class="flex text-yellow-500 text-sm ml-2">
@@ -477,7 +477,7 @@
                             <span class="text-sm text-gray-500">(245 تقييم)</span>
                         </div>
                     </div>
-                    
+
                     <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                         <div>
                             <span class="text-3xl font-extrabold text-orange-600">350</span>
@@ -490,11 +490,11 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Hotel 2 -->
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
                 <div class="relative h-64 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                          alt="فندق" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute top-4 left-4 flex gap-2">
                         <div class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-900 shadow-lg">
@@ -515,7 +515,7 @@
                             </p>
                         </div>
                     </div>
-                    
+
                     <div class="flex flex-wrap gap-2 mb-4">
                         <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
                             <i class="fas fa-wifi ml-1"></i> واي فاي
@@ -527,7 +527,7 @@
                             <i class="fas fa-dumbbell ml-1"></i> جيم
                         </span>
                     </div>
-                    
+
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center">
                             <div class="flex text-yellow-500 text-sm ml-2">
@@ -540,7 +540,7 @@
                             <span class="text-sm text-gray-500">(189 تقييم)</span>
                         </div>
                     </div>
-                    
+
                     <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                         <div>
                             <span class="text-3xl font-extrabold text-orange-600">280</span>
@@ -553,11 +553,11 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Hotel 3 -->
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
                 <div class="relative h-64 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                          alt="فندق" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute top-4 left-4 flex gap-2">
                         <div class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-900 shadow-lg">
@@ -575,7 +575,7 @@
                             </p>
                         </div>
                     </div>
-                    
+
                     <div class="flex flex-wrap gap-2 mb-4">
                         <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
                             <i class="fas fa-wifi ml-1"></i> واي فاي
@@ -587,7 +587,7 @@
                             <i class="fas fa-car ml-1"></i> موقف
                         </span>
                     </div>
-                    
+
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center">
                             <div class="flex text-yellow-500 text-sm ml-2">
@@ -600,7 +600,7 @@
                             <span class="text-sm text-gray-500">(312 تقييم)</span>
                         </div>
                     </div>
-                    
+
                     <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                         <div>
                             <span class="text-3xl font-extrabold text-orange-600">420</span>
@@ -635,7 +635,7 @@
                 <span class="text-gray-600">من 5.0 بناءً على 2,458 تقييم</span>
             </div>
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Review 1 -->
             <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition">
@@ -665,7 +665,7 @@
                     <span>حجز مؤكد</span>
                 </div>
             </div>
-            
+
             <!-- Review 2 -->
             <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition">
                 <div class="flex items-center mb-4">
@@ -694,7 +694,7 @@
                     <span>حجز مؤكد</span>
                 </div>
             </div>
-            
+
             <!-- Review 3 -->
             <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition">
                 <div class="flex items-center mb-4">
@@ -733,13 +733,13 @@
         <div class="absolute top-0 right-0 w-96 h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl"></div>
         <div class="absolute bottom-0 left-0 w-96 h-96 bg-blue-900 rounded-full mix-blend-multiply filter blur-3xl"></div>
     </div>
-    
+
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-4xl md:text-5xl font-extrabold mb-4">لماذا تختارنا؟</h2>
             <p class="text-slate-300 text-lg">نوفر لك أفضل تجربة حجز مع ضمانات كاملة</p>
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div class="text-center group">
                 <div class="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300">
@@ -748,7 +748,7 @@
                 <h3 class="text-xl font-bold mb-3">آمن ومضمون</h3>
                 <p class="text-blue-100 leading-relaxed">حماية كاملة لبياناتك ومدفوعاتك مع تشفير SSL</p>
             </div>
-            
+
             <div class="text-center group">
                 <div class="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300">
                     <i class="fas fa-tag text-3xl"></i>
@@ -756,7 +756,7 @@
                 <h3 class="text-xl font-bold mb-3">أفضل الأسعار</h3>
                 <p class="text-blue-100 leading-relaxed">ضمان أفضل الأسعار في السوق أو استرداد الفرق</p>
             </div>
-            
+
             <div class="text-center group">
                 <div class="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300">
                     <i class="fas fa-headset text-3xl"></i>
@@ -764,7 +764,7 @@
                 <h3 class="text-xl font-bold mb-3">دعم 24/7</h3>
                 <p class="text-blue-100 leading-relaxed">فريق دعم متاح على مدار الساعة لمساعدتك</p>
             </div>
-            
+
             <div class="text-center group">
                 <div class="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300">
                     <i class="fas fa-check-circle text-3xl"></i>
@@ -809,7 +809,7 @@
         const menu = document.getElementById('mobile-menu');
         menu.classList.toggle('hidden');
     });
-    
+
     // Smooth scroll
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
@@ -823,7 +823,7 @@
             }
         });
     });
-    
+
     // Countdown timer
     function updateCountdown() {
         const now = new Date().getTime();
@@ -831,20 +831,20 @@
         tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(0, 0, 0, 0);
         const distance = tomorrow - now;
-        
+
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        
+
         const countdownEl = document.getElementById('countdown');
         if (countdownEl) {
-            countdownEl.textContent = 
-                String(hours).padStart(2, '0') + ':' + 
-                String(minutes).padStart(2, '0') + ':' + 
+            countdownEl.textContent =
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
                 String(seconds).padStart(2, '0');
         }
     }
-    
+
     setInterval(updateCountdown, 1000);
     updateCountdown();
 </script>

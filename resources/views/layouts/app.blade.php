@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl">
 @include('partials.head')
 
-<body class="font-cairo antialiased">
+<body class="font-cairo antialiased bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
     @include('partials.navbar')
 
     <!-- Main Content -->
@@ -13,7 +13,7 @@
     @include('partials.footer')
 
     <!-- WhatsApp CTA Button - Bottom Left -->
-    <a href="https://wa.me/966500000000?text=مرحباً، أريد الاستفسار عن حجز فندق" 
+    <a href="https://wa.me/966500000000?text=مرحباً، أريد الاستفسار عن حجز فندق"
        target="_blank"
        class="fixed bottom-6 left-6 z-50 bg-green-500 hover:bg-green-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 group">
         <i class="fab fa-whatsapp text-xl"></i>
@@ -23,19 +23,19 @@
     </a>
 
     <!-- Scroll to Top Button - Bottom Right -->
-    <button id="scrollToTop" 
+    <button id="scrollToTop"
             class="fixed bottom-6 right-6 z-50 bg-orange-500 hover:bg-orange-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-2xl transition-all duration-300 opacity-0 invisible hover:scale-110">
         <i class="fas fa-arrow-up text-xl"></i>
     </button>
 
     <!-- Login/Register Modal -->
     <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 my-8 relative" id="modalContent">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 my-8 relative" id="modalContent">
             <!-- Close Button -->
             <button onclick="closeAuthModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600 transition">
                 <i class="fas fa-times text-2xl"></i>
             </button>
-            
+
             <!-- Tabs -->
             <div class="flex border-b border-gray-200">
                 <button id="loginTab" onclick="switchTab('login')" class="flex-1 px-6 py-4 text-center font-semibold text-orange-500 border-b-2 border-orange-500">
@@ -45,7 +45,7 @@
                     إنشاء حساب
                 </button>
             </div>
-            
+
             <!-- Login Form -->
             <div id="loginForm" class="p-6 max-w-md mx-auto">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">مرحباً بعودتك</h2>
@@ -81,7 +81,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Register Form -->
             <div id="registerForm" class="hidden">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-0 min-h-[500px]">
@@ -110,7 +110,7 @@
                             </div>
                         </div>
                     </section>
-                    
+
                     <!-- Section 2 - Registration Form -->
                     <section class="p-8 bg-white">
                         <div class="w-full max-w-md mx-auto">
@@ -134,7 +134,7 @@
                                         <input type="password" name="password" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
                                     </div>
                                 </div>
-                                
+
                                 <!-- Terms and Submit -->
                                 <div class="mt-6">
                                     <label class="flex items-start">
@@ -142,7 +142,7 @@
                                         <span class="mr-2 text-sm text-gray-600">أوافق على <a href="#" class="text-orange-500 hover:underline">الشروط والأحكام</a> و <a href="#" class="text-orange-500 hover:underline">سياسة الخصوصية</a></span>
                                     </label>
                                 </div>
-                                
+
                                 <button type="submit" class="w-full mt-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition shadow-lg">
                                     إنشاء حساب
                                 </button>
@@ -155,32 +155,32 @@
     </div>
 
     @stack('scripts')
-    
+
     <script>
         // Mobile menu toggle
         document.getElementById('mobile-menu-btn')?.addEventListener('click', function() {
             const menu = document.getElementById('mobile-menu');
             menu.classList.toggle('hidden');
         });
-        
+
         // Auth Modal Functions
         function openAuthModal() {
             document.getElementById('authModal').classList.remove('hidden');
             document.getElementById('authModal').classList.add('flex');
             switchTab('login');
         }
-        
+
         function closeAuthModal() {
             document.getElementById('authModal').classList.add('hidden');
             document.getElementById('authModal').classList.remove('flex');
         }
-        
+
         function switchTab(tab) {
             const loginTab = document.getElementById('loginTab');
             const registerTab = document.getElementById('registerTab');
             const loginForm = document.getElementById('loginForm');
             const registerForm = document.getElementById('registerForm');
-            
+
             if (tab === 'login') {
                 loginTab.classList.add('text-orange-500', 'border-b-2', 'border-orange-500');
                 loginTab.classList.remove('text-gray-500');
@@ -197,7 +197,7 @@
                 loginForm.classList.add('hidden');
             }
         }
-        
+
         function handleLogin(event) {
             event.preventDefault();
             // Simulate login - in real app, this would be an API call
@@ -205,7 +205,7 @@
             document.getElementById('user-icon').classList.remove('hidden');
             closeAuthModal();
         }
-        
+
         function handleRegister(event) {
             event.preventDefault();
             // Simulate registration - in real app, this would be an API call
@@ -213,17 +213,17 @@
             document.getElementById('user-icon').classList.remove('hidden');
             closeAuthModal();
         }
-        
+
         // Close modal when clicking outside
         document.getElementById('authModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeAuthModal();
             }
         });
-        
+
         // Scroll to Top Button
         const scrollToTopBtn = document.getElementById('scrollToTop');
-        
+
         window.addEventListener('scroll', function() {
             if (window.pageYOffset > 300) {
                 scrollToTopBtn.classList.remove('opacity-0', 'invisible');
@@ -233,13 +233,15 @@
                 scrollToTopBtn.classList.remove('opacity-100', 'visible');
             }
         });
-        
+
         scrollToTopBtn.addEventListener('click', function() {
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
         });
+
+        // Theme is handled in `resources/js/app.js` (avoids duplicate listeners)
     </script>
 </body>
 </html>
