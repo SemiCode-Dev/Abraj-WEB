@@ -14,36 +14,36 @@
                     @endif
                 </div>
                 <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                    نوفر لك أفضل الخدمات لحجز الفنادق في جميع أنحاء العالم بأفضل الأسعار والعروض الحصرية.
+                    {{ __('We provide you with the best services for booking hotels around the world at the best prices and exclusive offers.') }}
                 </p>
             </div>
 
             <!-- Quick Links -->
             <div>
-                <h4 class="font-semibold mb-4 text-center text-gray-900 dark:text-gray-100">روابط سريعة</h4>
+                <h4 class="font-semibold mb-4 text-center text-gray-900 dark:text-gray-100">{{ __('Quick Links') }}</h4>
                 <ul class="space-y-2 text-sm text-gray-600 text-center">
-                    <li><a href="#" class="hover:text-orange-500 transition">حجز فندق</a></li>
-                    <li><a href="#" class="hover:text-orange-500 transition">العروض الخاصة</a></li>
-                    <li><a href="#" class="hover:text-orange-500 transition">الوجهات الشعبية</a></li>
-                    <li><a href="#" class="hover:text-orange-500 transition">دليل السفر</a></li>
+                    <li><a href="#" class="hover:text-orange-500 transition">{{ __('Book Hotel') }}</a></li>
+                    <li><a href="#" class="hover:text-orange-500 transition">{{ __('Special Offers') }}</a></li>
+                    <li><a href="#" class="hover:text-orange-500 transition">{{ __('Popular Destinations') }}</a></li>
+                    <li><a href="#" class="hover:text-orange-500 transition">{{ __('Travel Guide') }}</a></li>
                 </ul>
             </div>
 
             <!-- Support -->
             <div>
-                <h4 class="font-semibold mb-4 text-center text-gray-900 dark:text-gray-100">الدعم</h4>
+                <h4 class="font-semibold mb-4 text-center text-gray-900 dark:text-gray-100">{{ __('Support') }}</h4>
                 <ul class="space-y-2 text-sm text-gray-600 text-center">
-                    <li><a href="#" class="hover:text-orange-500 transition">الأسئلة الشائعة</a></li>
-                    <li><a href="#" class="hover:text-orange-500 transition">اتصل بنا</a></li>
-                    <li><a href="#" class="hover:text-orange-500 transition">سياسة الخصوصية</a></li>
-                    <li><a href="#" class="hover:text-orange-500 transition">شروط الاستخدام</a></li>
+                    <li><a href="#" class="hover:text-orange-500 transition">{{ __('FAQ') }}</a></li>
+                    <li><a href="{{ route('contact', ['locale' => app()->getLocale()]) }}" class="hover:text-orange-500 transition">{{ __('Contact Us') }}</a></li>
+                    <li><a href="#" class="hover:text-orange-500 transition">{{ __('Privacy Policy') }}</a></li>
+                    <li><a href="#" class="hover:text-orange-500 transition">{{ __('Terms of Use') }}</a></li>
                 </ul>
             </div>
 
             <!-- Social Media -->
             <div>
-                <h4 class="font-semibold mb-4 text-center text-gray-900 dark:text-gray-100">تابعنا</h4>
-                <div class="flex space-x-reverse space-x-4 justify-center">
+                <h4 class="font-semibold mb-4 text-center text-gray-900 dark:text-gray-100">{{ __('Follow Us') }}</h4>
+                <div class="flex {{ app()->getLocale() === 'ar' ? 'space-x-reverse space-x-4' : 'space-x-4' }} justify-center">
                     <a href="#" class="w-10 h-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full flex items-center justify-center hover:bg-orange-500 hover:border-orange-500 hover:text-white text-gray-700 dark:text-gray-200 transition">
                         <i class="fab fa-facebook-f"></i>
                     </a>
@@ -70,7 +70,7 @@
                     </span>
                 @endif
             </div>
-            <p>&copy; {{ date('Y') }} ABRAJ STAY. جميع الحقوق محفوظة.</p>
+            <p>&copy; {{ date('Y') }} ABRAJ STAY. {{ __('All rights reserved.') }}</p>
         </div>
     </div>
 </footer>

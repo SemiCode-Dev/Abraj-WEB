@@ -1,38 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'حجز الفنادق - أفضل العروض والخدمات')
+@section('title', __('Book Hotels - Best Offers and Services'))
 
 @section('content')
-<!-- Top Banner with Stats -->
-<section class="bg-gradient-to-r from-orange-500 via-orange-600 to-blue-900 text-white py-3">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-wrap items-center justify-between text-sm">
-            <div class="flex items-center space-x-reverse space-x-6">
-                <div class="flex items-center">
-                    <i class="fas fa-users text-lg ml-2"></i>
-                    <span>أكثر من <strong>2 مليون</strong> عميل سعيد</span>
-                </div>
-                <div class="flex items-center">
-                    <i class="fas fa-hotel text-lg ml-2"></i>
-                    <span>أكثر من <strong>50,000</strong> فندق حول العالم</span>
-                </div>
-            </div>
-            <div class="flex items-center space-x-reverse space-x-4 mt-2 md:mt-0">
-                <a href="#" class="flex items-center hover:opacity-80 transition" title="العربية">
-                    <img src="https://flagcdn.com/w20/sa.png" alt="العربية" class="w-5 h-4 rounded">
-                </a>
-                <span class="text-white/50">|</span>
-                <a href="#" class="flex items-center hover:opacity-80 transition" title="English">
-                    <img src="https://flagcdn.com/w20/gb.png" alt="English" class="w-5 h-4 rounded">
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Hero Section with Enhanced Search -->
 <section id="home" class="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16 md:py-24 overflow-hidden">
-    <!-- Animated Background -->
     <div class="absolute inset-0">
         <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-20"></div>
         <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60"></div>
@@ -45,89 +16,128 @@
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-10">
             <h1 class="text-5xl md:text-7xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-cyan-200">
-                ابحث عن فندقك المثالي
+                {{ __('Search for your perfect hotel') }}
             </h1>
-            <p class="text-xl md:text-2xl text-slate-300 mb-2">أفضل العروض والخدمات في مكان واحد</p>
-            <p class="text-slate-400">احجز الآن ووفر حتى 40% على إقامتك</p>
+            <p class="text-xl md:text-2xl text-slate-300 mb-2">{{ __('Best offers and services in one place') }}</p>
+            <p class="text-slate-400">{{ __('Book Now and Save up to 40%') }}</p>
         </div>
 
     <!-- Enhanced Search Box -->
     <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 max-w-6xl mx-auto">
             <!-- Search Form -->
-            <form action="{{ route('hotels.search') }}" method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-3">
-                <!-- Destination with Autocomplete -->
-                <div class="md:col-span-2 relative">
-                    <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                        <i class="fas fa-map-marker-alt text-orange-500 ml-1"></i>
-                        الوجهة / الفندق
-                    </label>
-              <input type="text" name="destination" placeholder="أين تريد الذهاب؟" required
-                  class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg transition">
-                    <div class="absolute left-4 top-11 text-gray-400">
-                        <i class="fas fa-search"></i>
-                    </div>
-                </div>
-
-                <!-- Check-in -->
-                <div class="relative">
-                    <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                        <i class="fas fa-calendar-alt text-orange-500 ml-1"></i>
-                        الوصول
-                    </label>
-              <input type="date" name="check_in" required
-                  class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg">
-                </div>
-
-                <!-- Check-out -->
-                <div class="relative">
-                    <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                        <i class="fas fa-calendar-check text-orange-500 ml-1"></i>
-                        المغادرة
-                    </label>
-              <input type="date" name="check_out" required
-                  class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg">
-                </div>
-
-                <!-- Guests & Rooms -->
-                <div class="relative">
-                    <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                        <i class="fas fa-users text-orange-500 ml-1"></i>
-                        الضيوف / الغرف
-                    </label>
+            <form action="{{ route('hotels.search', ['locale' => app()->getLocale()]) }}" method="GET" class="space-y-3">
+                <!-- Row 1: City Select, Hotel Search, Guests -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <!-- Destination - City Select -->
                     <div class="relative">
-                        <select name="guests" class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg">
-                            <option value="1">1 ضيف</option>
-                            <option value="2" selected>2 ضيوف</option>
-                            <option value="3">3 ضيوف</option>
-                            <option value="4">4 ضيوف</option>
-                            <option value="5">5+ ضيوف</option>
+                        <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                            <i class="fas fa-map-marker-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                            {{ __('Destination') }}
+                        </label>
+                        <select id="citySelect" name="destination" required
+                            class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg transition appearance-none bg-white dark:bg-gray-700">
+                            <option value="">{{ __('Select City') }}</option>
+                            <option value="Riyadh">{{ __('Riyadh') }}</option>
+                            <option value="Jeddah">{{ __('Jeddah') }}</option>
+                            <option value="Dammam">{{ __('Dammam') }}</option>
+                            <option value="Mecca">{{ __('Mecca') }}</option>
+                            <option value="Medina">{{ __('Medina') }}</option>
+                            <option value="Abha">{{ __('Abha') }}</option>
+                            <option value="Taif">{{ __('Taif') }}</option>
+                            <option value="Khobar">{{ __('Khobar') }}</option>
                         </select>
+                        <div class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+
+                    <!-- Hotel Autocomplete - Hidden by default, appears after city selection -->
+                    <div id="hotelSearchContainer" class="relative hidden">
+                        <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                            <i class="fas fa-hotel text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                            {{ __('Search Hotel') }}
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="hotelSearch" name="hotel_name" 
+                                placeholder="{{ __('Search for a hotel...') }}"
+                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
+                            <div class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-4 text-gray-400">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <!-- Autocomplete Results -->
+                            <div id="hotelAutocomplete" class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
+                                <!-- Results will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guests & Rooms -->
+                    <div class="relative">
+                        <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                            <i class="fas fa-users text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                            {{ __('Guests / Rooms') }}
+                        </label>
+                        <div class="relative">
+                            <select name="guests" class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white dark:bg-gray-700">
+                                <option value="1">1 {{ __('Guest') }}</option>
+                                <option value="2" selected>2 {{ __('Guests') }}</option>
+                                <option value="3">3 {{ __('Guests') }}</option>
+                                <option value="4">4 {{ __('Guests') }}</option>
+                                <option value="5">5+ {{ __('Guests') }}</option>
+                            </select>
+                            <div class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-4 text-gray-400 pointer-events-none">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Search Button -->
-                <div class="flex items-end">
-                    <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-105 shadow-lg flex items-center justify-center">
-                        <i class="fas fa-search ml-2"></i>
-                        ابحث
-                    </button>
+                <!-- Row 2: Check In, Check Out, and Search Button -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <!-- Check-in -->
+                    <div class="relative">
+                        <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                            <i class="fas fa-calendar-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                            {{ __('Check In') }}
+                        </label>
+                        <input type="date" name="check_in" required
+                            class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
+                    </div>
+
+                    <!-- Check-out -->
+                    <div class="relative">
+                        <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                            <i class="fas fa-calendar-check text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                            {{ __('Check Out') }}
+                        </label>
+                        <input type="date" name="check_out" required
+                            class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
+                    </div>
+
+                    <!-- Search Button -->
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-105 shadow-lg flex items-center justify-center">
+                            <i class="fas fa-search {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                            {{ __('Search') }}
+                        </button>
+                    </div>
                 </div>
             </form>
 
             <!-- Quick Filters -->
                 <div class="px-4 pb-4 flex flex-wrap gap-2">
-                <span class="text-xs text-gray-500 dark:text-gray-300 font-semibold">ابحث بسرعة:</span>
+                <span class="text-xs text-gray-500 dark:text-gray-300 font-semibold">{{ __('Quick Search') }}</span>
                 <a href="#" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900 text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full text-xs font-medium transition">
-                    <i class="fas fa-fire text-orange-500 ml-1"></i> عروض اليوم
+                    <i class="fas fa-fire text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Today\'s Offers') }}
                 </a>
                 <a href="#" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900 text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full text-xs font-medium transition">
-                    <i class="fas fa-star text-yellow-500 ml-1"></i> فنادق 5 نجوم
+                    <i class="fas fa-star text-yellow-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('5 Star Hotels') }}
                 </a>
                 <a href="#" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900 text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full text-xs font-medium transition">
-                    <i class="fas fa-swimming-pool text-blue-500 ml-1"></i> مع مسبح
+                    <i class="fas fa-swimming-pool text-blue-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('With Pool') }}
                 </a>
                 <a href="#" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900 text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full text-xs font-medium transition">
-                    <i class="fas fa-wifi text-purple-500 ml-1"></i> واي فاي مجاني
+                    <i class="fas fa-wifi text-purple-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Free WiFi') }}
                 </a>
             </div>
         </div>
@@ -139,31 +149,31 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-wrap items-center justify-center gap-8 md:gap-12">
             <div class="flex items-center text-gray-600">
-                <i class="fas fa-shield-check text-2xl text-orange-600 ml-3"></i>
+                <i class="fas fa-shield-check text-2xl text-orange-600 {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
                 <div>
-                    <div class="font-bold text-sm">حجز آمن</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-300">SSL مشفر</div>
+                    <div class="font-bold text-sm">{{ __('Secure Booking') }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-300">{{ __('SSL Encrypted') }}</div>
                 </div>
             </div>
             <div class="flex items-center text-gray-600">
-                <i class="fas fa-money-bill-wave text-2xl text-orange-600 ml-3"></i>
+                <i class="fas fa-money-bill-wave text-2xl text-orange-600 {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
                 <div>
-                    <div class="font-bold text-sm">أفضل سعر</div>
-                    <div class="text-xs text-gray-500">ضمان السعر</div>
+                    <div class="font-bold text-sm">{{ __('Best Price') }}</div>
+                    <div class="text-xs text-gray-500">{{ __('Price Guarantee') }}</div>
                 </div>
             </div>
             <div class="flex items-center text-gray-600">
-                <i class="fas fa-headset text-2xl text-orange-600 ml-3"></i>
+                <i class="fas fa-headset text-2xl text-orange-600 {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
                 <div>
-                    <div class="font-bold text-sm">دعم 24/7</div>
-                    <div class="text-xs text-gray-500">متاح دائماً</div>
+                    <div class="font-bold text-sm">{{ __('24/7 Support') }}</div>
+                    <div class="text-xs text-gray-500">{{ __('Always Available') }}</div>
                 </div>
             </div>
             <div class="flex items-center text-gray-600">
-                <i class="fas fa-undo text-2xl text-orange-600 ml-3"></i>
+                <i class="fas fa-undo text-2xl text-orange-600 {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
                 <div>
-                    <div class="font-bold text-sm">إلغاء مجاني</div>
-                    <div class="text-xs text-gray-500">حتى 24 ساعة</div>
+                    <div class="font-bold text-sm">{{ __('Free Cancellation') }}</div>
+                    <div class="text-xs text-gray-500">{{ __('Up to 24 hours') }}</div>
                 </div>
             </div>
         </div>
@@ -175,12 +185,12 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between mb-8">
             <div>
-                <h2 class="text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-2">عروض فلاش</h2>
-                <p class="text-gray-600 dark:text-gray-300">عروض محدودة بوقت - احجز قبل فوات الأوان!</p>
+                <h2 class="text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-2">{{ __('Flash Deals') }}</h2>
+                <p class="text-gray-600 dark:text-gray-300">{{ __('Limited time offers - Book before it\'s too late!') }}</p>
             </div>
             <div class="hidden md:flex items-center bg-white px-6 py-3 rounded-full shadow-lg">
-                <i class="fas fa-clock text-red-600 ml-2"></i>
-                <span class="text-sm font-bold text-gray-700 dark:text-gray-200">ينتهي خلال:</span>
+                <i class="fas fa-clock text-red-600 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{ __('Ends in') }}</span>
                 <span class="text-xl font-bold text-red-600 mr-3" id="countdown">23:45:12</span>
             </div>
         </div>
@@ -195,12 +205,12 @@
                         -40%
                     </div>
                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                        <div class="text-white text-sm font-semibold">دبي، الإمارات</div>
+                        <div class="text-white text-sm font-semibold">{{ __('Dubai') }}, {{ __('United Arab Emirates') }}</div>
                     </div>
                 </div>
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">فندق برج العرب</h3>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ __('Burj Al Arab Hotel') }}</h3>
                         <div class="flex items-center bg-yellow-100 px-2 py-1 rounded-lg">
                             <i class="fas fa-star text-yellow-500 text-xs ml-1"></i>
                             <span class="text-xs font-bold text-gray-900">4.9</span>
@@ -208,15 +218,15 @@
                     </div>
                             <div class="flex items-center mb-4">
                         <span class="text-3xl font-extrabold text-orange-600">250</span>
-                        <span class="text-gray-500 dark:text-gray-300 text-sm mr-2">ريال</span>
-                        <span class="text-gray-400 dark:text-gray-500 line-through text-sm">420 ريال</span>
+                        <span class="text-gray-500 dark:text-gray-300 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">{{ __('SAR') }}</span>
+                        <span class="text-gray-400 dark:text-gray-500 line-through text-sm">420 {{ __('SAR') }}</span>
                     </div>
                     <div class="flex items-center text-xs text-gray-600 dark:text-gray-300 mb-4">
                         <i class="fas fa-map-marker-alt ml-1"></i>
-                        <span>وسط المدينة • 2.5 كم من الشاطئ</span>
+                        <span>{{ __('City Center') }} • 2.5 {{ __('km from beach') }}</span>
                     </div>
                     <a href="#" class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">
-                        احجز الآن
+                        {{ __('Book Now') }}
                     </a>
                 </div>
             </div>
@@ -230,12 +240,12 @@
                         -35%
                     </div>
                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                        <div class="text-white text-sm font-semibold">الرياض، السعودية</div>
+                        <div class="text-white text-sm font-semibold">{{ __('Riyadh') }}, {{ __('Saudi Arabia') }}</div>
                     </div>
                 </div>
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xl font-bold text-gray-900">فندق الفيصلية</h3>
+                        <h3 class="text-xl font-bold text-gray-900">{{ __('Al Faisaliah Hotel') }}</h3>
                         <div class="flex items-center bg-yellow-100 px-2 py-1 rounded-lg">
                             <i class="fas fa-star text-yellow-500 text-xs ml-1"></i>
                             <span class="text-xs font-bold text-gray-900">4.8</span>
@@ -243,15 +253,15 @@
                     </div>
                     <div class="flex items-center mb-4">
                         <span class="text-3xl font-extrabold text-orange-600">180</span>
-                        <span class="text-gray-500 text-sm mr-2">ريال</span>
-                        <span class="text-gray-400 line-through text-sm">280 ريال</span>
+                        <span class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">{{ __('SAR') }}</span>
+                        <span class="text-gray-400 line-through text-sm">280 {{ __('SAR') }}</span>
                     </div>
                     <div class="flex items-center text-xs text-gray-600 mb-4">
                         <i class="fas fa-map-marker-alt ml-1"></i>
-                        <span>الحي الدبلوماسي • قريب من المطار</span>
+                        <span>{{ __('Diplomatic Quarter') }} • {{ __('Near airport') }}</span>
                     </div>
                     <a href="#" class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">
-                        احجز الآن
+                        {{ __('Book Now') }}
                     </a>
                 </div>
             </div>
@@ -265,12 +275,12 @@
                         -45%
                     </div>
                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                        <div class="text-white text-sm font-semibold">جدة، السعودية</div>
+                        <div class="text-white text-sm font-semibold">{{ __('Jeddah') }}, {{ __('Saudi Arabia') }}</div>
                     </div>
                 </div>
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xl font-bold text-gray-900">فندق الكورنيش</h3>
+                        <h3 class="text-xl font-bold text-gray-900">{{ __('Corniche Hotel') }}</h3>
                         <div class="flex items-center bg-yellow-100 px-2 py-1 rounded-lg">
                             <i class="fas fa-star text-yellow-500 text-xs ml-1"></i>
                             <span class="text-xs font-bold text-gray-900">4.7</span>
@@ -278,15 +288,15 @@
                     </div>
                     <div class="flex items-center mb-4">
                         <span class="text-3xl font-extrabold text-orange-600">200</span>
-                        <span class="text-gray-500 text-sm mr-2">ريال</span>
-                        <span class="text-gray-400 line-through text-sm">365 ريال</span>
+                        <span class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">{{ __('SAR') }}</span>
+                        <span class="text-gray-400 line-through text-sm">365 {{ __('SAR') }}</span>
                     </div>
                     <div class="flex items-center text-xs text-gray-600 mb-4">
                         <i class="fas fa-map-marker-alt ml-1"></i>
-                        <span>الكورنيش • إطلالة على البحر</span>
+                        <span>{{ __('Corniche') }} • {{ __('Sea view') }}</span>
                     </div>
                     <a href="#" class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">
-                        احجز الآن
+                        {{ __('Book Now') }}
                     </a>
                 </div>
             </div>
@@ -300,12 +310,12 @@
                         -30%
                     </div>
                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                        <div class="text-white text-sm font-semibold">أبوظبي، الإمارات</div>
+                        <div class="text-white text-sm font-semibold">{{ __('Abu Dhabi') }}, {{ __('United Arab Emirates') }}</div>
                     </div>
                 </div>
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xl font-bold text-gray-900">فندق الإمارات</h3>
+                        <h3 class="text-xl font-bold text-gray-900">{{ __('Emirates Hotel') }}</h3>
                         <div class="flex items-center bg-yellow-100 px-2 py-1 rounded-lg">
                             <i class="fas fa-star text-yellow-500 text-xs ml-1"></i>
                             <span class="text-xs font-bold text-gray-900">4.9</span>
@@ -313,15 +323,15 @@
                     </div>
                     <div class="flex items-center mb-4">
                         <span class="text-3xl font-extrabold text-orange-600">320</span>
-                        <span class="text-gray-500 text-sm mr-2">ريال</span>
-                        <span class="text-gray-400 line-through text-sm">460 ريال</span>
+                        <span class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">{{ __('SAR') }}</span>
+                        <span class="text-gray-400 line-through text-sm">460 {{ __('SAR') }}</span>
                     </div>
                     <div class="flex items-center text-xs text-gray-600 mb-4">
                         <i class="fas fa-map-marker-alt ml-1"></i>
-                        <span>جزيرة ياس • قريب من المتنزهات</span>
+                        <span>{{ __('Yas Island') }} • {{ __('Near parks') }}</span>
                     </div>
                     <a href="#" class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">
-                        احجز الآن
+                        {{ __('Book Now') }}
                     </a>
                 </div>
             </div>
@@ -333,8 +343,8 @@
 <section id="destinations" class="py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-4xl font-extrabold text-gray-900 mb-3">الوجهات الأكثر شعبية</h2>
-            <p class="text-gray-600 text-lg">اكتشف أفضل الوجهات السياحية مع أفضل الأسعار</p>
+            <h2 class="text-4xl font-extrabold text-gray-900 mb-3">{{ __('Popular Destinations') }}</h2>
+            <p class="text-gray-600 text-lg">{{ __('Discover the best tourist destinations with the best prices') }}</p>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -344,15 +354,15 @@
                          alt="مكة المكرمة" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6">
-                        <h3 class="text-2xl font-bold text-white mb-1">مكة المكرمة</h3>
-                        <p class="text-white/90 text-sm mb-3">150+ فندق متاح</p>
+                        <h3 class="text-2xl font-bold text-white mb-1">{{ __('Mecca') }}</h3>
+                        <p class="text-white/90 text-sm mb-3">150+ {{ __('hotels available') }}</p>
                         <div class="flex items-center text-white text-sm">
-                            <span>من 120 ريال</span>
+                            <span>{{ __('From') }} 120 {{ __('SAR') }}</span>
                             <i class="fas fa-arrow-left mr-2 text-xs"></i>
                         </div>
                     </div>
                     <div class="absolute top-4 right-4 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-white text-xs font-semibold">
-                        <i class="fas fa-fire text-orange-400 ml-1"></i> رائج
+                        <i class="fas fa-fire text-orange-400 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Trending') }}
                     </div>
                 </div>
             </div>
@@ -363,10 +373,10 @@
                          alt="المدينة المنورة" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6">
-                        <h3 class="text-2xl font-bold text-white mb-1">المدينة المنورة</h3>
-                        <p class="text-white/90 text-sm mb-3">120+ فندق متاح</p>
+                        <h3 class="text-2xl font-bold text-white mb-1">{{ __('Medina') }}</h3>
+                        <p class="text-white/90 text-sm mb-3">120+ {{ __('hotels available') }}</p>
                         <div class="flex items-center text-white text-sm">
-                            <span>من 100 ريال</span>
+                            <span>{{ __('From') }} 100 {{ __('SAR') }}</span>
                             <i class="fas fa-arrow-left mr-2 text-xs"></i>
                         </div>
                     </div>
@@ -379,10 +389,10 @@
                          alt="الطائف" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6">
-                        <h3 class="text-2xl font-bold text-white mb-1">الطائف</h3>
-                        <p class="text-white/90 text-sm mb-3">80+ فندق متاح</p>
+                        <h3 class="text-2xl font-bold text-white mb-1">{{ __('Taif') }}</h3>
+                        <p class="text-white/90 text-sm mb-3">80+ {{ __('hotels available') }}</p>
                         <div class="flex items-center text-white text-sm">
-                            <span>من 150 ريال</span>
+                            <span>{{ __('From') }} 150 {{ __('SAR') }}</span>
                             <i class="fas fa-arrow-left mr-2 text-xs"></i>
                         </div>
                     </div>
@@ -395,10 +405,10 @@
                          alt="أبها" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6">
-                        <h3 class="text-2xl font-bold text-white mb-1">أبها</h3>
-                        <p class="text-white/90 text-sm mb-3">60+ فندق متاح</p>
+                        <h3 class="text-2xl font-bold text-white mb-1">{{ __('Abha') }}</h3>
+                        <p class="text-white/90 text-sm mb-3">60+ {{ __('hotels available') }}</p>
                         <div class="flex items-center text-white text-sm">
-                            <span>من 180 ريال</span>
+                            <span>{{ __('From') }} 180 {{ __('SAR') }}</span>
                             <i class="fas fa-arrow-left mr-2 text-xs"></i>
                         </div>
                     </div>
@@ -413,14 +423,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between mb-12">
             <div>
-                <h2 class="text-4xl font-extrabold text-gray-900 mb-2">فنادق مميزة</h2>
-                <p class="text-gray-600">اختر من بين أفضل الفنادق الموصى بها</p>
+                <h2 class="text-4xl font-extrabold text-gray-900 mb-2">{{ __('Featured Hotels') }}</h2>
+                <p class="text-gray-600">{{ __('Choose from the best recommended hotels') }}</p>
             </div>
             <div class="hidden md:flex gap-2">
-                <button class="px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold">الكل</button>
-                <button class="px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-100">5 نجوم</button>
-                <button class="px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-100">4 نجوم</button>
-                <button class="px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-100">3 نجوم</button>
+                <button class="px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold">{{ __('All') }}</button>
+                <button class="px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-100">5 {{ __('stars') }}</button>
+                <button class="px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-100">4 {{ __('stars') }}</button>
+                <button class="px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-100">3 {{ __('stars') }}</button>
             </div>
         </div>
 
@@ -435,33 +445,33 @@
                             <i class="fas fa-star text-yellow-500 ml-1"></i> 4.8
                         </div>
                         <div class="bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                            <i class="fas fa-fire ml-1"></i> شعبي
+                            <i class="fas fa-fire {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Popular') }}
                         </div>
                     </div>
                     <div class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-semibold text-gray-900">
-                        <i class="fas fa-images ml-1"></i> 24 صورة
+                        <i class="fas fa-images {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> 24 {{ __('photos') }}
                     </div>
                 </div>
                 <div class="p-6">
                     <div class="flex items-start justify-between mb-3">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-1">فندق الفخامة الدولي</h3>
+                            <h3 class="text-xl font-bold text-gray-900 mb-1">{{ __('International Luxury Hotel') }}</h3>
                             <p class="text-gray-600 text-sm flex items-center">
                                 <i class="fas fa-map-marker-alt text-orange-600 ml-1 text-xs"></i>
-                                الرياض، المملكة العربية السعودية
+                                {{ __('Riyadh') }}, {{ __('Saudi Arabia') }}
                             </p>
                         </div>
                     </div>
 
                     <div class="flex flex-wrap gap-2 mb-4">
                         <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
-                            <i class="fas fa-wifi ml-1"></i> واي فاي
+                            <i class="fas fa-wifi {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('WiFi') }}
                         </span>
                         <span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
-                            <i class="fas fa-swimming-pool ml-1"></i> مسبح
+                            <i class="fas fa-swimming-pool {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Pool') }}
                         </span>
                         <span class="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
-                            <i class="fas fa-utensils ml-1"></i> مطعم
+                            <i class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Restaurant') }}
                         </span>
                     </div>
 
@@ -474,15 +484,15 @@
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
                             </div>
-                            <span class="text-sm text-gray-500">(245 تقييم)</span>
+                            <span class="text-sm text-gray-500">(245 {{ __('reviews') }})</span>
                         </div>
                     </div>
 
                     <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                         <div>
                             <span class="text-3xl font-extrabold text-orange-600">350</span>
-                            <span class="text-gray-500 text-sm mr-1">ريال</span>
-                            <div class="text-xs text-gray-400">/ ليلة</div>
+                            <span class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}">{{ __('SAR') }}</span>
+                            <div class="text-xs text-gray-400">{{ __('per night') }}</div>
                         </div>
                         <a href="#" class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-6 py-2 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
                             احجز الآن
@@ -501,30 +511,30 @@
                             <i class="fas fa-star text-yellow-500 ml-1"></i> 4.9
                         </div>
                         <div class="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                            <i class="fas fa-tag ml-1"></i> خصم
+                            <i class="fas fa-tag {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Discount') }}
                         </div>
                     </div>
                 </div>
                 <div class="p-6">
                     <div class="flex items-start justify-between mb-3">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-1">فندق الراحة والاستجمام</h3>
+                            <h3 class="text-xl font-bold text-gray-900 mb-1">{{ __('Comfort & Relaxation Hotel') }}</h3>
                             <p class="text-gray-600 text-sm flex items-center">
                                 <i class="fas fa-map-marker-alt text-orange-600 ml-1 text-xs"></i>
-                                جدة، المملكة العربية السعودية
+                                {{ __('Jeddah') }}, {{ __('Saudi Arabia') }}
                             </p>
                         </div>
                     </div>
 
                     <div class="flex flex-wrap gap-2 mb-4">
                         <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
-                            <i class="fas fa-wifi ml-1"></i> واي فاي
+                            <i class="fas fa-wifi {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('WiFi') }}
                         </span>
                         <span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
-                            <i class="fas fa-spa ml-1"></i> سبا
+                            <i class="fas fa-spa {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Spa') }}
                         </span>
                         <span class="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
-                            <i class="fas fa-dumbbell ml-1"></i> جيم
+                            <i class="fas fa-dumbbell {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Gym') }}
                         </span>
                     </div>
 
@@ -544,8 +554,8 @@
                     <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                         <div>
                             <span class="text-3xl font-extrabold text-orange-600">280</span>
-                            <span class="text-gray-500 text-sm mr-1">ريال</span>
-                            <div class="text-xs text-gray-400">/ ليلة</div>
+                            <span class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}">{{ __('SAR') }}</span>
+                            <div class="text-xs text-gray-400">{{ __('per night') }}</div>
                         </div>
                         <a href="#" class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-6 py-2 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
                             احجز الآن
@@ -568,23 +578,23 @@
                 <div class="p-6">
                     <div class="flex items-start justify-between mb-3">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-1">فندق الإقامة المميزة</h3>
+                            <h3 class="text-xl font-bold text-gray-900 mb-1">{{ __('Premium Stay Hotel') }}</h3>
                             <p class="text-gray-600 text-sm flex items-center">
                                 <i class="fas fa-map-marker-alt text-orange-600 ml-1 text-xs"></i>
-                                دبي، الإمارات العربية المتحدة
+                                {{ __('Dubai') }}, {{ __('United Arab Emirates') }}
                             </p>
                         </div>
                     </div>
 
                     <div class="flex flex-wrap gap-2 mb-4">
                         <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
-                            <i class="fas fa-wifi ml-1"></i> واي فاي
+                            <i class="fas fa-wifi {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('WiFi') }}
                         </span>
                         <span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
-                            <i class="fas fa-swimming-pool ml-1"></i> مسبح
+                            <i class="fas fa-swimming-pool {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Pool') }}
                         </span>
                         <span class="px-2 py-1 bg-orange-50 text-orange-700 text-xs rounded-lg font-semibold">
-                            <i class="fas fa-car ml-1"></i> موقف
+                            <i class="fas fa-car {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Parking') }}
                         </span>
                     </div>
 
@@ -604,8 +614,8 @@
                     <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                         <div>
                             <span class="text-3xl font-extrabold text-orange-600">420</span>
-                            <span class="text-gray-500 text-sm mr-1">ريال</span>
-                            <div class="text-xs text-gray-400">/ ليلة</div>
+                            <span class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}">{{ __('SAR') }}</span>
+                            <div class="text-xs text-gray-400">{{ __('per night') }}</div>
                         </div>
                         <a href="#" class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-6 py-2 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
                             احجز الآن
@@ -621,8 +631,8 @@
 <section class="py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-4xl font-extrabold text-gray-900 mb-3">ماذا يقول عملاؤنا</h2>
-            <p class="text-gray-600 text-lg mb-6">آراء حقيقية من عملائنا المميزين</p>
+            <h2 class="text-4xl font-extrabold text-gray-900 mb-3">{{ __('What Our Customers Say') }}</h2>
+            <p class="text-gray-600 text-lg mb-6">{{ __('Real reviews from our distinguished customers') }}</p>
             <div class="flex items-center justify-center gap-2">
                 <div class="flex text-yellow-500 text-2xl">
                     <i class="fas fa-star"></i>
@@ -631,8 +641,8 @@
                     <i class="fas fa-star"></i>
                     <i class="fas fa-star"></i>
                 </div>
-                <span class="text-xl font-bold text-gray-900 mr-2">4.8</span>
-                <span class="text-gray-600">من 5.0 بناءً على 2,458 تقييم</span>
+                <span class="text-xl font-bold text-gray-900 {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">4.8</span>
+                <span class="text-gray-600">{{ __('Based on') }} 2,458 {{ __('reviews') }}</span>
             </div>
         </div>
 
@@ -653,16 +663,16 @@
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
                             </div>
-                            <span class="text-xs text-gray-500">منذ 3 أيام</span>
+                            <span class="text-xs text-gray-500">3 {{ __('days ago') }}</span>
                         </div>
                     </div>
                 </div>
                 <p class="text-gray-700 leading-relaxed mb-4">
-                    "تجربة رائعة! الموقع سهل الاستخدام والعروض ممتازة. استطعت حجز فندق رائع بأسعار مناسبة جداً. الخدمة سريعة والردود فورية."
+                    "{{ __('Review 1 Text') }}"
                 </p>
                 <div class="flex items-center text-sm text-gray-600">
                     <i class="fas fa-check-circle text-orange-600 ml-2"></i>
-                    <span>حجز مؤكد</span>
+                    <span>{{ __('Confirmed booking') }}</span>
                 </div>
             </div>
 
@@ -682,16 +692,16 @@
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
                             </div>
-                            <span class="text-xs text-gray-500">منذ أسبوع</span>
+                            <span class="text-xs text-gray-500">{{ __('week ago') }}</span>
                         </div>
                     </div>
                 </div>
                 <p class="text-gray-700 leading-relaxed mb-4">
-                    "خدمة ممتازة ودعم فني سريع. أنصح الجميع باستخدام هذا الموقع لحجز الفنادق. الأسعار منافسة والجودة عالية."
+                    "{{ __('Review 2 Text') }}"
                 </p>
                 <div class="flex items-center text-sm text-gray-600">
                     <i class="fas fa-check-circle text-orange-600 ml-2"></i>
-                    <span>حجز مؤكد</span>
+                    <span>{{ __('Confirmed booking') }}</span>
                 </div>
             </div>
 
@@ -711,16 +721,16 @@
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star-half-alt"></i>
                             </div>
-                            <span class="text-xs text-gray-500">منذ أسبوعين</span>
+                            <span class="text-xs text-gray-500">2 {{ __('weeks ago') }}</span>
                         </div>
                     </div>
                 </div>
                 <p class="text-gray-700 leading-relaxed mb-4">
-                    "عروض متنوعة وأسعار منافسة. استطعت توفير الكثير من المال بفضل العروض الحصرية. الموقع احترافي جداً."
+                    "{{ __('Review 3 Text') }}"
                 </p>
                 <div class="flex items-center text-sm text-gray-600">
                     <i class="fas fa-check-circle text-orange-600 ml-2"></i>
-                    <span>حجز مؤكد</span>
+                    <span>{{ __('Confirmed booking') }}</span>
                 </div>
             </div>
         </div>
@@ -736,8 +746,8 @@
 
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">لماذا تختارنا؟</h2>
-            <p class="text-slate-300 text-lg">نوفر لك أفضل تجربة حجز مع ضمانات كاملة</p>
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">{{ __('Why Choose Us') }}</h2>
+            <p class="text-slate-300 text-lg">{{ __('We provide you with the best booking experience with full guarantees') }}</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -745,32 +755,32 @@
                 <div class="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300">
                     <i class="fas fa-shield-alt text-3xl"></i>
                 </div>
-                <h3 class="text-xl font-bold mb-3">آمن ومضمون</h3>
-                <p class="text-blue-100 leading-relaxed">حماية كاملة لبياناتك ومدفوعاتك مع تشفير SSL</p>
+                <h3 class="text-xl font-bold mb-3">{{ __('Secure & Guaranteed') }}</h3>
+                <p class="text-blue-100 leading-relaxed">{{ __('Full protection for your data and payments with SSL encryption') }}</p>
             </div>
 
             <div class="text-center group">
                 <div class="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300">
                     <i class="fas fa-tag text-3xl"></i>
                 </div>
-                <h3 class="text-xl font-bold mb-3">أفضل الأسعار</h3>
-                <p class="text-blue-100 leading-relaxed">ضمان أفضل الأسعار في السوق أو استرداد الفرق</p>
+                <h3 class="text-xl font-bold mb-3">{{ __('Best Prices') }}</h3>
+                <p class="text-blue-100 leading-relaxed">{{ __('Guarantee of the best prices in the market or refund the difference') }}</p>
             </div>
 
             <div class="text-center group">
                 <div class="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300">
                     <i class="fas fa-headset text-3xl"></i>
                 </div>
-                <h3 class="text-xl font-bold mb-3">دعم 24/7</h3>
-                <p class="text-blue-100 leading-relaxed">فريق دعم متاح على مدار الساعة لمساعدتك</p>
+                <h3 class="text-xl font-bold mb-3">{{ __('24/7 Support') }}</h3>
+                <p class="text-blue-100 leading-relaxed">{{ __('Support team available around the clock to help you') }}</p>
             </div>
 
             <div class="text-center group">
                 <div class="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300">
                     <i class="fas fa-check-circle text-3xl"></i>
                 </div>
-                <h3 class="text-xl font-bold mb-3">حجز فوري</h3>
-                <p class="text-blue-100 leading-relaxed">تأكيد فوري للحجوزات مع إشعارات فورية</p>
+                <h3 class="text-xl font-bold mb-3">{{ __('Instant Booking') }}</h3>
+                <p class="text-blue-100 leading-relaxed">{{ __('Instant confirmation of bookings with instant notifications') }}</p>
             </div>
         </div>
     </div>
@@ -823,6 +833,80 @@
             }
         });
     });
+
+    // Hotels database by city
+    const hotelsByCity = {
+        'Riyadh': ['Ritz-Carlton Riyadh', 'Four Seasons Hotel Riyadh', 'Al Faisaliah Hotel', 'Burj Rafal Hotel', 'Holiday Inn Riyadh', 'Marriott Riyadh', 'Hilton Riyadh', 'InterContinental Riyadh', 'Hyatt Regency Riyadh', 'Radisson Blu Hotel Riyadh'],
+        'Jeddah': ['Ritz-Carlton Jeddah', 'Hilton Jeddah', 'Park Hyatt Jeddah', 'Radisson Blu Hotel Jeddah', 'Holiday Inn Jeddah', 'Marriott Jeddah', 'InterContinental Jeddah', 'Sheraton Jeddah', 'Mövenpick Hotel Jeddah', 'Grand Mercure Jeddah'],
+        'Dammam': ['Sheraton Dammam', 'Holiday Inn Dammam', 'Radisson Blu Hotel Dammam', 'Marriott Dammam', 'Hilton Dammam', 'InterContinental Dammam', 'Grand Hyatt Dammam', 'Crowne Plaza Dammam', 'Novotel Dammam', 'Pullman Dammam'],
+        'Mecca': ['Abraj Al Bait', 'Makkah Clock Royal Tower', 'Conrad Makkah', 'Raffles Makkah Palace', 'Hilton Makkah Convention', 'Swissotel Makkah', 'Mövenpick Hotel Makkah', 'Pullman Zamzam Makkah', 'Elaf Al Huda Hotel', 'Al Marwa Rayhaan by Rotana'],
+        'Medina': ['Anwar Al Madinah Mövenpick', 'Pullman Zamzam Madina', 'Hilton Madina', 'Shaza Al Madina', 'Dar Al Iman InterContinental', 'Al Eman Royal Hotel', 'Al Haramain Hotel', 'Madinah Millennium Hotel', 'Al Madinah Al Munawwarah Hotel', 'Al Ansar International Hotel'],
+        'Abha': ['Abha Palace Hotel', 'Holiday Inn Abha', 'Al Khozama Hotel Abha', 'Abha Hotel', 'Al Salam Hotel Abha', 'Mercure Abha', 'Al Soudah Park Hotel', 'Green Hills Hotel', 'Al Shams Hotel Abha', 'Al Rashid Hotel Abha'],
+        'Taif': ['Hilton Taif', 'InterContinental Taif', 'Al Hada Hotel', 'Al Khozama Hotel Taif', 'Shaza Al Madina Taif', 'Al Faisaliah Hotel Taif', 'Al Shafa Hotel', 'Al Raha Hotel Taif', 'Al Waha Hotel', 'Al Manar Hotel Taif'],
+        'Khobar': ['Sheraton Dammam Hotel & Towers', 'Holiday Inn Al Khobar', 'Radisson Blu Hotel Al Khobar', 'Marriott Al Khobar', 'Hilton Al Khobar', 'InterContinental Al Khobar', 'Crowne Plaza Al Khobar', 'Novotel Al Khobar', 'Grand Hyatt Al Khobar', 'Pullman Al Khobar']
+    };
+
+    // City select change handler
+    const citySelect = document.getElementById('citySelect');
+    const hotelSearchContainer = document.getElementById('hotelSearchContainer');
+    const hotelSearch = document.getElementById('hotelSearch');
+    const hotelAutocomplete = document.getElementById('hotelAutocomplete');
+
+    if (citySelect) {
+        citySelect.addEventListener('change', function() {
+            const selectedCity = this.value;
+            if (selectedCity) {
+                hotelSearchContainer.classList.remove('hidden');
+                hotelSearch.value = '';
+                hotelAutocomplete.classList.add('hidden');
+            } else {
+                hotelSearchContainer.classList.add('hidden');
+                hotelSearch.value = '';
+                hotelAutocomplete.classList.add('hidden');
+            }
+        });
+    }
+
+    // Hotel search autocomplete
+    if (hotelSearch) {
+        hotelSearch.addEventListener('input', function() {
+            const city = citySelect.value;
+            const searchTerm = this.value.toLowerCase().trim();
+            
+            if (!city || !searchTerm) {
+                hotelAutocomplete.classList.add('hidden');
+                return;
+            }
+
+            const hotels = hotelsByCity[city] || [];
+            const filteredHotels = hotels.filter(hotel => hotel.toLowerCase().includes(searchTerm));
+
+            if (filteredHotels.length > 0) {
+                hotelAutocomplete.innerHTML = filteredHotels.map(hotel => `
+                    <div class="px-4 py-3 hover:bg-orange-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0" onclick="selectHotel('${hotel}')">
+                        <div class="flex items-center">
+                            <i class="fas fa-hotel text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                            <span class="text-gray-900 dark:text-gray-100">${hotel}</span>
+                        </div>
+                    </div>
+                `).join('');
+                hotelAutocomplete.classList.remove('hidden');
+            } else {
+                hotelAutocomplete.classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!hotelSearch.contains(e.target) && !hotelAutocomplete.contains(e.target)) {
+                hotelAutocomplete.classList.add('hidden');
+            }
+        });
+    }
+
+    function selectHotel(hotelName) {
+        hotelSearch.value = hotelName;
+        hotelAutocomplete.classList.add('hidden');
+    }
 
     // Countdown timer
     function updateCountdown() {
