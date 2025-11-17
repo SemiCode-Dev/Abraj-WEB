@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
-@include('partials.head')
+@include('Web.partials.head')
 
 <body class="font-cairo antialiased bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-    @include('partials.navbar')
-    @include('partials.top-banner')
+    @include('Web.partials.navbar')
+    @include('Web.partials.top-banner')
 
     <!-- Main Content -->
     <main>
         @yield('content')
     </main>
 
-    @include('partials.footer')
+    @include('Web.partials.footer')
 
     <!-- WhatsApp CTA Button - Bottom Left -->
     <a href="https://wa.me/966500000000?text={{ app()->getLocale() === 'ar' ? 'مرحباً، أريد الاستفسار عن حجز فندق' : 'Hello, I would like to inquire about hotel booking' }}"

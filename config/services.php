@@ -31,4 +31,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'tbo' => [
+    'base_url' => env('TBO_BASE_URL'),
+    'username' => env('TBO_USERNAME'),
+    'password' => env('TBO_PASSWORD'),
+],
+
+
 ];

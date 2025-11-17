@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('Web.layouts.app')
 
 @section('title', __('Hotel Details') . ' - ' . __('Book Hotels - Best Offers and Services'))
 

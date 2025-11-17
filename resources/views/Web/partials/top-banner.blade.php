@@ -15,13 +15,13 @@
             <div class="flex items-center {{ app()->getLocale() === 'ar' ? 'space-x-reverse space-x-4' : 'space-x-4' }} mt-2 md:mt-0">
                 <!-- Language Switcher - Show only the other language flag -->
                 @if(app()->getLocale() === 'ar')
-                    <a href="{{ route('lang.switch', ['locale' => 'en']) }}" 
+                    <a href="{{ LaravelLocalization::getLocalizedURL('en') }}" 
                        class="flex items-center hover:opacity-80 transition"
                        title="English">
                         <img src="https://flagcdn.com/w20/gb.png" alt="English" class="w-5 h-4 rounded">
                     </a>
                 @else
-                    <a href="{{ route('lang.switch', ['locale' => 'ar']) }}" 
+                    <a href="{{ LaravelLocalization::getLocalizedURL('ar') }}" 
                        class="flex items-center hover:opacity-80 transition"
                        title="العربية">
                         <img src="https://flagcdn.com/w20/sa.png" alt="العربية" class="w-5 h-4 rounded">
