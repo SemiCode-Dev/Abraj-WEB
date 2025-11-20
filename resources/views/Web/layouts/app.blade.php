@@ -158,10 +158,100 @@
     @stack('scripts')
 
     <script>
-        // Mobile menu toggle
-        document.getElementById('mobile-menu-btn')?.addEventListener('click', function() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
+        // Mobile menu toggle functions
+        function openMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+            const isRTL = document.documentElement.dir === 'rtl';
+            
+            if (mobileMenu && backdrop) {
+                backdrop.classList.remove('hidden');
+                mobileMenu.classList.remove('hidden');
+                // Force reflow to ensure transition works
+                void mobileMenu.offsetWidth;
+                
+                if (isRTL) {
+                    mobileMenu.classList.remove('translate-x-full');
+                } else {
+                    mobileMenu.classList.remove('-translate-x-full');
+                }
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+            const isRTL = document.documentElement.dir === 'rtl';
+            
+            if (mobileMenu && backdrop) {
+                if (isRTL) {
+                    mobileMenu.classList.add('translate-x-full');
+                } else {
+                    mobileMenu.classList.add('-translate-x-full');
+                }
+                
+                backdrop.classList.add('hidden');
+                
+                setTimeout(() => {
+                    mobileMenu.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }, 300);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenuClose = document.getElementById('mobile-menu-close');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+            
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', openMobileMenu);
+            }
+            
+            if (mobileMenuClose) {
+                mobileMenuClose.addEventListener('click', closeMobileMenu);
+            }
+            
+            if (backdrop) {
+                backdrop.addEventListener('click', closeMobileMenu);
+            }
+            
+            // Profile dropdown toggle
+            const profileToggle = document.getElementById('profile-toggle');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            const profileContainer = document.getElementById('profile-dropdown-container');
+            
+            if (profileToggle && profileDropdown && profileContainer) {
+                // Toggle dropdown on click
+                profileToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const isVisible = !profileDropdown.classList.contains('opacity-0');
+                    
+                    if (isVisible) {
+                        profileDropdown.classList.add('opacity-0', 'invisible');
+                    } else {
+                        profileDropdown.classList.remove('opacity-0', 'invisible');
+                    }
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!profileContainer.contains(e.target)) {
+                        profileDropdown.classList.add('opacity-0', 'invisible');
+                    }
+                });
+                
+                // Close dropdown on hover out (optional - can be removed if you want click-only)
+                profileContainer.addEventListener('mouseleave', function() {
+                    profileDropdown.classList.add('opacity-0', 'invisible');
+                });
+                
+                // Show dropdown on hover
+                profileContainer.addEventListener('mouseenter', function() {
+                    profileDropdown.classList.remove('opacity-0', 'invisible');
+                });
+            }
         });
 
         // Auth Modal Functions
