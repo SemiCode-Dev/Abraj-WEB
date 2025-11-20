@@ -41,4 +41,19 @@ class HotelController extends Controller
 
         return response()->json($clean->values());
     }
+
+    public function getCityHotels($cityCode)
+    {
+        $response = $this->hotelApi->getCityHotels($cityCode);
+
+        $hotels = $response['Hotels'] ?? [];
+
+
+        return view('Web.hotels', [
+            
+            'hotels' => $hotels
+        ]);
+    }
+
+    
 }

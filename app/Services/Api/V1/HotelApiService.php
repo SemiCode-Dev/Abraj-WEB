@@ -52,4 +52,13 @@ class HotelApiService
 
         return $this->sendRequest('TBOHotelCodeList', $payload);
     }
+    public function getCityHotels($cityCode)
+    {
+        $payload = [
+            "CityCode" => $cityCode,
+            "IsDetailedResponse" => "true"
+        ];
+
+        return $this->sendRequest('TBOHotelCodeList', $payload);
+    }
 }

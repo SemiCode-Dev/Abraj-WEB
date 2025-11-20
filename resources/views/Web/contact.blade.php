@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('Web.layouts.app')
 
 @section('title', __('Contact Us') . ' - ABRAJ STAY')
 
