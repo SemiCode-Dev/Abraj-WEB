@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\V1\AuthController;
 use App\Http\Controllers\Web\V1\HomeController;
 use App\Http\Controllers\Web\V1\HotelController;
+use App\Http\Controllers\Web\V1\PaymentController;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
 /*
@@ -35,8 +36,7 @@ Route::group([
 
     // Home
     Route::get('/',[HomeController::class,'index'])->name('home');
-    Route::post('/start-aps-payment', [HomeController::class, 'startApsPayment'])->name('aps.start');
-    Route::post('/aps/callback', [HomeController::class, 'apsCallback'])->name('aps.callback');
+    Route::post('/aps/callback', [PaymentController::class, 'apsCallback'])->name('aps.callback');
 
 
 

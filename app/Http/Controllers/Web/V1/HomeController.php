@@ -3,36 +3,24 @@
 namespace App\Http\Controllers\Web\V1;
 
 use App\Models\City;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Services\Api\V1\PaymentService;
 use App\Services\Api\V1\HotelApiService;
 
 class HomeController extends Controller
 {
     protected HotelApiService $hotelApi;
+    protected PaymentService $paymentService;
 
-    public function __construct(HotelApiService $hotelApi)
+    public function __construct(HotelApiService $hotelApi, PaymentService $paymentService)
     {
         $this->hotelApi = $hotelApi;
+        $this->paymentService = $paymentService;
     }
 
     public function index()
     {
-
-    $data = [
-        "command" => "PURCHASE",
-        "access_code" => env("APS_ACCESS_CODE"),
-        "merchant_identifier" => env("APS_MERCHANT_ID"),
-        "merchant_reference" => uniqid("order_"),
-        "amount" => 100,
-        "currency" => "SAR",
-        "language" => "en",
-        "customer_email" => "test@example.com",
-        "return_url" => route("aps.callback"),
-    ];
-
-    $data["signature"] = $this->apsSignature($data, env("APS_SHA_REQUEST"));
-
+        $data = $this->paymentService->apsPayment();
 
         $codes = ['122187', '100218', '100304', '127891'];
 
@@ -62,43 +50,7 @@ class HomeController extends Controller
         ]);
     }
 
-    public function apsSignature($data, $phrase)
-    {
-        ksort($data);
-        $str = $phrase;
+   
 
-        foreach ($data as $key => $value) {
-            $str .= "$key=$value";
-        }
-
-        $str .= $phrase;
-
-        return hash('sha256', $str);
-    }
-
-  
-
-    public function apsCallback(Request $request)
-{
-    $data = $request->all();
-
-    // Extract APS signature
-    $receivedSignature = $data["signature"] ?? null;
-    unset($data["signature"]);
-
-    // Validate signature
-    $generatedSignature = $this->apsSignature($data, env("APS_SHA_RESPONSE"));
-
-    if ($receivedSignature !== $generatedSignature) {
-        return "Invalid signature — payment not trusted";
-    }
-
-    if ($data["status"] == "14") {
-        // Payment success
-        return "Payment Successful: Order " . $data["merchant_reference"];
-    }
-
-    return "Payment Failed: " . $data["response_message"];
-}
-
+   
 }

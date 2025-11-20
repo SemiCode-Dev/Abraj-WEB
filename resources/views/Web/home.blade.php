@@ -288,7 +288,7 @@
                                 <span>{{ Str::limit($hotel['Address'], 30) }}</span>
                             </div>
 
-                            <form id="apsForm" method="POST"
+                            <form id="apsForm{{ $loop->index }}" method="POST" 
                                 action="https://sbcheckout.payfort.com/FortAPI/paymentPage">
                                 @foreach ($data as $k => $v)
                                     <input type="hidden" name="{{ $k }}" value="{{ $v }}">
@@ -296,12 +296,7 @@
                                 <button type="submit" class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">{{ __('Book Now') }}</button>
                             </form>
 
-                            {{-- <form action="{{ route('aps.start') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="amount" value="250">
-                                <input type="hidden" name="email"
-                                    value="{{ auth()->user()->email ?? 'test@example.com' }}">
-                            </form> --}}
+                           
 
                         </div>
                     </div>

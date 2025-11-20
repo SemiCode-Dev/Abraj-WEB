@@ -7,6 +7,21 @@
     @include('Web.partials.top-banner')
 
     <!-- Main Content -->
+    @if (session()->has('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                showToast('{{ session('success') }}' , 'success');
+            });
+        </script>
+    @endif
+    @if (session()->has('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                showToast('{{ session('error') }}' , 'error');
+            });
+        </script>
+    @endif
+
     <main>
         @yield('content')
     </main>
@@ -497,11 +512,11 @@
 
             container.appendChild(toast);
 
-            // Remove after 3 sec
+            // Remove after 10 sec
             setTimeout(() => {
                 toast.classList.add("opacity-0");
                 setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            }, 10000);
         }
     </script>
     <div id="toast-container"
