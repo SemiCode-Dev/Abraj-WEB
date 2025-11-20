@@ -53,4 +53,23 @@ Route::group([
         return view('Web.contact');
     })->name('contact');
 
+    // Profile & Requests Routes (temporarily accessible without auth for development)
+    Route::get('/profile', function () {
+        return view('Web.profile');
+    })->name('profile');
+    
+    Route::get('/requests', function () {
+        return view('Web.requests');
+    })->name('requests');
+    
+    // Logout route (requires auth)
+    Route::middleware('auth')->group(function () {
+        Route::post('/logout', function () {
+            auth()->logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+            return redirect()->route('home', ['locale' => app()->getLocale()]);
+        })->name('logout');
+    });
+
 });
