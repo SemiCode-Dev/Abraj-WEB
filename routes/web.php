@@ -73,3 +73,30 @@ Route::group([
     });
 
 });
+
+// Admin Routes (with locale support)
+Route::prefix(LaravelLocalization::setLocale() . '/admin')->name('admin.')->middleware(['localeSessionRedirect', 'localizationRedirect', 'localeViewPath'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('Admin.dashboard');
+    })->name('dashboard');
+    
+    Route::get('/bookings', function () {
+        return view('Admin.bookings');
+    })->name('bookings');
+    
+    Route::get('/transactions', function () {
+        return view('Admin.transactions');
+    })->name('transactions');
+    
+    Route::get('/reviews', function () {
+        return view('Admin.reviews');
+    })->name('reviews');
+    
+    Route::get('/reports', function () {
+        return view('Admin.reports');
+    })->name('reports');
+    
+    Route::get('/settings', function () {
+        return view('Admin.settings');
+    })->name('settings');
+});

@@ -4,26 +4,124 @@
 
 @section('content')
     <section id="home"
-        class="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16 md:py-24 overflow-hidden">
-        <div class="absolute inset-0">
-            <div
-                class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-20">
+        class="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16 md:py-24 overflow-hidden min-h-[600px] md:min-h-[700px]">
+        
+        <!-- Hero Image Slider Background -->
+        <div class="absolute inset-0 hero-slider-container" role="region" aria-label="{{ __('Hero Image Slider') }}">
+            <div class="hero-slider-wrapper">
+                <!-- Slide 1 -->
+                <div class="hero-slide active" 
+                     data-slide="0"
+                     aria-label="{{ __('Slide') }} 1">
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
+                         alt="{{ __('Luxury Hotel') }}" 
+                         class="hero-slide-image" 
+                         loading="eager">
             </div>
-            <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60"></div>
+                <!-- Slide 2 -->
+                <div class="hero-slide" 
+                     data-slide="1"
+                     aria-label="{{ __('Slide') }} 2">
+                    <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
+                         alt="{{ __('Modern Hotel Room') }}" 
+                         class="hero-slide-image" 
+                         loading="lazy">
+                </div>
+                <!-- Slide 3 -->
+                <div class="hero-slide" 
+                     data-slide="2"
+                     aria-label="{{ __('Slide') }} 3">
+                    <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
+                         alt="{{ __('Hotel Pool') }}" 
+                         class="hero-slide-image" 
+                         loading="lazy">
+                </div>
+                <!-- Slide 4 -->
+                <div class="hero-slide" 
+                     data-slide="3"
+                     aria-label="{{ __('Slide') }} 4">
+                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
+                         alt="{{ __('Hotel Lobby') }}" 
+                         class="hero-slide-image" 
+                         loading="lazy">
+                </div>
+                <!-- Slide 5 -->
+                <div class="hero-slide" 
+                     data-slide="4"
+                     aria-label="{{ __('Slide') }} 5">
+                    <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
+                         alt="{{ __('Hotel Suite') }}" 
+                         class="hero-slide-image" 
+                         loading="lazy">
+                </div>
+            </div>
+            <!-- Overlay -->
+            <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60 z-10"></div>
+            
+            <!-- Slider Navigation Arrows - Centered Vertically -->
+            <button id="hero-slider-prev" 
+                    class="absolute {{ app()->getLocale() === 'ar' ? 'right-4' : 'left-4' }} z-30 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 active:scale-95"
+                    style="top: 50%; transform: translateY(-50%);"
+                    aria-label="{{ __('Previous slide') }}"
+                    type="button">
+                <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} text-xl"></i>
+            </button>
+            <button id="hero-slider-next" 
+                    class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} z-30 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 active:scale-95"
+                    style="top: 50%; transform: translateY(-50%);"
+                    aria-label="{{ __('Next slide') }}"
+                    type="button">
+                <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} text-xl"></i>
+            </button>
+            
+            <!-- Slider Dots Indicator - Bottom Center -->
+            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2 justify-center items-center" role="tablist" aria-label="{{ __('Slide indicators') }}">
+                <button class="hero-slider-dot active w-2.5 h-2.5 rounded-full bg-white transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50" 
+                        data-slide="0"
+                        role="tab"
+                        aria-selected="true"
+                        aria-label="{{ __('Go to slide') }} 1"
+                        type="button"></button>
+                <button class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50" 
+                        data-slide="1"
+                        role="tab"
+                        aria-selected="false"
+                        aria-label="{{ __('Go to slide') }} 2"
+                        type="button"></button>
+                <button class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50" 
+                        data-slide="2"
+                        role="tab"
+                        aria-selected="false"
+                        aria-label="{{ __('Go to slide') }} 3"
+                        type="button"></button>
+                <button class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50" 
+                        data-slide="3"
+                        role="tab"
+                        aria-selected="false"
+                        aria-label="{{ __('Go to slide') }} 4"
+                        type="button"></button>
+                <button class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50" 
+                        data-slide="4"
+                        role="tab"
+                        aria-selected="false"
+                        aria-label="{{ __('Go to slide') }} 5"
+                        type="button"></button>
+            </div>
         </div>
 
         <!-- Floating Elements -->
         <div
-            class="absolute top-20 right-20 w-72 h-72 bg-orange-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob">
+            class="absolute top-20 right-20 w-72 h-72 bg-orange-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob z-5">
         </div>
         <div
-            class="absolute bottom-20 left-20 w-72 h-72 bg-blue-900 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000">
+            class="absolute bottom-20 left-20 w-72 h-72 bg-blue-900 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000 z-5">
         </div>
 
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Content Layer (Text and Search) -->
+        <div class="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-10">
                 <h1
-                    class="text-5xl md:text-7xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-cyan-200">
+                    class="text-5xl md:text-7xl p-2 font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-cyan-200">
                     {{ __('Search for your perfect hotel') }}
                 </h1>
                 <p class="text-xl md:text-2xl text-slate-300 mb-2">{{ __('Best offers and services in one place') }}</p>
@@ -516,7 +614,11 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Hotels Slider Container -->
+            <div class="relative">
+                <!-- Slider Wrapper -->
+                <div class="hotels-slider-wrapper overflow-hidden">
+                    <div class="hotels-slider-track flex gap-6 transition-transform duration-500 ease-in-out" style="transform: translateX(0);">
                 <!-- Hotel 1 -->
                 <div
                     class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
@@ -732,17 +834,49 @@
                         </div>
                     </div>
                 </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation Arrows -->
+                <button class="hotels-slider-prev absolute {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-orange-600 text-gray-700 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 -translate-x-1/2 {{ app()->getLocale() === 'ar' ? 'translate-x-1/2' : '' }}"
+                        aria-label="{{ __('Previous') }}"
+                        type="button">
+                    <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} text-xl"></i>
+                </button>
+                <button class="hotels-slider-next absolute {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-orange-600 text-gray-700 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 translate-x-1/2 {{ app()->getLocale() === 'ar' ? '-translate-x-1/2' : '' }}"
+                        aria-label="{{ __('Next') }}"
+                        type="button">
+                    <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} text-xl"></i>
+                </button>
             </div>
         </div>
     </section>
 
-    <!-- Customer Reviews - Enhanced -->
-    <section class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-extrabold text-gray-900 mb-3">{{ __('What Our Customers Say') }}</h2>
-                <p class="text-gray-600 text-lg mb-6">{{ __('Real reviews from our distinguished customers') }}</p>
-                <div class="flex items-center justify-center gap-2">
+    <!-- Customer Reviews - Enhanced & Professional -->
+    <section class="py-20 bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+        <!-- Decorative Background Elements -->
+        <div class="absolute top-0 left-0 w-full h-full opacity-5">
+            <div class="absolute top-20 {{ app()->getLocale() === 'ar' ? 'left-20' : 'right-20' }} w-96 h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl"></div>
+            <div class="absolute bottom-20 {{ app()->getLocale() === 'ar' ? 'right-20' : 'left-20' }} w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl"></div>
+        </div>
+
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Header Section -->
+            <div class="text-center mb-16">
+                <div class="inline-block mb-4">
+                    <span class="px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full text-sm font-semibold">
+                        {{ __('Testimonials') }}
+                    </span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
+                    {{ __('What Our Customers Say') }}
+                </h2>
+                <p class="text-gray-600 dark:text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
+                    {{ __('Real reviews from our distinguished customers') }}
+                </p>
+                
+                <!-- Rating Badge -->
+                <div class="inline-flex items-center gap-3 bg-white dark:bg-gray-800 rounded-2xl px-6 py-4 shadow-lg border border-gray-100 dark:border-gray-700">
                     <div class="flex text-yellow-500 text-2xl">
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
@@ -750,166 +884,299 @@
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                     </div>
-                    <span
-                        class="text-xl font-bold text-gray-900 {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">4.8</span>
-                    <span class="text-gray-600">{{ __('Based on') }} 2,458 {{ __('reviews') }}</span>
+                    <div class="h-8 w-px bg-gray-300 dark:bg-gray-600"></div>
+                    <div>
+                        <div class="text-2xl font-bold text-gray-900 dark:text-white">4.8</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('Based on') }} 2,458 {{ __('reviews') }}</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Review 1 -->
-                <div
-                    class="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition">
-                    <div class="flex items-center mb-4">
-                        <div
-                            class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                            أ
+            <!-- Testimonials Slider Container -->
+            <div class="relative">
+                <!-- Slider Wrapper -->
+                <div class="testimonials-slider-wrapper overflow-hidden">
+                    <div class="testimonials-slider-track flex gap-8 transition-transform duration-500 ease-in-out" style="transform: translateX(0);">
+                        <!-- Review 1 - Featured Style -->
+                <div class="group relative bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    <!-- Quote Icon -->
+                    <div class="absolute top-6 {{ app()->getLocale() === 'ar' ? 'right-6' : 'left-6' }} text-orange-500/10 dark:text-orange-400/20 text-6xl font-serif">
+                        "
                         </div>
-                        <div class="mr-4 flex-1">
-                            <h4 class="font-bold text-gray-900 mb-1">أحمد محمد</h4>
-                            <div class="flex items-center gap-2">
-                                <div class="flex text-yellow-500 text-sm">
+                    
+                    <!-- Rating Stars -->
+                    <div class="flex text-yellow-500 text-lg mb-4 relative z-10">
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
                                 </div>
-                                <span class="text-xs text-gray-500">3 {{ __('days ago') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 leading-relaxed mb-4">
+                    
+                    <!-- Review Text -->
+                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6 relative z-10 text-lg">
                         "{{ __('Review 1 Text') }}"
                     </p>
-                    <div class="flex items-center text-sm text-gray-600">
-                        <i class="fas fa-check-circle text-orange-600 ml-2"></i>
-                        <span>{{ __('Confirmed booking') }}</span>
+                    
+                    <!-- Customer Info -->
+                    <div class="flex items-center gap-4 pt-6 border-t border-gray-100 dark:border-gray-700 relative z-10">
+                        <div class="relative">
+                            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg transform group-hover:scale-110 transition duration-300">
+                                أ
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center">
+                                <i class="fas fa-check text-white text-xs"></i>
+                        </div>
+                    </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-900 dark:text-white text-lg mb-1">أحمد محمد</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">3 {{ __('days ago') }}</p>
                     </div>
                 </div>
 
-                <!-- Review 2 -->
-                <div
-                    class="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition">
-                    <div class="flex items-center mb-4">
-                        <div
-                            class="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                            س
+                    <!-- Verified Badge -->
+                    <div class="absolute bottom-6 {{ app()->getLocale() === 'ar' ? 'left-6' : 'right-6' }} flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{{ __('Verified Booking') }}</span>
                         </div>
-                        <div class="mr-4 flex-1">
-                            <h4 class="font-bold text-gray-900 mb-1">سارة علي</h4>
-                            <div class="flex items-center gap-2">
-                                <div class="flex text-yellow-500 text-sm">
+                </div>
+
+                <!-- Review 2 - Modern Style -->
+                <div class="group relative bg-gradient-to-br from-white to-orange-50/50 dark:from-gray-800 dark:to-orange-900/20 rounded-3xl p-8 shadow-lg border-2 border-orange-100 dark:border-orange-900/30 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    <!-- Decorative Corner -->
+                    <div class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-24 h-24 bg-gradient-to-br from-orange-500/10 to-transparent rounded-bl-3xl {{ app()->getLocale() === 'ar' ? 'rounded-br-0 rounded-tr-3xl' : 'rounded-br-3xl rounded-tl-0' }}"></div>
+                    
+                    <!-- Rating Stars -->
+                    <div class="flex text-yellow-500 text-lg mb-4">
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
                                 </div>
-                                <span class="text-xs text-gray-500">{{ __('week ago') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 leading-relaxed mb-4">
+                    
+                    <!-- Review Text -->
+                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6 text-lg">
                         "{{ __('Review 2 Text') }}"
                     </p>
-                    <div class="flex items-center text-sm text-gray-600">
-                        <i class="fas fa-check-circle text-orange-600 ml-2"></i>
-                        <span>{{ __('Confirmed booking') }}</span>
+                    
+                    <!-- Customer Info -->
+                    <div class="flex items-center gap-4 pt-6 border-t border-orange-100 dark:border-orange-900/30">
+                        <div class="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg transform group-hover:rotate-6 transition duration-300">
+                            س
+                            </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-900 dark:text-white text-lg mb-1">سارة علي</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('week ago') }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Verified Badge -->
+                    <div class="mt-4 flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{{ __('Verified Booking') }}</span>
                     </div>
                 </div>
 
-                <!-- Review 3 -->
-                <div
-                    class="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition">
-                    <div class="flex items-center mb-4">
-                        <div
-                            class="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                            خ
+                <!-- Review 3 - Elegant Style -->
+                <div class="group relative bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                    <!-- Background Pattern -->
+                    <div class="absolute inset-0 opacity-5">
+                        <div class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} w-full h-full bg-gradient-to-br from-purple-500 to-blue-500"></div>
                         </div>
-                        <div class="mr-4 flex-1">
-                            <h4 class="font-bold text-gray-900 mb-1">خالد أحمد</h4>
-                            <div class="flex items-center gap-2">
-                                <div class="flex text-yellow-500 text-sm">
+                    
+                    <!-- Rating Stars -->
+                    <div class="flex text-yellow-500 text-lg mb-4 relative z-10">
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star-half-alt"></i>
                                 </div>
-                                <span class="text-xs text-gray-500">2 {{ __('weeks ago') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 leading-relaxed mb-4">
+                    
+                    <!-- Review Text -->
+                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6 relative z-10 text-lg">
                         "{{ __('Review 3 Text') }}"
                     </p>
-                    <div class="flex items-center text-sm text-gray-600">
-                        <i class="fas fa-check-circle text-orange-600 ml-2"></i>
-                        <span>{{ __('Confirmed booking') }}</span>
+                    
+                    <!-- Customer Info -->
+                    <div class="flex items-center gap-4 pt-6 border-t border-gray-100 dark:border-gray-700 relative z-10">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition duration-300">
+                            خ
+                            </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-900 dark:text-white text-lg mb-1">خالد أحمد</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">2 {{ __('weeks ago') }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Verified Badge -->
+                    <div class="absolute bottom-6 {{ app()->getLocale() === 'ar' ? 'left-6' : 'right-6' }} flex items-center gap-2 text-xs text-purple-600 dark:text-purple-400 font-semibold relative z-10">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{{ __('Verified Booking') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+                
+                <!-- Navigation Arrows -->
+                <button class="testimonials-slider-prev absolute {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg hover:bg-orange-600 dark:hover:bg-orange-600 text-gray-700 dark:text-gray-300 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 -translate-x-1/2 {{ app()->getLocale() === 'ar' ? 'translate-x-1/2' : '' }}"
+                        aria-label="{{ __('Previous') }}"
+                        type="button">
+                    <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} text-xl"></i>
+                </button>
+                <button class="testimonials-slider-next absolute {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg hover:bg-orange-600 dark:hover:bg-orange-600 text-gray-700 dark:text-gray-300 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 translate-x-1/2 {{ app()->getLocale() === 'ar' ? '-translate-x-1/2' : '' }}"
+                        aria-label="{{ __('Next') }}"
+                        type="button">
+                    <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} text-xl"></i>
+                </button>
+            </div>
+            </div>
+    </section>
+
+    <!-- Why Choose Us - Modern Split Layout -->
+    <section id="about" class="py-20 bg-white dark:bg-gray-900 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                <!-- Left Section - Text Content -->
+                <div class="{{ app()->getLocale() === 'ar' ? 'lg:text-right' : 'lg:text-left' }} text-center lg:text-left">
+                    <!-- Badge -->
+                    <div class="inline-block mb-6">
+                        <span class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-semibold">
+                            {{ __('Why Choose Us') }}
+                        </span>
+        </div>
+
+                    <!-- Main Heading -->
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">
+                        {{ __('Dare to live the life you\'ve always wanted') }}
+                    </h2>
+                    
+                    <!-- Description -->
+                    <p class="text-lg text-gray-600 dark:text-gray-400 mb-8 leading-relaxed max-w-xl {{ app()->getLocale() === 'ar' ? 'lg:mr-0 lg:ml-auto' : 'lg:ml-0 lg:mr-auto' }}">
+                        {{ __('Discover how you can offset your adventure\'s carbon emissions and support the sustainable initiatives practiced by our operators worldwide.') }}
+                    </p>
+                    
+                    <!-- App Download Buttons -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 justify-center lg:justify-start max-w-md">
+                        <a href="#" class="w-full sm:w-auto flex items-center gap-3 bg-black text-white px-8 py-4 rounded-lg hover:bg-gray-800 transition shadow-lg min-w-[200px]">
+                            <svg class="w-8 h-8 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L16.81,12L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" fill="#00D9FF"/>
+                            </svg>
+                            <div class="text-left">
+                                <div class="text-xs">GET IT ON</div>
+                                <div class="text-base font-bold">Google Play</div>
+                            </div>
+                        </a>
+                        <a href="#" class="w-full sm:w-auto flex items-center gap-3 bg-black text-white px-8 py-4 rounded-lg hover:bg-gray-800 transition shadow-lg min-w-[200px]">
+                            <svg class="w-8 h-8 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.09,16.67C20.06,16.74 19.67,18.11 18.71,19.5M13,3.5C13.73,2.67 14.94,2.04 15.94,2C16.07,3.17 15.6,4.35 14.9,5.19C14.21,6.04 13.07,6.7 11.95,6.61C11.8,5.46 12.36,4.26 13,3.5Z" fill="#FFFFFF"/>
+                            </svg>
+                            <div class="text-left">
+                                <div class="text-xs">Download on the</div>
+                                <div class="text-base font-bold">App Store</div>
+                            </div>
+                        </a>
+                    </div>
+            </div>
+
+                <!-- Right Section - Feature Cards Grid (2 columns) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <!-- Card 1 - Destinations (Orange) -->
+                    <div class="group relative bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 text-white shadow-2xl overflow-hidden transform hover:scale-105 hover:shadow-orange-500/50 transition-all duration-300">
+                        <!-- Decorative Background Pattern -->
+                        <div class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                        <div class="relative z-10">
+                            <div class="mb-4 flex items-center justify-between">
+                                <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
+                                    <i class="fas fa-suitcase-rolling text-3xl"></i>
+                                </div>
+                                <div class="text-4xl font-extrabold opacity-20">01</div>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-2">50,000+ {{ __('Destinations') }}</h3>
+                            <p class="text-sm text-orange-100 leading-relaxed">
+                                {{ __('Our expert team handpicked all destinations in this site.') }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 - 24/7 Support (White) -->
+                    <div class="group relative bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-2xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden transform hover:scale-105 hover:shadow-blue-500/20 hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300">
+                        <!-- Decorative Background Pattern -->
+                        <div class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 h-32 bg-blue-100 dark:bg-blue-900/30 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                        <div class="relative z-10">
+                            <div class="mb-4 flex items-center justify-between">
+                                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300 shadow-lg">
+                                    <i class="fas fa-headset text-3xl text-white"></i>
+                                </div>
+                                <div class="text-4xl font-extrabold text-gray-100 dark:text-gray-800">02</div>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ __('Great 24/7 Support') }}</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                {{ __('We are here to help, before, during, and even after your trip.') }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 - Fast Booking (White) -->
+                    <div class="group relative bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-2xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden transform hover:scale-105 hover:shadow-green-500/20 hover:border-green-200 dark:hover:border-green-800 transition-all duration-300">
+                        <!-- Decorative Background Pattern -->
+                        <div class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 h-32 bg-green-100 dark:bg-green-900/30 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                        <div class="relative z-10">
+                            <div class="mb-4 flex items-center justify-between">
+                                <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300 shadow-lg">
+                                    <i class="fas fa-bolt text-3xl text-white"></i>
+                                </div>
+                                <div class="text-4xl font-extrabold text-gray-100 dark:text-gray-800">03</div>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ __('Fast Booking') }}</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                {{ __('Secure payment and instant confirmation.') }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Card 4 - Best Price (Orange) -->
+                    <div class="group relative bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 text-white shadow-2xl overflow-hidden transform hover:scale-105 hover:shadow-orange-500/50 transition-all duration-300">
+                        <!-- Decorative Background Pattern -->
+                        <div class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                        <div class="relative z-10">
+                            <div class="mb-4 flex items-center justify-between">
+                                <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
+                                    <i class="fas fa-money-bill-wave text-3xl"></i>
+                                </div>
+                                <div class="text-4xl font-extrabold opacity-20">04</div>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-2">{{ __('Best Price') }}</h3>
+                            <p class="text-sm text-orange-100 leading-relaxed">
+                                {{ __('Price match within 48 hours of order confirmation.') }}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Why Choose Us - Enhanced -->
-    <section id="about"
-        class="py-16 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute top-0 right-0 w-96 h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl">
-            </div>
-            <div class="absolute bottom-0 left-0 w-96 h-96 bg-blue-900 rounded-full mix-blend-multiply filter blur-3xl">
-            </div>
-        </div>
-
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl md:text-5xl font-extrabold mb-4">{{ __('Why Choose Us') }}</h2>
-                <p class="text-slate-300 text-lg">
-                    {{ __('We provide you with the best booking experience with full guarantees') }}</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="text-center group">
-                    <div
-                        class="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300">
-                        <i class="fas fa-shield-alt text-3xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">{{ __('Secure & Guaranteed') }}</h3>
-                    <p class="text-blue-100 leading-relaxed">
-                        {{ __('Full protection for your data and payments with SSL encryption') }}</p>
-                </div>
-
-                <div class="text-center group">
-                    <div
-                        class="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300">
-                        <i class="fas fa-tag text-3xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">{{ __('Best Prices') }}</h3>
-                    <p class="text-blue-100 leading-relaxed">
-                        {{ __('Guarantee of the best prices in the market or refund the difference') }}</p>
-                </div>
-
-                <div class="text-center group">
-                    <div
-                        class="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300">
-                        <i class="fas fa-headset text-3xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">{{ __('24/7 Support') }}</h3>
-                    <p class="text-blue-100 leading-relaxed">
-                        {{ __('Support team available around the clock to help you') }}</p>
-                </div>
-
-                <div class="text-center group">
-                    <div
-                        class="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300">
-                        <i class="fas fa-check-circle text-3xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">{{ __('Instant Booking') }}</h3>
-                    <p class="text-blue-100 leading-relaxed">
-                        {{ __('Instant confirmation of bookings with instant notifications') }}</p>
-                </div>
+    <!-- Book Your Trip Now Section -->
+    <section class="py-20 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-4">
+                {{ __('Book Your Trip Now') }}
+            </h2>
+            <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-10">
+                {{ __('Start Your Journey With Us') }}
+            </p>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="{{ route('hotels.search', ['locale' => app()->getLocale()]) }}" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 min-w-[200px]">
+                    <i class="fas fa-calendar-check"></i>
+                    {{ __('Book Now') }}
+                </a>
+                <a href="{{ route('contact', ['locale' => app()->getLocale()]) }}" class="inline-flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-8 py-4 rounded-xl font-semibold text-lg border-2 border-gray-300 dark:border-gray-700 hover:border-orange-500 dark:hover:border-orange-500 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 min-w-[200px]">
+                    <i class="fas fa-envelope"></i>
+                    {{ __('Contact Us') }}
+                </a>
             </div>
         </div>
     </section>
@@ -942,11 +1209,525 @@
         .animation-delay-2000 {
             animation-delay: 2s;
         }
+
+        /* Hero Slider Styles */
+        .hero-slider-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            touch-action: pan-y;
+            z-index: 1;
+        }
+
+        .hero-slider-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .hero-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: scale(1.1);
+            transition: opacity 1.5s ease-in-out, transform 8s ease-out;
+            z-index: 1;
+            will-change: opacity, transform;
+            pointer-events: none;
+        }
+
+        .hero-slide.active {
+            opacity: 1;
+            transform: scale(1);
+            z-index: 2;
+            pointer-events: auto;
+        }
+        
+        .hero-slide:not(.active) {
+            opacity: 0.05;
+        }
+
+        .hero-slide-image {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-slider-dot {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .hero-slider-dot.active {
+            background-color: white;
+            width: 2.5rem;
+            border-radius: 0.25rem;
+        }
+
+        /* Smooth fade transition */
+        .hero-slide.fade-out {
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .hero-slide.fade-in {
+            opacity: 1;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .hero-slider-dot {
+                width: 2rem;
+                height: 2rem;
+            }
+            
+            .hero-slider-dot.active {
+                width: 2rem;
+            }
+        }
+
+        /* Hotels & Testimonials Slider Styles */
+        .hotels-slider-wrapper,
+        .testimonials-slider-wrapper {
+            position: relative;
+            overflow: hidden;
+            margin: 0 -12px;
+            padding: 0 12px;
+        }
+
+        .hotels-slider-track,
+        .testimonials-slider-track {
+            display: flex;
+            will-change: transform;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hotels-slider-track > div,
+        .testimonials-slider-track > div {
+            flex: 0 0 100%;
+            min-width: 0;
+            padding: 0 12px;
+            box-sizing: border-box;
+        }
+
+        @media (min-width: 768px) {
+            .hotels-slider-track > div,
+            .testimonials-slider-track > div {
+                flex: 0 0 50%;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .hotels-slider-track > div,
+            .testimonials-slider-track > div {
+                flex: 0 0 33.333%;
+            }
+        }
+
+        .hotels-slider-prev,
+        .hotels-slider-next,
+        .testimonials-slider-prev,
+        .testimonials-slider-next {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .hotels-slider-wrapper:hover .hotels-slider-prev,
+        .hotels-slider-wrapper:hover .hotels-slider-next,
+        .testimonials-slider-wrapper:hover .testimonials-slider-prev,
+        .testimonials-slider-wrapper:hover .testimonials-slider-next {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .hotels-slider-prev,
+            .hotels-slider-next,
+            .testimonials-slider-prev,
+            .testimonials-slider-next {
+                opacity: 1;
+            }
+        }
     </style>
 @endpush
 
 @push('scripts')
     <script>
+        // Enhanced Hero Slider Functionality
+        (function() {
+            const slides = document.querySelectorAll('.hero-slide');
+            const dots = document.querySelectorAll('.hero-slider-dot');
+            const prevBtn = document.getElementById('hero-slider-prev');
+            const nextBtn = document.getElementById('hero-slider-next');
+            const sliderContainer = document.querySelector('.hero-slider-container');
+            let currentSlide = 0;
+            let autoSlideInterval;
+            let isTransitioning = false;
+            let touchStartX = 0;
+            let touchEndX = 0;
+            const SWIPE_THRESHOLD = 50;
+            const AUTO_SLIDE_INTERVAL = 6000; // 6 seconds
+
+            // Preload next image for smoother transitions
+            function preloadNextImage(index) {
+                const nextIndex = (index + 1) % slides.length;
+                const nextSlide = slides[nextIndex];
+                if (nextSlide) {
+                    const img = nextSlide.querySelector('.hero-slide-image');
+                    if (img && !img.complete) {
+                        const preloadImg = new Image();
+                        preloadImg.src = img.src;
+                    }
+                }
+            }
+
+            function showSlide(index, direction = 'next') {
+                if (isTransitioning || index < 0 || index >= slides.length || index === currentSlide) return;
+                
+                isTransitioning = true;
+                
+                // Remove active class from all slides and dots
+                slides.forEach((slide) => {
+                    slide.classList.remove('active', 'fade-in', 'fade-out');
+                });
+                
+                dots.forEach((dot) => {
+                    dot.classList.remove('active');
+                    dot.setAttribute('aria-selected', 'false');
+                });
+
+                // Add active class to current slide and dot
+                if (slides[index]) {
+                    slides[index].classList.add('active');
+                }
+                if (dots[index]) {
+                    dots[index].classList.add('active');
+                    dots[index].setAttribute('aria-selected', 'true');
+                }
+                
+                currentSlide = index;
+                
+                // Reset transition flag after animation completes
+                setTimeout(() => {
+                    isTransitioning = false;
+                    // Preload next image
+                    preloadNextImage(index);
+                }, 1600);
+            }
+
+            function nextSlide() {
+                if (isTransitioning) return;
+                const nextIndex = (currentSlide + 1) % slides.length;
+                showSlide(nextIndex, 'next');
+            }
+
+            function prevSlide() {
+                if (isTransitioning) return;
+                const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
+                showSlide(prevIndex, 'prev');
+            }
+
+            function goToSlide(index) {
+                if (isTransitioning || index === currentSlide) return;
+                showSlide(index);
+                resetAutoSlide();
+            }
+
+            function startAutoSlide() {
+                clearInterval(autoSlideInterval);
+                autoSlideInterval = setInterval(() => {
+                    if (!isTransitioning && document.visibilityState === 'visible') {
+                        nextSlide();
+                    }
+                }, AUTO_SLIDE_INTERVAL);
+            }
+
+            function resetAutoSlide() {
+                clearInterval(autoSlideInterval);
+                startAutoSlide();
+            }
+
+            function pauseAutoSlide() {
+                clearInterval(autoSlideInterval);
+            }
+
+            // Touch/Swipe support for mobile
+            function handleTouchStart(e) {
+                touchStartX = e.touches[0].clientX;
+            }
+
+            function handleTouchMove(e) {
+                // Prevent default to avoid scrolling while swiping
+                e.preventDefault();
+            }
+
+            function handleTouchEnd(e) {
+                touchEndX = e.changedTouches[0].clientX;
+                handleSwipe();
+            }
+
+            function handleSwipe() {
+                const diff = touchStartX - touchEndX;
+                const isRTL = document.documentElement.dir === 'rtl';
+                
+                if (Math.abs(diff) > SWIPE_THRESHOLD) {
+                    if ((diff > 0 && !isRTL) || (diff < 0 && isRTL)) {
+                        nextSlide();
+                    } else {
+                        prevSlide();
+                    }
+                    resetAutoSlide();
+                }
+            }
+
+            // Keyboard navigation
+            function handleKeyPress(e) {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    const isRTL = document.documentElement.dir === 'rtl';
+                    
+                    if ((e.key === 'ArrowLeft' && !isRTL) || (e.key === 'ArrowRight' && isRTL)) {
+                        prevSlide();
+                    } else {
+                        nextSlide();
+                    }
+                    resetAutoSlide();
+                }
+            }
+
+            // Event listeners
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    nextSlide();
+                    resetAutoSlide();
+                });
+            }
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    prevSlide();
+                    resetAutoSlide();
+                });
+            }
+
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => goToSlide(index));
+            });
+
+            // Touch events for mobile swipe
+            if (sliderContainer) {
+                sliderContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+                sliderContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+                sliderContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
+                
+                // Pause on hover (desktop)
+                sliderContainer.addEventListener('mouseenter', pauseAutoSlide);
+                sliderContainer.addEventListener('mouseleave', startAutoSlide);
+                
+                // Pause when tab is hidden
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'hidden') {
+                        pauseAutoSlide();
+                    } else {
+                        startAutoSlide();
+                    }
+                });
+            }
+
+            // Keyboard navigation
+            document.addEventListener('keydown', handleKeyPress);
+
+            // Initialize - ensure first slide is visible
+            if (slides.length > 0) {
+                // Make sure first slide is active
+                slides[0].classList.add('active');
+                if (dots[0]) {
+                    dots[0].classList.add('active');
+                    dots[0].setAttribute('aria-selected', 'true');
+                }
+                currentSlide = 0;
+                
+                // Start auto slide after a delay
+                setTimeout(() => {
+                    startAutoSlide();
+                    preloadNextImage(0);
+                }, 2000);
+            }
+        })();
+
+        // Hotels Slider Functionality
+        (function() {
+            const hotelsTrack = document.querySelector('.hotels-slider-track');
+            const hotelsPrev = document.querySelector('.hotels-slider-prev');
+            const hotelsNext = document.querySelector('.hotels-slider-next');
+            if (!hotelsTrack || !hotelsPrev || !hotelsNext) return;
+
+            const hotelsItems = hotelsTrack.querySelectorAll('> div');
+            let hotelsCurrentIndex = 0;
+            const hotelsItemsPerView = () => {
+                if (window.innerWidth >= 1024) return 3;
+                if (window.innerWidth >= 768) return 2;
+                return 1;
+            };
+            const hotelsMaxIndex = Math.max(0, hotelsItems.length - hotelsItemsPerView());
+
+            function updateHotelsSlider() {
+                const itemsPerView = hotelsItemsPerView();
+                const maxIndex = Math.max(0, hotelsItems.length - itemsPerView);
+                const translateX = -(hotelsCurrentIndex * (100 / itemsPerView));
+                const isRTL = document.documentElement.dir === 'rtl';
+                
+                hotelsTrack.style.transform = `translateX(${isRTL ? -translateX : translateX}%)`;
+                
+                hotelsPrev.style.opacity = hotelsCurrentIndex === 0 ? '0.5' : '1';
+                hotelsPrev.style.pointerEvents = hotelsCurrentIndex === 0 ? 'none' : 'auto';
+                hotelsNext.style.opacity = hotelsCurrentIndex >= maxIndex ? '0.5' : '1';
+                hotelsNext.style.pointerEvents = hotelsCurrentIndex >= maxIndex ? 'none' : 'auto';
+            }
+
+            hotelsPrev.addEventListener('click', () => {
+                if (hotelsCurrentIndex > 0) {
+                    hotelsCurrentIndex--;
+                    updateHotelsSlider();
+                }
+            });
+
+            hotelsNext.addEventListener('click', () => {
+                const itemsPerView = hotelsItemsPerView();
+                const maxIndex = Math.max(0, hotelsItems.length - itemsPerView);
+                if (hotelsCurrentIndex < maxIndex) {
+                    hotelsCurrentIndex++;
+                    updateHotelsSlider();
+                }
+            });
+
+            // Touch/Swipe support
+            let hotelsTouchStartX = 0;
+            let hotelsTouchEndX = 0;
+            const SWIPE_THRESHOLD = 50;
+
+            hotelsTrack.addEventListener('touchstart', (e) => {
+                hotelsTouchStartX = e.touches[0].clientX;
+            }, { passive: true });
+
+            hotelsTrack.addEventListener('touchend', (e) => {
+                hotelsTouchEndX = e.changedTouches[0].clientX;
+                const diff = hotelsTouchStartX - hotelsTouchEndX;
+                const isRTL = document.documentElement.dir === 'rtl';
+                
+                if (Math.abs(diff) > SWIPE_THRESHOLD) {
+                    if ((diff > 0 && !isRTL) || (diff < 0 && isRTL)) {
+                        hotelsNext.click();
+                    } else {
+                        hotelsPrev.click();
+                    }
+                }
+            }, { passive: true });
+
+            // Responsive update
+            let hotelsResizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(hotelsResizeTimeout);
+                hotelsResizeTimeout = setTimeout(() => {
+                    const itemsPerView = hotelsItemsPerView();
+                    hotelsCurrentIndex = Math.min(hotelsCurrentIndex, Math.max(0, hotelsItems.length - itemsPerView));
+                    updateHotelsSlider();
+                }, 250);
+            });
+
+            updateHotelsSlider();
+        })();
+
+        // Testimonials Slider Functionality
+        (function() {
+            const testimonialsTrack = document.querySelector('.testimonials-slider-track');
+            const testimonialsPrev = document.querySelector('.testimonials-slider-prev');
+            const testimonialsNext = document.querySelector('.testimonials-slider-next');
+            if (!testimonialsTrack || !testimonialsPrev || !testimonialsNext) return;
+
+            const testimonialsItems = testimonialsTrack.querySelectorAll('> div');
+            let testimonialsCurrentIndex = 0;
+            const testimonialsItemsPerView = () => {
+                if (window.innerWidth >= 1024) return 3;
+                if (window.innerWidth >= 768) return 2;
+                return 1;
+            };
+            const testimonialsMaxIndex = Math.max(0, testimonialsItems.length - testimonialsItemsPerView());
+
+            function updateTestimonialsSlider() {
+                const itemsPerView = testimonialsItemsPerView();
+                const maxIndex = Math.max(0, testimonialsItems.length - itemsPerView);
+                const translateX = -(testimonialsCurrentIndex * (100 / itemsPerView));
+                const isRTL = document.documentElement.dir === 'rtl';
+                
+                testimonialsTrack.style.transform = `translateX(${isRTL ? -translateX : translateX}%)`;
+                
+                testimonialsPrev.style.opacity = testimonialsCurrentIndex === 0 ? '0.5' : '1';
+                testimonialsPrev.style.pointerEvents = testimonialsCurrentIndex === 0 ? 'none' : 'auto';
+                testimonialsNext.style.opacity = testimonialsCurrentIndex >= maxIndex ? '0.5' : '1';
+                testimonialsNext.style.pointerEvents = testimonialsCurrentIndex >= maxIndex ? 'none' : 'auto';
+            }
+
+            testimonialsPrev.addEventListener('click', () => {
+                if (testimonialsCurrentIndex > 0) {
+                    testimonialsCurrentIndex--;
+                    updateTestimonialsSlider();
+                }
+            });
+
+            testimonialsNext.addEventListener('click', () => {
+                const itemsPerView = testimonialsItemsPerView();
+                const maxIndex = Math.max(0, testimonialsItems.length - itemsPerView);
+                if (testimonialsCurrentIndex < maxIndex) {
+                    testimonialsCurrentIndex++;
+                    updateTestimonialsSlider();
+                }
+            });
+
+            // Touch/Swipe support
+            let testimonialsTouchStartX = 0;
+            let testimonialsTouchEndX = 0;
+            const SWIPE_THRESHOLD = 50;
+
+            testimonialsTrack.addEventListener('touchstart', (e) => {
+                testimonialsTouchStartX = e.touches[0].clientX;
+            }, { passive: true });
+
+            testimonialsTrack.addEventListener('touchend', (e) => {
+                testimonialsTouchEndX = e.changedTouches[0].clientX;
+                const diff = testimonialsTouchStartX - testimonialsTouchEndX;
+                const isRTL = document.documentElement.dir === 'rtl';
+                
+                if (Math.abs(diff) > SWIPE_THRESHOLD) {
+                    if ((diff > 0 && !isRTL) || (diff < 0 && isRTL)) {
+                        testimonialsNext.click();
+                    } else {
+                        testimonialsPrev.click();
+                    }
+                }
+            }, { passive: true });
+
+            // Responsive update
+            let testimonialsResizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(testimonialsResizeTimeout);
+                testimonialsResizeTimeout = setTimeout(() => {
+                    const itemsPerView = testimonialsItemsPerView();
+                    testimonialsCurrentIndex = Math.min(testimonialsCurrentIndex, Math.max(0, testimonialsItems.length - itemsPerView));
+                    updateTestimonialsSlider();
+                }, 250);
+            });
+
+            updateTestimonialsSlider();
+        })();
+
         // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
