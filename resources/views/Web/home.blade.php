@@ -138,7 +138,7 @@
                 </div>
                 <!-- Search Form -->
                 <form action="#" method="" class="space-y-3">
-                  
+
                     <!-- Row 1: City Select, Hotel Search, Guests -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <!-- Destination - City Select -->
@@ -334,171 +334,72 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Deal 1 -->
-                <div
-                    class="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div class="relative h-56 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            alt="عرض دبي"
-                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                        <div
-                            class="absolute top-0 right-0 bg-gradient-to-br from-red-600 to-pink-600 text-white px-4 py-2 rounded-bl-2xl font-bold text-lg shadow-lg">
-                            -40%
-                        </div>
-                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                            <div class="text-white text-sm font-semibold">{{ __('Dubai') }},
-                                {{ __('United Arab Emirates') }}</div>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ __('Burj Al Arab Hotel') }}
-                            </h3>
-                            <div class="flex items-center bg-yellow-100 px-2 py-1 rounded-lg">
-                                <i class="fas fa-star text-yellow-500 text-xs ml-1"></i>
-                                <span class="text-xs font-bold text-gray-900">4.9</span>
+                @foreach ($hotels as $hotel)
+                    <div
+                        class="group relative bg-white @if ($loop->first) dark:bg-gray-800 @endif rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="relative h-56 overflow-hidden">
+                            <img src="{{ $hotel['ImageUrls'][0]['ImageUrl'] ?? 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}"
+                                alt="فندق"
+                                class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                            <div
+                                class="absolute top-0 right-0 bg-gradient-to-br from-red-600 to-pink-600 text-white px-4 py-2 rounded-bl-2xl font-bold text-lg shadow-lg">
+                                -40%
+                            </div>
+                            <div
+                                class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                                <div class="text-white text-sm font-semibold">{{ $hotel['CityName'] }},
+                                    {{ $hotel['CountryName'] }}</div>
                             </div>
                         </div>
-                        <div class="flex items-center mb-4">
-                            <span class="text-3xl font-extrabold text-orange-600">250</span>
-                            <span
-                                class="text-gray-500 dark:text-gray-300 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">{{ __('SAR') }}</span>
-                            <span class="text-gray-400 dark:text-gray-500 line-through text-sm">420
-                                {{ __('SAR') }}</span>
-                        </div>
-                        <div class="flex items-center text-xs text-gray-600 dark:text-gray-300 mb-4">
-                            <i class="fas fa-map-marker-alt ml-1"></i>
-                            <span>{{ __('City Center') }} • 2.5 {{ __('km from beach') }}</span>
-                        </div>
-                        <a href="#"
-                            class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">
-                            {{ __('Book Now') }}
-                        </a>
-                    </div>
-                </div>
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3
+                                    class="text-xl font-bold text-gray-900 @if ($loop->first) dark:text-gray-100 @endif">
+                                    {{ Str::limit($hotel['HotelName'], 15) }}
+                                </h3>
+                                <div class="flex items-center bg-yellow-100 px-2 py-1 rounded-lg">
+                                    <i class="fas fa-star text-yellow-500 text-xs ml-1"></i>
+                                    @php
+                                        $stars = [
+                                            'FiveStar' => 5,
+                                            'FourStar' => 4,
+                                            'ThreeStar' => 3,
+                                            'TwoStar' => 2,
+                                            'OneStar' => 1,
+                                        ];
+                                        $count = $stars[$hotel['HotelRating']] ?? 5;
+                                    @endphp
+                                    <span class="text-xs font-bold text-gray-900">{{ $count }}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center mb-4">
+                                <span class="text-3xl font-extrabold text-orange-600">250</span>
+                                <span
+                                    class="text-gray-500 @if ($loop->first) dark:text-gray-300 @endif text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">{{ __('SAR') }}</span>
+                                <span
+                                    class="text-gray-400 @if ($loop->first) dark:text-gray-500 @endif line-through text-sm">420
+                                    {{ __('SAR') }}</span>
+                            </div>
+                            <div
+                                class="flex items-center text-xs text-gray-600 @if ($loop->first) dark:text-gray-300 @endif mb-4">
+                                <i class="fas fa-map-marker-alt ml-1"></i>
+                                <span>{{ Str::limit($hotel['Address'], 30) }}</span>
+                            </div>
 
-                <!-- Deal 2 -->
-                <div
-                    class="group relative bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div class="relative h-56 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            alt="عرض الرياض"
-                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                        <div
-                            class="absolute top-0 right-0 bg-gradient-to-br from-green-600 to-orange-600 text-white px-4 py-2 rounded-bl-2xl font-bold text-lg shadow-lg">
-                            -35%
-                        </div>
-                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                            <div class="text-white text-sm font-semibold">{{ __('Riyadh') }}, {{ __('Saudi Arabia') }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <h3 class="text-xl font-bold text-gray-900">{{ __('Al Faisaliah Hotel') }}</h3>
-                            <div class="flex items-center bg-yellow-100 px-2 py-1 rounded-lg">
-                                <i class="fas fa-star text-yellow-500 text-xs ml-1"></i>
-                                <span class="text-xs font-bold text-gray-900">4.8</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center mb-4">
-                            <span class="text-3xl font-extrabold text-orange-600">180</span>
-                            <span
-                                class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">{{ __('SAR') }}</span>
-                            <span class="text-gray-400 line-through text-sm">280 {{ __('SAR') }}</span>
-                        </div>
-                        <div class="flex items-center text-xs text-gray-600 mb-4">
-                            <i class="fas fa-map-marker-alt ml-1"></i>
-                            <span>{{ __('Diplomatic Quarter') }} • {{ __('Near airport') }}</span>
-                        </div>
-                        <a href="#"
-                            class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">
-                            {{ __('Book Now') }}
-                        </a>
-                    </div>
-                </div>
+                            <form id="apsForm{{ $loop->index }}" method="POST" 
+                                action="https://sbcheckout.payfort.com/FortAPI/paymentPage">
+                                @foreach ($data as $k => $v)
+                                    <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+                                @endforeach
+                                <button type="submit" class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">{{ __('Book Now') }}</button>
+                            </form>
 
-                <!-- Deal 3 -->
-                <div
-                    class="group relative bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div class="relative h-56 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            alt="عرض جدة"
-                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                        <div
-                            class="absolute top-0 right-0 bg-gradient-to-br from-purple-600 to-pink-600 text-white px-4 py-2 rounded-bl-2xl font-bold text-lg shadow-lg">
-                            -45%
-                        </div>
-                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                            <div class="text-white text-sm font-semibold">{{ __('Jeddah') }}, {{ __('Saudi Arabia') }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <h3 class="text-xl font-bold text-gray-900">{{ __('Corniche Hotel') }}</h3>
-                            <div class="flex items-center bg-yellow-100 px-2 py-1 rounded-lg">
-                                <i class="fas fa-star text-yellow-500 text-xs ml-1"></i>
-                                <span class="text-xs font-bold text-gray-900">4.7</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center mb-4">
-                            <span class="text-3xl font-extrabold text-orange-600">200</span>
-                            <span
-                                class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">{{ __('SAR') }}</span>
-                            <span class="text-gray-400 line-through text-sm">365 {{ __('SAR') }}</span>
-                        </div>
-                        <div class="flex items-center text-xs text-gray-600 mb-4">
-                            <i class="fas fa-map-marker-alt ml-1"></i>
-                            <span>{{ __('Corniche') }} • {{ __('Sea view') }}</span>
-                        </div>
-                        <a href="#"
-                            class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">
-                            {{ __('Book Now') }}
-                        </a>
-                    </div>
-                </div>
+                           
 
-                <!-- Deal 4 -->
-                <div
-                    class="group relative bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div class="relative h-56 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            alt="عرض أبوظبي"
-                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                        <div
-                            class="absolute top-0 right-0 bg-gradient-to-br from-blue-600 to-cyan-600 text-white px-4 py-2 rounded-bl-2xl font-bold text-lg shadow-lg">
-                            -30%
-                        </div>
-                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                            <div class="text-white text-sm font-semibold">{{ __('Abu Dhabi') }},
-                                {{ __('United Arab Emirates') }}</div>
                         </div>
                     </div>
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <h3 class="text-xl font-bold text-gray-900">{{ __('Emirates Hotel') }}</h3>
-                            <div class="flex items-center bg-yellow-100 px-2 py-1 rounded-lg">
-                                <i class="fas fa-star text-yellow-500 text-xs ml-1"></i>
-                                <span class="text-xs font-bold text-gray-900">4.9</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center mb-4">
-                            <span class="text-3xl font-extrabold text-orange-600">320</span>
-                            <span
-                                class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">{{ __('SAR') }}</span>
-                            <span class="text-gray-400 line-through text-sm">460 {{ __('SAR') }}</span>
-                        </div>
-                        <div class="flex items-center text-xs text-gray-600 mb-4">
-                            <i class="fas fa-map-marker-alt ml-1"></i>
-                            <span>{{ __('Yas Island') }} • {{ __('Near parks') }}</span>
-                        </div>
-                        <a href="#"
-                            class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">
-                            {{ __('Book Now') }}
-                        </a>
-                    </div>
-                </div>
+                @endforeach
+
             </div>
         </div>
     </section>
@@ -513,83 +414,50 @@
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                <div class="group relative cursor-pointer">
-                    <div
-                        class="relative h-80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            alt="مكة المكرمة"
-                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-6">
-                            <h3 class="text-2xl font-bold text-white mb-1">{{ __('Mecca') }}</h3>
-                            <p class="text-white/90 text-sm mb-3">150+ {{ __('hotels available') }}</p>
-                            <div class="flex items-center text-white text-sm">
-                                <span>{{ __('From') }} 120 {{ __('SAR') }}</span>
-                                <i class="fas fa-arrow-left mr-2 text-xs"></i>
+                @foreach ($cities as $city)
+                    <div class="group relative cursor-pointer">
+                        <a href="{{ route('city.hotels', $city->code) }}">
+                            <div
+                                class="relative h-80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
+                                @if ($loop->first)
+                                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                        alt="مكة المكرمة"
+                                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                                @elseif ($loop->last)
+                                    <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                        alt="المدينة المنورة"
+                                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                                @elseif ($loop->index == 1)
+                                    <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                        alt="أبو ظبي"
+                                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                                @else
+                                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                        alt="مكة المكرمة"
+                                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                                @endif
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                                </div>
+                                <div class="absolute bottom-0 left-0 right-0 p-6">
+                                    <h3 class="text-2xl font-bold text-white mb-1">{{ $city->locale_name }}</h3>
+                                    <p class="text-white/90 text-sm mb-3">150+ {{ __('hotels available') }}</p>
+                                    <div class="flex items-center text-white text-sm">
+                                        <span>{{ __('From') }} 120 {{ __('SAR') }}</span>
+                                        <i class="fas fa-arrow-left mr-2 text-xs"></i>
+                                    </div>
+                                </div>
+                                <div
+                                    class="absolute top-4 right-4 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-white text-xs font-semibold">
+                                    <i
+                                        class="fas fa-fire text-orange-400 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                    {{ __('Trending') }}
+                                </div>
                             </div>
-                        </div>
-                        <div
-                            class="absolute top-4 right-4 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-white text-xs font-semibold">
-                            <i
-                                class="fas fa-fire text-orange-400 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                            {{ __('Trending') }}
-                        </div>
-                    </div>
-                </div>
+                        </a>
 
-                <div class="group relative cursor-pointer">
-                    <div
-                        class="relative h-80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            alt="المدينة المنورة"
-                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-6">
-                            <h3 class="text-2xl font-bold text-white mb-1">{{ __('Medina') }}</h3>
-                            <p class="text-white/90 text-sm mb-3">120+ {{ __('hotels available') }}</p>
-                            <div class="flex items-center text-white text-sm">
-                                <span>{{ __('From') }} 100 {{ __('SAR') }}</span>
-                                <i class="fas fa-arrow-left mr-2 text-xs"></i>
-                            </div>
-                        </div>
                     </div>
-                </div>
+                @endforeach
 
-                <div class="group relative cursor-pointer">
-                    <div
-                        class="relative h-80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            alt="الطائف"
-                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-6">
-                            <h3 class="text-2xl font-bold text-white mb-1">{{ __('Taif') }}</h3>
-                            <p class="text-white/90 text-sm mb-3">80+ {{ __('hotels available') }}</p>
-                            <div class="flex items-center text-white text-sm">
-                                <span>{{ __('From') }} 150 {{ __('SAR') }}</span>
-                                <i class="fas fa-arrow-left mr-2 text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="group relative cursor-pointer">
-                    <div
-                        class="relative h-80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            alt="أبها"
-                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-6">
-                            <h3 class="text-2xl font-bold text-white mb-1">{{ __('Abha') }}</h3>
-                            <p class="text-white/90 text-sm mb-3">60+ {{ __('hotels available') }}</p>
-                            <div class="flex items-center text-white text-sm">
-                                <span>{{ __('From') }} 180 {{ __('SAR') }}</span>
-                                <i class="fas fa-arrow-left mr-2 text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
@@ -620,217 +488,90 @@
                 <div class="hotels-slider-wrapper overflow-hidden">
                     <div class="hotels-slider-track flex gap-6 transition-transform duration-500 ease-in-out" style="transform: translateX(0);">
                 <!-- Hotel 1 -->
-                <div
-                    class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
-                    <div class="relative h-64 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            alt="فندق"
-                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                        <div class="absolute top-4 left-4 flex gap-2">
-                            <div class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-900 shadow-lg">
-                                <i class="fas fa-star text-yellow-500 ml-1"></i> 4.8
-                            </div>
-                            <div class="bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                                <i class="fas fa-fire {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Popular') }}
-                            </div>
-                        </div>
-                        <div
-                            class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-semibold text-gray-900">
-                            <i class="fas fa-images {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> 24
-                            {{ __('photos') }}
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex items-start justify-between mb-3">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-1">{{ __('International Luxury Hotel') }}
-                                </h3>
-                                <p class="text-gray-600 text-sm flex items-center">
-                                    <i class="fas fa-map-marker-alt text-orange-600 ml-1 text-xs"></i>
-                                    {{ __('Riyadh') }}, {{ __('Saudi Arabia') }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
-                                <i class="fas fa-wifi {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('WiFi') }}
-                            </span>
-                            <span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
-                                <i class="fas fa-swimming-pool {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Pool') }}
-                            </span>
-                            <span class="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
-                                <i class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Restaurant') }}
-                            </span>
-                        </div>
-
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center">
-                                <div class="flex text-yellow-500 text-sm ml-2">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
+                @foreach ($hotels2 as $hotel2)
+                    <div
+                        class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
+                        <div class="relative h-64 overflow-hidden">
+                            <img src="{{ $hotel2['ImageUrls'][0]['ImageUrl'] ?? 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}"
+                                alt="فندق"
+                                class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                            <div class="absolute top-4 left-4 flex gap-2">
+                                <div class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-900 shadow-lg">
+                                    @php
+                                        $stars = [
+                                            'FiveStar' => 5,
+                                            'FourStar' => 4,
+                                            'ThreeStar' => 3,
+                                            'TwoStar' => 2,
+                                            'OneStar' => 1,
+                                        ];
+                                        $count = $stars[$hotel2['HotelRating']] ?? 5;
+                                    @endphp
+                                    <i class="fas fa-star text-yellow-500 ml-1"></i> {{ $count }}
                                 </div>
-                                <span class="text-sm text-gray-500">(245 {{ __('reviews') }})</span>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                            <div>
-                                <span class="text-3xl font-extrabold text-orange-600">350</span>
-                                <span
-                                    class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}">{{ __('SAR') }}</span>
-                                <div class="text-xs text-gray-400">{{ __('per night') }}</div>
-                            </div>
-                            <a href="#"
-                                class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-6 py-2 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
-                                احجز الآن
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Hotel 2 -->
-                <div
-                    class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
-                    <div class="relative h-64 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            alt="فندق"
-                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                        <div class="absolute top-4 left-4 flex gap-2">
-                            <div class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-900 shadow-lg">
-                                <i class="fas fa-star text-yellow-500 ml-1"></i> 4.9
-                            </div>
-                            <div class="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                                <i class="fas fa-tag {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Discount') }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex items-start justify-between mb-3">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-1">{{ __('Comfort & Relaxation Hotel') }}
-                                </h3>
-                                <p class="text-gray-600 text-sm flex items-center">
-                                    <i class="fas fa-map-marker-alt text-orange-600 ml-1 text-xs"></i>
-                                    {{ __('Jeddah') }}, {{ __('Saudi Arabia') }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
-                                <i class="fas fa-wifi {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('WiFi') }}
-                            </span>
-                            <span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
-                                <i class="fas fa-spa {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Spa') }}
-                            </span>
-                            <span class="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
-                                <i class="fas fa-dumbbell {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Gym') }}
-                            </span>
-                        </div>
-
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center">
-                                <div class="flex text-yellow-500 text-sm ml-2">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
+                                <div class="bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                                    <i class="fas fa-fire {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                    {{ __('Popular') }}
                                 </div>
-                                <span class="text-sm text-gray-500">(189 تقييم)</span>
+                            </div>
+                            <div
+                                class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-semibold text-gray-900">
+                                <i class="fas fa-images {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('photos') }}
                             </div>
                         </div>
-
-                        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                            <div>
-                                <span class="text-3xl font-extrabold text-orange-600">280</span>
-                                <span
-                                    class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}">{{ __('SAR') }}</span>
-                                <div class="text-xs text-gray-400">{{ __('per night') }}</div>
-                            </div>
-                            <a href="#"
-                                class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-6 py-2 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
-                                احجز الآن
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Hotel 3 -->
-                <div
-                    class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
-                    <div class="relative h-64 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            alt="فندق"
-                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                        <div class="absolute top-4 left-4 flex gap-2">
-                            <div class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-900 shadow-lg">
-                                <i class="fas fa-star text-yellow-500 ml-1"></i> 4.7
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex items-start justify-between mb-3">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-1">{{ __('Premium Stay Hotel') }}</h3>
-                                <p class="text-gray-600 text-sm flex items-center">
-                                    <i class="fas fa-map-marker-alt text-orange-600 ml-1 text-xs"></i>
-                                    {{ __('Dubai') }}, {{ __('United Arab Emirates') }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
-                                <i class="fas fa-wifi {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('WiFi') }}
-                            </span>
-                            <span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
-                                <i class="fas fa-swimming-pool {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Pool') }}
-                            </span>
-                            <span class="px-2 py-1 bg-orange-50 text-orange-700 text-xs rounded-lg font-semibold">
-                                <i class="fas fa-car {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Parking') }}
-                            </span>
-                        </div>
-
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center">
-                                <div class="flex text-yellow-500 text-sm ml-2">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star-half-alt"></i>
+                        <div class="p-6">
+                            <div class="flex items-start justify-between mb-3">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-1">{{ $hotel2['HotelName'] }}
+                                    </h3>
+                                    <p class="text-gray-600 text-sm flex items-center">
+                                        <i class="fas fa-map-marker-alt text-orange-600 ml-1 text-xs"></i>
+                                        {{ $hotel2['CityName'] }}, {{ $hotel2['CountryName'] }}
+                                    </p>
                                 </div>
-                                <span class="text-sm text-gray-500">(312 تقييم)</span>
                             </div>
-                        </div>
 
-                        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                            <div>
-                                <span class="text-3xl font-extrabold text-orange-600">420</span>
-                                <span
-                                    class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}">{{ __('SAR') }}</span>
-                                <div class="text-xs text-gray-400">{{ __('per night') }}</div>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
+                                    <i class="fas fa-wifi {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                    {{ __('WiFi') }}
+                                </span>
+                                <span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
+                                    <i
+                                        class="fas fa-swimming-pool {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                    {{ __('Pool') }}
+                                </span>
+                                <span class="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
+                                    <i class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                    {{ __('Restaurant') }}
+                                </span>
                             </div>
-                            <a href="#"
-                                class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-6 py-2 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
-                                احجز الآن
-                            </a>
+
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center">
+                                    <div class="flex text-yellow-500 text-sm ml-2">
+                                        @for ($i = 0; $i < $count; $i++)
+                                            <i class="fas fa-star"></i>
+                                        @endfor
+
+                                    </div>
+                                    <span class="text-sm text-gray-500">({{ $count }} {{ __('reviews') }})</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                                <div>
+                                    <span class="text-3xl font-extrabold text-orange-600">350</span>
+                                    <span
+                                        class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}">{{ __('SAR') }}</span>
+                                    <div class="text-xs text-gray-400">{{ __('per night') }}</div>
+                                </div>
+                                <a href="#"
+                                    class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-6 py-2 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
+                                    احجز الآن
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -2,8 +2,10 @@
 
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Web\V1\AuthController;
 use App\Http\Controllers\Web\V1\HomeController;
 use App\Http\Controllers\Web\V1\HotelController;
+use App\Http\Controllers\Web\V1\PaymentController;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
 /*
@@ -27,14 +29,21 @@ Route::group([
     ]
 ], function () {
 
+    //auth
+
+    Route::post('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/register', [AuthController::class, 'register'])->name('register');
+
     // Home
     Route::get('/',[HomeController::class,'index'])->name('home');
+    Route::post('/aps/callback', [PaymentController::class, 'apsCallback'])->name('aps.callback');
 
 
 
     // Hotels
 
     Route::get('/get-hotels/{cityCode}', [HotelController::class, 'getHotels']);
+    Route::get('/hotels/{cityCode}', [HotelController::class, 'getCityHotels'])->name('city.hotels');
     Route::get('/hotels', [HotelController::class, 'search'])->name('hotels.search');
 
     
@@ -68,7 +77,7 @@ Route::group([
             auth()->logout();
             request()->session()->invalidate();
             request()->session()->regenerateToken();
-            return redirect()->route('home', ['locale' => app()->getLocale()]);
+            return redirect()->route('home');
         })->name('logout');
     });
 
