@@ -574,10 +574,10 @@
                             </div>
                         </div>
                     </div>
+                @endforeach
                 </div>
                     </div>
                 </div>
-                
                 <!-- Navigation Arrows -->
                 <button class="hotels-slider-prev absolute {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-orange-600 text-gray-700 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 -translate-x-1/2 {{ app()->getLocale() === 'ar' ? 'translate-x-1/2' : '' }}"
                         aria-label="{{ __('Previous') }}"

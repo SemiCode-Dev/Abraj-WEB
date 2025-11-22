@@ -10,7 +10,7 @@
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ __('Dashboard') }}</h1>
         <p class="text-gray-600 dark:text-gray-400">{{ __('Welcome back! Here\'s what\'s happening today.') }}</p>
     </div>
-    
+
     <!-- Action Buttons -->
     <div class="flex items-center justify-end gap-3 mb-6">
         <button class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2">
@@ -20,52 +20,52 @@
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Total Bookings -->
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition duration-300">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                    <i class="fas fa-calendar-check text-2xl"></i>
-                </div>
-                <span class="text-sm bg-white/20 px-3 py-1 rounded-full">+12%</span>
-            </div>
-            <div class="text-3xl font-bold mb-1">1,247</div>
-            <div class="text-blue-100 text-sm">{{ __('Total Bookings') }}</div>
-        </div>
-
-        <!-- Total Revenue -->
-        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition duration-300">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                    <i class="fas fa-dollar-sign text-2xl"></i>
-                </div>
-                <span class="text-sm bg-white/20 px-3 py-1 rounded-full">+23%</span>
-            </div>
-            <div class="text-3xl font-bold mb-1">SAR 2.4M</div>
-            <div class="text-orange-100 text-sm">{{ __('Total Revenue') }}</div>
-        </div>
-
         <!-- Total Users -->
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition duration-300">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition duration-300">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                     <i class="fas fa-users text-2xl"></i>
                 </div>
-                <span class="text-sm bg-white/20 px-3 py-1 rounded-full">+15%</span>
+                <span class="text-sm bg-white/20 px-3 py-1 rounded-full">{{ __('Total') }}</span>
             </div>
-            <div class="text-3xl font-bold mb-1">8,924</div>
-            <div class="text-purple-100 text-sm">{{ __('Total Users') }}</div>
+            <div class="text-3xl font-bold mb-1">{{ $totalUsers }}</div>
+            <div class="text-blue-100 text-sm">{{ __('Total Users') }}</div>
         </div>
 
-        <!-- Unread Reports -->
-        <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition duration-300">
+        <!-- Admins -->
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition duration-300">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                    <i class="fas fa-exclamation-triangle text-2xl"></i>
+                    <i class="fas fa-user-shield text-2xl"></i>
                 </div>
-                <a href="{{ route('admin.reports') }}" class="text-sm bg-white/20 px-3 py-1 rounded-full hover:bg-white/30 transition">View</a>
+                <span class="text-sm bg-white/20 px-3 py-1 rounded-full">{{ __('Admin') }}</span>
             </div>
-            <div class="text-3xl font-bold mb-1">45</div>
-            <div class="text-red-100 text-sm">{{ __('Unread Reports') }}</div>
+            <div class="text-3xl font-bold mb-1">{{ $adminCount }}</div>
+            <div class="text-purple-100 text-sm">{{ __('Administrators') }}</div>
+        </div>
+
+        <!-- Regular Users -->
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                    <i class="fas fa-user text-2xl"></i>
+                </div>
+                <span class="text-sm bg-white/20 px-3 py-1 rounded-full">{{ __('Users') }}</span>
+            </div>
+            <div class="text-3xl font-bold mb-1">{{ $totalUsers - $adminCount }}</div>
+            <div class="text-green-100 text-sm">{{ __('Regular Users') }}</div>
+        </div>
+
+        <!-- Verified Users -->
+        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                    <i class="fas fa-check-circle text-2xl"></i>
+                </div>
+                <span class="text-sm bg-white/20 px-3 py-1 rounded-full">{{ __('Verified') }}</span>
+            </div>
+            <div class="text-3xl font-bold mb-1">{{ $users->total() }}</div>
+            <div class="text-orange-100 text-sm">{{ __('On This Page') }}</div>
         </div>
     </div>
 
@@ -160,137 +160,90 @@
     <!-- Recent Bookings Table -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ __('Recent Bookings') }}</h2>
-            <a href="{{ route('admin.bookings') }}" class="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 text-sm font-semibold">
-                {{ __('View All') }} <i class="fas fa-arrow-left {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}"></i>
-            </a>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ __('All Users') }}</h2>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('Total') }}: {{ $totalUsers }}</span>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-gray-700">
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('Booking ID') }}</th>
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('Guest') }}</th>
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('Hotel') }}</th>
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('Check In') }}</th>
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('Check Out') }}</th>
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('Amount') }}</th>
+                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('Name') }}</th>
+                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('Email') }}</th>
+                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('Phone') }}</th>
+                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('Type') }}</th>
                         <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('Status') }}</th>
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('Actions') }}</th>
+                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('Joined') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    @forelse($users as $user)
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
                         <td class="py-4 px-4">
-                            <span class="font-mono text-sm font-semibold text-gray-900 dark:text-white">#BK-2024-001</span>
-                        </td>
-                        <td class="py-4 px-4">
                             <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">A</div>
-                                <span class="text-sm text-gray-900 dark:text-white">أحمد محمد</span>
+                                @if($user->image)
+                                    <img src="{{ asset('storage/' . $user->image) }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-lg object-cover">
+                                @else
+                                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">
+                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                                    </div>
+                                @endif
+                                <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ $user->name }}</span>
                             </div>
                         </td>
                         <td class="py-4 px-4">
-                            <span class="text-sm text-gray-900 dark:text-white">{{ __('International Luxury Hotel') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ $user->email }}</span>
                         </td>
                         <td class="py-4 px-4">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">2024-01-15</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ $user->phone ?? __('N/A') }}</span>
                         </td>
                         <td class="py-4 px-4">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">2024-01-18</span>
+                            @if($user->is_admin)
+                                <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-semibold">
+                                    <i class="fas fa-crown mr-1"></i>{{ __('Admin') }}
+                                </span>
+                            @else
+                                <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs font-semibold">
+                                    <i class="fas fa-user-circle mr-1"></i>{{ __('User') }}
+                                </span>
+                            @endif
                         </td>
                         <td class="py-4 px-4">
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">SAR 1,050</span>
+                            @if($user->email_verified_at)
+                                <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-semibold">
+                                    <i class="fas fa-check-circle mr-1"></i>{{ __('Verified') }}
+                                </span>
+                            @else
+                                <span class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-semibold">
+                                    <i class="fas fa-clock mr-1"></i>{{ __('Pending') }}
+                                </span>
+                            @endif
                         </td>
                         <td class="py-4 px-4">
-                            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-semibold">{{ __('Confirmed') }}</span>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-2">
-                                <button class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="p-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </div>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ $user->created_at->format('M d, Y') }}</span>
                         </td>
                     </tr>
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                        <td class="py-4 px-4">
-                            <span class="font-mono text-sm font-semibold text-gray-900 dark:text-white">#BK-2024-002</span>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">س</div>
-                                <span class="text-sm text-gray-900 dark:text-white">سارة علي</span>
-                            </div>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="text-sm text-gray-900 dark:text-white">{{ __('Comfort & Relaxation Hotel') }}</span>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">2024-01-20</span>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">2024-01-22</span>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">SAR 840</span>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-semibold">{{ __('Pending') }}</span>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-2">
-                                <button class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="p-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </div>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="py-8 px-4 text-center text-gray-600 dark:text-gray-400">
+                            <i class="fas fa-inbox text-3xl mb-2 text-gray-400 block"></i>
+                            {{ __('No users found') }}
                         </td>
                     </tr>
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                        <td class="py-4 px-4">
-                            <span class="font-mono text-sm font-semibold text-gray-900 dark:text-white">#BK-2024-003</span>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">خ</div>
-                                <span class="text-sm text-gray-900 dark:text-white">خالد أحمد</span>
-                            </div>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="text-sm text-gray-900 dark:text-white">{{ __('Premium Stay Hotel') }}</span>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">2024-01-25</span>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">2024-01-28</span>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">SAR 1,260</span>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-semibold">{{ __('Confirmed') }}</span>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-2">
-                                <button class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="p-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
+
+        @if($users->hasPages())
+        <div class="mt-6 flex items-center justify-between">
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                {{ __('Showing') }} {{ $users->firstItem() }} {{ __('to') }} {{ $users->lastItem() }} {{ __('of') }} {{ $users->total() }} {{ __('results') }}
+            </div>
+            <div class="flex gap-2">
+                {{ $users->links() }}
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 @endsection

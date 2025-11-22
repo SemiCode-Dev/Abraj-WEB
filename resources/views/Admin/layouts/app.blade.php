@@ -5,44 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Panel') - ABRAJ STAY</title>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=cairo:400,500,600,700,800,900" rel="stylesheet" />
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Vite -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
+
     <style>
         /* Modern Admin Panel Styles */
         body {
             direction: ltr;
             overflow-x: hidden;
         }
-        
+
         html {
             overflow-x: hidden;
         }
-        
+
         .min-h-screen {
             min-width: 0;
             width: 100%;
             overflow-x: hidden;
         }
-        
+
         .admin-content {
             max-width: 100%;
             overflow-x: hidden;
         }
-        
+
         .admin-sidebar {
             background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
             box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
         }
-        
+
         .admin-nav-link {
             display: flex;
             align-items: center;
@@ -54,19 +54,19 @@
             color: #cbd5e1;
             font-weight: 500;
         }
-        
+
         .admin-nav-link:hover {
             background: rgba(255, 255, 255, 0.08);
             color: #ffffff;
             transform: translateX(4px);
         }
-        
+
         .admin-nav-link.active {
             background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
         }
-        
+
         .admin-nav-link.active::before {
             content: '';
             position: absolute;
@@ -78,13 +78,13 @@
             background: #ffffff;
             border-radius: 0 4px 4px 0;
         }
-        
+
         .admin-nav-link i {
             width: 20px;
             text-align: center;
             font-size: 18px;
         }
-        
+
         .admin-badge {
             margin-left: auto;
             background: rgba(255, 255, 255, 0.2);
@@ -93,65 +93,65 @@
             font-size: 11px;
             font-weight: 600;
         }
-        
+
         .admin-nav-link.active .admin-badge {
             background: rgba(255, 255, 255, 0.3);
         }
-        
+
         .admin-header {
             background: #ffffff;
             backdrop-filter: blur(10px);
             border-bottom: 1px solid #e2e8f0;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
-        
+
         .dark .admin-header {
             background: #1e293b;
             border-bottom-color: #334155;
         }
-        
+
         .admin-search {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             transition: all 0.3s;
         }
-        
+
         .admin-search:focus {
             background: #ffffff;
             border-color: #f97316;
             box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
         }
-        
+
         .dark .admin-search {
             background: #0f172a;
             border-color: #334155;
             color: #ffffff;
         }
-        
+
         .dark .admin-search:focus {
             background: #1e293b;
         }
-        
+
         .admin-content {
             background: #f8fafc;
             min-height: calc(100vh - 64px);
         }
-        
+
         .dark .admin-content {
             background: #0f172a;
         }
-        
+
         .admin-profile-card {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s;
         }
-        
+
         .admin-profile-card:hover {
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.2);
         }
-        
+
         .sidebar-section-title {
             color: #64748b;
             font-size: 11px;
@@ -159,22 +159,22 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        
+
         @media (max-width: 1024px) {
             .admin-sidebar {
                 transform: translateX(-100%);
             }
-            
+
             .admin-sidebar.open {
                 transform: translateX(0);
             }
         }
-        
+
         #sidebar-user-dropdown {
             min-width: 200px;
         }
     </style>
-    
+
     @stack('styles')
 </head>
 <body class="font-cairo antialiased bg-gray-50 dark:bg-gray-900" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
@@ -204,33 +204,37 @@
                         <i class="fas fa-chart-line"></i>
                         <span>Dashboard</span>
                     </a>
-                    
+
+                    <a href="{{ route('admin.users', ['locale' => app()->getLocale()]) }}" class="admin-nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+                        <i class="fas fa-users"></i>
+                        <span>Users</span>
+                    </a>
                     <a href="{{ route('admin.bookings', ['locale' => app()->getLocale()]) }}" class="admin-nav-link {{ request()->routeIs('admin.bookings*') ? 'active' : '' }}">
                         <i class="fas fa-calendar-check"></i>
                         <span>Bookings</span>
                         <span class="admin-badge">24</span>
                     </a>
-                    
+
                     <a href="{{ route('admin.transactions', ['locale' => app()->getLocale()]) }}" class="admin-nav-link {{ request()->routeIs('admin.transactions*') ? 'active' : '' }}">
                         <i class="fas fa-credit-card"></i>
                         <span>Transactions</span>
                     </a>
-                    
+
                     <a href="{{ route('admin.reviews', ['locale' => app()->getLocale()]) }}" class="admin-nav-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}">
                         <i class="fas fa-star"></i>
                         <span>Client Reviews</span>
                     </a>
-                    
+
                     <a href="{{ route('admin.reports', ['locale' => app()->getLocale()]) }}" class="admin-nav-link {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
                         <i class="fas fa-exclamation-triangle"></i>
                         <span>User Reports</span>
                         <span class="admin-badge">5</span>
                     </a>
-                    
+
                     <!-- Settings Section -->
                     <div class="pt-6 mt-6 border-t border-white/10">
                         <div class="px-4 mb-3 sidebar-section-title">Settings</div>
-                        
+
                         <a href="{{ route('admin.settings', ['locale' => app()->getLocale()]) }}" class="admin-nav-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                             <i class="fas fa-cog"></i>
                             <span>Settings</span>
@@ -255,7 +259,7 @@
                                 </button>
                             </div>
                         </div>
-                        
+
                         <!-- User Dropdown -->
                         <div id="sidebar-user-dropdown" class="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 opacity-0 invisible transition-all duration-200 z-50">
                             <a href="#" class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
@@ -266,9 +270,12 @@
                                 <i class="fas fa-home w-5 {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }} text-gray-400"></i>View Website
                             </a>
                             <hr class="my-2 border-gray-200 dark:border-gray-700">
-                            <a href="#" class="flex items-center px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
-                                <i class="fas fa-sign-out-alt w-5 {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>Logout
-                            </a>
+                            <form method="POST" action="{{ route('admin.logout') }}" class="block">
+                                @csrf
+                                <button type="submit" class="w-full text-left flex items-center px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                                    <i class="fas fa-sign-out-alt w-5 {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>Logout
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -286,7 +293,7 @@
                         <button id="sidebar-toggle" class="lg:hidden text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                             <i class="fas fa-bars text-xl"></i>
                         </button>
-                        
+
                         <!-- Page Title -->
                         <div class="hidden md:block">
                             <h1 class="text-xl font-bold text-gray-900 dark:text-white">@yield('page-title', 'Dashboard')</h1>
@@ -296,8 +303,8 @@
                     <!-- Center Section - Search -->
                     <div class="flex-1 max-w-2xl mx-8 hidden lg:block">
                         <div class="relative">
-                            <input type="text" 
-                                   placeholder="Search anything..." 
+                            <input type="text"
+                                   placeholder="Search anything..."
                                    class="admin-search w-full pl-10 pr-4 py-2.5 rounded-lg text-sm focus:outline-none">
                             <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                         </div>

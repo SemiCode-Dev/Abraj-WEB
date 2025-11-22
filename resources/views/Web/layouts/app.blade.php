@@ -2,6 +2,8 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 @include('Web.partials.head')
 
+@stack('styles')
+
 <body class="font-cairo antialiased bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
     @include('Web.partials.navbar')
     @include('Web.partials.top-banner')
