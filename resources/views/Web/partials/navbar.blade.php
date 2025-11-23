@@ -20,7 +20,7 @@
             <!-- Navigation Links -->
             <div class="hidden md:flex items-center {{ app()->getLocale() === 'ar' ? 'space-x-reverse space-x-8' : 'space-x-8' }}">
                 <a href="{{ route('home', ['locale' => app()->getLocale()]) }}" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Home') }}</a>
-                <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#offers" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Hotels') }}</a>
+                <a href="{{ route('all.hotels') }}" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Hotels') }}</a>
                 <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#offers" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Offers') }}</a>
                 <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#destinations" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Destinations') }}</a>
                 <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#about" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('About Us') }}</a>

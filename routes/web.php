@@ -43,7 +43,8 @@ Route::group([
 
     Route::get('/get-hotels/{cityCode}', [HotelController::class, 'getHotels']);
     Route::get('/hotels/{cityCode}', [HotelController::class, 'getCityHotels'])->name('city.hotels');
-    Route::get('/hotels', [HotelController::class, 'search'])->name('hotels.search');
+    Route::get('/hotel', [HotelController::class, 'search'])->name('hotels.search');
+    Route::get('/hotels', [HotelController::class, 'getAllHotels'])->name('all.hotels');
 
     // Hotel Details with Rooms
     Route::get('/hotel/{id}', function ($id) {
@@ -83,7 +84,11 @@ Route::group([
 });
 
 // Admin Authentication Routes (without middleware protection)
-Route::prefix('/admin')->name('admin.')->group(function () {
+Route::prefix(LaravelLocalization::setLocale() . '/admin')->name('admin.')->middleware([
+    'localeSessionRedirect',
+    'localizationRedirect',
+    'localeViewPath',
+])->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
         Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');

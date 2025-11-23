@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Web\V1;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\V1\HotelSearchRequest;
-use App\Services\Api\V1\HotelApiService;
+use App\Models\City;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Services\Api\V1\HotelApiService;
+use App\Http\Requests\Api\V1\HotelSearchRequest;
 
 class HotelController extends Controller
 {
@@ -45,6 +46,23 @@ class HotelController extends Controller
     public function getCityHotels($cityCode)
     {
         $response = $this->hotelApi->getCityHotels($cityCode);
+
+        $hotels = $response['Hotels'] ?? [];
+
+
+        return view('Web.hotels', [
+            
+            'hotels' => $hotels
+        ]);
+    }
+
+    public function getAllHotels()
+    {
+       $cities = City::select('code')->get();
+
+       $randomCity = $cities->random();
+
+       $response = $this->hotelApi->getCityHotels($randomCity->code);
 
         $hotels = $response['Hotels'] ?? [];
 
