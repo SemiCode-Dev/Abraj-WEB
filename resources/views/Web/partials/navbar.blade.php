@@ -21,8 +21,10 @@
             <div class="hidden md:flex items-center {{ app()->getLocale() === 'ar' ? 'space-x-reverse space-x-8' : 'space-x-8' }}">
                 <a href="{{ route('home', ['locale' => app()->getLocale()]) }}" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Home') }}</a>
                 <a href="{{ route('all.hotels') }}" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Hotels') }}</a>
-                <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#offers" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Offers') }}</a>
-                <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#destinations" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Destinations') }}</a>
+                <a href="{{ route('packages', ['locale' => app()->getLocale()]) }}" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Packages') }}</a>
+                <a href="{{ route('flights', ['locale' => app()->getLocale()]) }}" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Flight Booking') }}</a>
+                <a href="{{ route('transfer', ['locale' => app()->getLocale()]) }}" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Transfer') }}</a>
+                <a href="{{ route('car-rental', ['locale' => app()->getLocale()]) }}" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Car Rental') }}</a>
                 <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#about" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('About Us') }}</a>
                 <a href="{{ route('contact', ['locale' => app()->getLocale()]) }}" class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium">{{ __('Contact Us') }}</a>
             </div>
@@ -125,8 +127,10 @@
             <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
                 <a href="{{ route('home', ['locale' => app()->getLocale()]) }}" onclick="closeMobileMenu()" class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Home') }}</a>
                 <a href="{{ route('hotels.search', ['locale' => app()->getLocale()]) }}" onclick="closeMobileMenu()" class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Hotels') }}</a>
-                <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#offers" onclick="closeMobileMenu()" class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Offers') }}</a>
-                <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#destinations" onclick="closeMobileMenu()" class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Destinations') }}</a>
+                <a href="{{ route('packages', ['locale' => app()->getLocale()]) }}" onclick="closeMobileMenu()" class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Packages') }}</a>
+                <a href="{{ route('flights', ['locale' => app()->getLocale()]) }}" onclick="closeMobileMenu()" class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Flight Booking') }}</a>
+                <a href="{{ route('transfer', ['locale' => app()->getLocale()]) }}" onclick="closeMobileMenu()" class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Transfer') }}</a>
+                <a href="{{ route('car-rental', ['locale' => app()->getLocale()]) }}" onclick="closeMobileMenu()" class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Car Rental') }}</a>
                 <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#about" onclick="closeMobileMenu()" class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('About Us') }}</a>
                 <a href="{{ route('contact', ['locale' => app()->getLocale()]) }}" onclick="closeMobileMenu()" class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Contact Us') }}</a>
                

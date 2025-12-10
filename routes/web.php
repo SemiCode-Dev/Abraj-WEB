@@ -4,9 +4,13 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Web\V1\AuthController;
+use App\Http\Controllers\Web\V1\CarRentalController;
+use App\Http\Controllers\Web\V1\FlightController;
 use App\Http\Controllers\Web\V1\HomeController;
 use App\Http\Controllers\Web\V1\HotelController;
+use App\Http\Controllers\Web\V1\PackageController;
 use App\Http\Controllers\Web\V1\PaymentController;
+use App\Http\Controllers\Web\V1\TransferController;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
@@ -42,8 +46,10 @@ Route::group([
     // Hotels
 
     Route::get('/get-hotels/{cityCode}', [HotelController::class, 'getHotels']);
+    Route::get('/get-cities/{countryCode}', [HotelController::class, 'getCitiesByCountry']);
     Route::get('/hotels/{cityCode}', [HotelController::class, 'getCityHotels'])->name('city.hotels');
     Route::get('/hotel', [HotelController::class, 'search'])->name('hotels.search');
+    Route::post('/hotel/search', [HotelController::class, 'search'])->name('hotel.search');
     Route::get('/hotels', [HotelController::class, 'getAllHotels'])->name('all.hotels');
 
     // Hotel Details with Rooms
@@ -60,6 +66,26 @@ Route::group([
     Route::get('/contact', function () {
         return view('Web.contact');
     })->name('contact');
+
+    // Packages
+    Route::get('/packages', [PackageController::class, 'index'])->name('packages');
+    Route::get('/package/{id}', [PackageController::class, 'show'])->name('package.details');
+    Route::post('/package/{id}/contact', [PackageController::class, 'contact'])->name('package.contact');
+
+    // Flights
+    Route::get('/flights', [FlightController::class, 'index'])->name('flights');
+    Route::post('/flights/book', [FlightController::class, 'book'])->name('flights.book');
+    Route::get('/flights/cities/{countryId}', [FlightController::class, 'getCitiesByCountry'])->name('flights.cities');
+
+    // Transfer
+    Route::get('/transfer', [TransferController::class, 'index'])->name('transfer');
+    Route::post('/transfer/book', [TransferController::class, 'book'])->name('transfer.book');
+    Route::get('/transfer/cities/{countryId}', [TransferController::class, 'getCitiesByCountry'])->name('transfer.cities');
+
+    // Car Rental
+    Route::get('/car-rental', [CarRentalController::class, 'index'])->name('car-rental');
+    Route::post('/car-rental/book', [CarRentalController::class, 'book'])->name('car-rental.book');
+    Route::get('/car-rental/cities/{countryId}', [CarRentalController::class, 'getCitiesByCountry'])->name('car-rental.cities');
 
     // Profile & Requests Routes (temporarily accessible without auth for development)
     Route::get('/profile', function () {
@@ -84,7 +110,7 @@ Route::group([
 });
 
 // Admin Authentication Routes (without middleware protection)
-Route::prefix(LaravelLocalization::setLocale() . '/admin')->name('admin.')->middleware([
+Route::prefix(LaravelLocalization::setLocale().'/admin')->name('admin.')->middleware([
     'localeSessionRedirect',
     'localizationRedirect',
     'localeViewPath',

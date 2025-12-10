@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class City extends Model
+class Country extends Model
 {
     use HasFactory;
 
@@ -14,12 +14,11 @@ class City extends Model
         'name',
         'name_ar',
         'code',
-        'country_id',
     ];
 
-    public function country(): BelongsTo
+    public function cities(): HasMany
     {
-        return $this->belongsTo(Country::class);
+        return $this->hasMany(City::class);
     }
 
     public function getLocaleNameAttribute(): string

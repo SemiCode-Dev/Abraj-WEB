@@ -16,7 +16,6 @@ class AuthController extends Controller
         $this->authService = $authService;
     }
 
-   
     public function login(LoginRequest $request)
     {
         return response()->json(

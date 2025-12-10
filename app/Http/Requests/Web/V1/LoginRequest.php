@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests\Web\V1;
 
-use Illuminate\Foundation\Http\FormRequest;
-
 class LoginRequest extends ApiRequest
 {
     /**

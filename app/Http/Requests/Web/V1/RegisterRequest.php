@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests\Web\V1;
 
-use Illuminate\Foundation\Http\FormRequest;
-
 class RegisterRequest extends ApiRequest
 {
     /**
@@ -28,6 +26,4 @@ class RegisterRequest extends ApiRequest
             'password' => 'required|string|min:6',
         ];
     }
-
-    
 }

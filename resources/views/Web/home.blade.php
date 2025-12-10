@@ -137,19 +137,42 @@
                     </p>
                 </div>
                 <!-- Search Form -->
-                <form action="#" method="" class="space-y-3">
+                <form id="searchForm" action="{{ route('city.hotels', ['cityCode' => 'PLACEHOLDER']) }}" method="GET" class="space-y-3">
 
-                    <!-- Row 1: City Select, Hotel Search, Guests -->
+                    <!-- Row 1: Country Select, City Select, Hotel Search, Guests -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <!-- Country Select -->
+                        <div class="relative">
+                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                <i
+                                    class="fas fa-globe text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Country') }}
+                            </label>
+                            <select id="countrySelect" name="country_code" required
+                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white dark:bg-gray-700">
+                                <option value="">{{ __('Select Country') }}</option>
+                                @if (is_array($countries) && count($countries) > 0)
+                                    @foreach ($countries as $country)
+                                        <option value="{{ $country['Code'] ?? $country['CountryCode'] ?? '' }}">{{ $country['Name'] ?? $country['CountryName'] ?? '' }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            <div
+                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+
                         <!-- Destination - City Select -->
                         <div class="relative">
                             <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                                 <i
                                     class="fas fa-map-marker-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Destination') }}
+                                {{ __('City') }}
                             </label>
                             <input type="text" id="citySelect" autocomplete="off" placeholder="{{ __('Select City') }}"
-                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg">
+                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg"
+                                disabled>
 
                             <input type="hidden" name="destination" id="destinationCode">
 
@@ -162,33 +185,29 @@
                             </div>
                         </div>
 
-                        <!-- Hotel Autocomplete - Hidden by default, appears after city selection -->
-                        <div id="hotelSearchContainer" class="relative hidden">
+                        <!-- Hotel Select -->
+                        <div class="relative">
                             <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                                 <i
                                     class="fas fa-hotel text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Search Hotel') }}
+                                {{ __('Hotel') }}
                             </label>
-                            <div class="relative">
-                                <input type="text" id="hotelSearch" name="hotel_name"
-                                    placeholder="{{ __('Search for a hotel...') }}"
-                                    class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
-                                <input type="hidden" name="HotelCodes" id="hotelCode">
-                                <!-- Hotel Loading Spinner -->
-
-
-                                <div
-                                    class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-4 text-gray-400">
-                                    <i class="fas fa-search"></i>
-                                </div>
-                                <!-- Autocomplete Results -->
-                                <div id="hotelAutocomplete"
-                                    class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
-                                    <!-- Results will be populated by JavaScript -->
-                                </div>
+                            <select id="hotelSelect" name="hotel_code"
+                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white dark:bg-gray-700"
+                                disabled>
+                                <option value="">{{ __('Select Hotel') }}</option>
+                            </select>
+                            <div
+                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                <i class="fas fa-chevron-down"></i>
                             </div>
                         </div>
 
+                        
+                    </div>
+
+                    <!-- Row 2: Check In, Check Out, and Search Button -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                         <!-- Guests & Rooms -->
                         <div class="relative">
                             <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
@@ -211,10 +230,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Row 2: Check In, Check Out, and Search Button -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <!-- Check-in -->
                         <div class="relative">
                             <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
@@ -239,17 +254,25 @@
 
                         <!-- Search Button -->
                         <div class="flex items-end">
-                            <button type="submit"
-                                class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-105 shadow-lg flex items-center justify-center">
+                            <button type="submit" id="searchBtn"
+                                class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-105 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
                                 <i class="fas fa-search {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
-                                {{ __('Search') }}
+                                <span class="btn-text">{{ __('Search') }}</span>
+                                <svg class="btn-loader hidden animate-spin h-5 w-5 text-white {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v4l3-3-3-3v4a12 12 0 00-12 12h4z">
+                                    </path>
+                                </svg>
                             </button>
                         </div>
                     </div>
                 </form>
 
                 <!-- Quick Filters -->
-                <div class="px-4 pb-4 flex flex-wrap gap-2">
+                <div class="p-4 flex flex-wrap gap-2">
                     <span class="text-xs text-gray-500 dark:text-gray-300 font-semibold">{{ __('Quick Search') }}</span>
                     <a href="#"
                         class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900 text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full text-xs font-medium transition">
@@ -486,7 +509,7 @@
             <div class="relative">
                 <!-- Slider Wrapper -->
                 <div class="hotels-slider-wrapper overflow-hidden">
-                    <div class="hotels-slider-track flex gap-6 transition-transform duration-500 ease-in-out" style="transform: translateX(0);">
+                    <div class="hotels-slider-track py-12 flex gap-6 transition-transform duration-500 ease-in-out" style="transform: translateX(0);">
                 <!-- Hotel 1 -->
                 @foreach ($hotels2 as $hotel2)
                     <div
@@ -601,7 +624,7 @@
             <div class="absolute bottom-20 {{ app()->getLocale() === 'ar' ? 'right-20' : 'left-20' }} w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl"></div>
         </div>
 
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="relative max-w-7xl mx-auto p-4 sm:px-6 lg:px-8">
             <!-- Header Section -->
             <div class="text-center mb-16">
                 <div class="inline-block mb-4">
@@ -719,44 +742,7 @@
                     </div>
                 </div>
 
-                <!-- Review 3 - Elegant Style -->
-                <div class="group relative bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
-                    <!-- Background Pattern -->
-                    <div class="absolute inset-0 opacity-5">
-                        <div class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} w-full h-full bg-gradient-to-br from-purple-500 to-blue-500"></div>
-                        </div>
-                    
-                    <!-- Rating Stars -->
-                    <div class="flex text-yellow-500 text-lg mb-4 relative z-10">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star-half-alt"></i>
-                                </div>
-                    
-                    <!-- Review Text -->
-                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6 relative z-10 text-lg">
-                        "{{ __('Review 3 Text') }}"
-                    </p>
-                    
-                    <!-- Customer Info -->
-                    <div class="flex items-center gap-4 pt-6 border-t border-gray-100 dark:border-gray-700 relative z-10">
-                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition duration-300">
-                            خ
-                            </div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-gray-900 dark:text-white text-lg mb-1">خالد أحمد</h4>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">2 {{ __('weeks ago') }}</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Verified Badge -->
-                    <div class="absolute bottom-6 {{ app()->getLocale() === 'ar' ? 'left-6' : 'right-6' }} flex items-center gap-2 text-xs text-purple-600 dark:text-purple-400 font-semibold relative z-10">
-                        <i class="fas fa-check-circle"></i>
-                        <span>{{ __('Verified Booking') }}</span>
-                    </div>
-                </div>
+              
             </div>
         </div>
                 
@@ -1041,12 +1027,13 @@
             position: relative;
             overflow: hidden;
             margin: 0 -12px;
-            padding: 0 12px;
+            padding: 12px;
         }
 
         .hotels-slider-track,
         .testimonials-slider-track {
             display: flex;
+            padding-bottom: 20px;
             will-change: transform;
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -1055,7 +1042,7 @@
         .testimonials-slider-track > div {
             flex: 0 0 100%;
             min-width: 0;
-            padding: 0 12px;
+            padding: 15px;
             box-sizing: border-box;
         }
 
@@ -1511,21 +1498,103 @@
         document.addEventListener("DOMContentLoaded", function() {
 
             let cities = [];
+            let filteredCities = [];
+            const countrySelect = document.getElementById("countrySelect");
             const cityInput = document.getElementById("citySelect");
             const cityBox = document.getElementById("cityAutocomplete");
             const destinationCode = document.getElementById("destinationCode");
-            const hotelLoading = document.getElementById("hotelLoading");
+            const searchForm = document.getElementById("searchForm");
+            const searchBtn = document.getElementById("searchBtn");
+            const checkInInput = document.querySelector('input[name="CheckIn"]');
+            const checkOutInput = document.querySelector('input[name="CheckOut"]');
 
-            const hotelInput = document.getElementById("hotelSearch");
-            const hotelBox = document.getElementById("hotelAutocomplete");
-            const hotelCode = document.getElementById("hotelCode");
+            // Set default dates
+            const today = new Date();
+            const nextMonth = new Date(today);
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            if (checkInInput && !checkInInput.value) {
+                checkInInput.value = formatDate(today);
+                checkInInput.min = formatDate(today);
+            }
+
+            if (checkOutInput && !checkOutInput.value) {
+                checkOutInput.value = formatDate(nextMonth);
+                checkOutInput.min = formatDate(today);
+            }
+
+            // Update checkout min date when checkin changes
+            if (checkInInput && checkOutInput) {
+                checkInInput.addEventListener('change', function() {
+                    if (this.value) {
+                        const checkInDate = new Date(this.value);
+                        checkInDate.setDate(checkInDate.getDate() + 1);
+                        checkOutInput.min = formatDate(checkInDate);
+                        
+                        if (checkOutInput.value && checkOutInput.value <= this.value) {
+                            checkOutInput.value = formatDate(checkInDate);
+                        }
+                    }
+                });
+            }
 
             // -------------------------------------------------------------
-            // LOAD CITIES JSON
+            // COUNTRY SELECTION
             // -------------------------------------------------------------
-            fetch("/json/cities.json")
-                .then(res => res.json())
-                .then(data => cities = data);
+            countrySelect.addEventListener("change", function() {
+                const countryCode = this.value;
+                
+                // Reset city input
+                cityInput.value = "";
+                destinationCode.value = "";
+                cityInput.disabled = true;
+                cityBox.classList.add("hidden");
+                filteredCities = [];
+
+                if (!countryCode) {
+                    return;
+                }
+
+                // Show loading
+                cityInput.placeholder = "{{ __('Loading cities...') }}";
+                cityInput.disabled = true;
+
+                // Fetch cities for selected country from TBO API
+                fetch("{{ url('/get-cities') }}/" + countryCode)
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error('Failed to fetch cities');
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        // Handle error response
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        
+                        filteredCities = data;
+                        cities = data;
+                        cityInput.disabled = false;
+                        cityInput.placeholder = "{{ __('Select City') }}";
+                        
+                        if (data.length === 0) {
+                            cityInput.placeholder = "{{ __('No cities available') }}";
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error loading cities:", err);
+                        cityInput.placeholder = "{{ __('Error loading cities') }}";
+                        showToast("{{ __('Error loading cities') }}", "error");
+                    });
+            });
 
             // -------------------------------------------------------------
             // CITY AUTOCOMPLETE
@@ -1534,12 +1603,18 @@
                 cityBox.innerHTML = "";
                 let results = [];
 
+                if (filteredCities.length === 0) {
+                    cityBox.classList.add("hidden");
+                    return;
+                }
+
                 if (keyword === "") {
-                    results = cities.slice(0, 10);
+                    results = filteredCities.slice(0, 10);
                 } else {
-                    results = cities.filter(city =>
-                        city.Name.toLowerCase().includes(keyword) ||
-                        city.Name_ar.includes(keyword)
+                    const lowerKeyword = keyword.toLowerCase();
+                    results = filteredCities.filter(city =>
+                        (city.Name && city.Name.toLowerCase().includes(lowerKeyword)) ||
+                        (city.Name_ar && city.Name_ar.includes(keyword))
                     );
                 }
 
@@ -1557,29 +1632,18 @@
 
                     div.innerHTML = `
                 <div class="flex justify-between">
-                    <span>${city.Name}</span>
-                    <span class="text-gray-500">${city.Name_ar}</span>
+                    <span>${city.Name || ''}</span>
+                    <span class="text-gray-500">${city.Name_ar || ''}</span>
                 </div>
             `;
 
                     div.addEventListener("click", () => {
-                        cityInput.value = city.Name;
+                        cityInput.value = city.Name || city.Name_ar;
                         destinationCode.value = city.Code;
                         cityBox.classList.add("hidden");
-
-                        hotelLoading.classList.remove("hidden");
-
-                        fetch("{{ url('/get-hotels') }}/" + city.Code)
-                            .then(res => res.json())
-                            .then(hotels => {
-
-                                window.hotelList = hotels;
-
-                                document.getElementById("hotelSearchContainer")
-                                    .classList.remove("hidden");
-
-                                hotelLoading.classList.add("hidden");
-                            });
+                        
+                        // Load hotels for selected city
+                        loadHotelsForCity(city.Code);
                     });
 
                     cityBox.appendChild(div);
@@ -1587,78 +1651,210 @@
             }
 
             cityInput.addEventListener("focus", function() {
-                showCityResults("");
+                if (!this.disabled && filteredCities.length > 0) {
+                    showCityResults("");
+                }
             });
 
             cityInput.addEventListener("input", function() {
-                const keyword = this.value.toLowerCase();
-                showCityResults(keyword);
+                if (!this.disabled) {
+                    const keyword = this.value.toLowerCase();
+                    showCityResults(keyword);
+                }
             });
 
             document.addEventListener("click", function(e) {
-                if (!cityInput.contains(e.target)) cityBox.classList.add("hidden");
+                if (!cityInput.contains(e.target) && !cityBox.contains(e.target)) {
+                    cityBox.classList.add("hidden");
+                }
             });
 
-
             // -------------------------------------------------------------
-            // HOTEL AUTOCOMPLETE
+            // HOTEL SELECTION
             // -------------------------------------------------------------
-            function showHotelResults(keyword = "") {
-                hotelBox.innerHTML = "";
-
-                if (!window.hotelList || window.hotelList.length === 0) {
-                    hotelBox.classList.add("hidden");
+            const hotelSelect = document.getElementById("hotelSelect");
+            
+            function loadHotelsForCity(cityCode) {
+                if (!cityCode) {
+                    hotelSelect.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
+                    hotelSelect.disabled = true;
                     return;
                 }
 
-                let results = [];
+                // Reset hotel select
+                hotelSelect.innerHTML = '<option value="">{{ __('Loading hotels...') }}</option>';
+                hotelSelect.disabled = true;
 
-                if (keyword === "") {
-                    results = window.hotelList.slice(0, 10);
-                } else {
-                    results = window.hotelList.filter(h =>
-                        h.name.toLowerCase().includes(keyword)
-                    );
-                }
+                // Fetch hotels for selected city
+                fetch("{{ url('/get-hotels') }}/" + cityCode)
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error('Failed to fetch hotels');
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        // Handle error response
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
 
-                if (results.length === 0) {
-                    hotelBox.classList.add("hidden");
-                    return;
-                }
+                        hotelSelect.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
+                        
+                        if (data.length === 0) {
+                            hotelSelect.innerHTML = '<option value="">{{ __('No hotels available') }}</option>';
+                            hotelSelect.disabled = true;
+                            return;
+                        }
 
-                hotelBox.classList.remove("hidden");
+                        // Populate hotels
+                        data.forEach(hotel => {
+                            const option = document.createElement("option");
+                            option.value = hotel.HotelCode || '';
+                            option.textContent = hotel.HotelName || '';
+                            hotelSelect.appendChild(option);
+                        });
 
-                results.forEach(hotel => {
-                    const div = document.createElement("div");
-                    div.className =
-                        "px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700";
-
-                    div.innerHTML = `
-                <div class="font-semibold">${hotel.name}</div>
-                <div class="text-xs text-gray-500">${hotel.address ?? ''}</div>
-            `;
-
-                    div.addEventListener("click", () => {
-                        hotelInput.value = hotel.name;
-                        hotelCode.value = hotel.code;
-                        hotelBox.classList.add("hidden");
+                        hotelSelect.disabled = false;
+                    })
+                    .catch(err => {
+                        console.error("Error loading hotels:", err);
+                        hotelSelect.innerHTML = '<option value="">{{ __('Error loading hotels') }}</option>';
+                        hotelSelect.disabled = true;
+                        showToast("{{ __('Error loading hotels') }}", "error");
                     });
-
-                    hotelBox.appendChild(div);
-                });
             }
 
-            hotelInput.addEventListener("focus", function() {
-                showHotelResults("");
+            // Reset hotel select when country or city changes
+            countrySelect.addEventListener("change", function() {
+                hotelSelect.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
+                hotelSelect.disabled = true;
             });
 
-            hotelInput.addEventListener("input", function() {
-                const keyword = this.value.toLowerCase();
-                showHotelResults(keyword);
+            cityInput.addEventListener("input", function() {
+                if (this.value === "") {
+                    hotelSelect.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
+                    hotelSelect.disabled = true;
+                    destinationCode.value = "";
+                }
             });
 
-            document.addEventListener("click", function(e) {
-                if (!hotelInput.contains(e.target)) hotelBox.classList.add("hidden");
+            // -------------------------------------------------------------
+            // FORM SUBMISSION
+            // -------------------------------------------------------------
+            searchForm.addEventListener("submit", function(e) {
+                e.preventDefault();
+
+                const cityCode = destinationCode.value;
+                const countryCode = countrySelect.value;
+                const hotelCode = hotelSelect.value;
+                const checkIn = document.querySelector('input[name="CheckIn"]').value;
+                const checkOut = document.querySelector('input[name="CheckOut"]').value;
+                const adults = document.querySelector('select[name="PaxRooms[Adults]"]').value;
+
+                if (!countryCode) {
+                    showToast("{{ __('Please select a country') }}", "error");
+                    return;
+                }
+
+                if (!cityCode) {
+                    showToast("{{ __('Please select a city') }}", "error");
+                    return;
+                }
+
+                if (!hotelCode) {
+                    showToast("{{ __('Please select a hotel') }}", "error");
+                    return;
+                }
+
+                if (!checkIn || !checkOut) {
+                    showToast("{{ __('Please select check-in and check-out dates') }}", "error");
+                    return;
+                }
+
+                // Disable button and show loading
+                const btnText = searchBtn.querySelector(".btn-text");
+                const btnLoader = searchBtn.querySelector(".btn-loader");
+                searchBtn.disabled = true;
+                if (btnText) btnText.classList.add("hidden");
+                if (btnLoader) btnLoader.classList.remove("hidden");
+
+                // Validate hotel code
+                if (!hotelCode || hotelCode.trim() === '') {
+                    showToast("{{ __('Please select a hotel') }}", "error");
+                    searchBtn.disabled = false;
+                    if (btnText) btnText.classList.remove("hidden");
+                    if (btnLoader) btnLoader.classList.add("hidden");
+                    return;
+                }
+
+                // Prepare search data
+                const searchData = {
+                    CheckIn: checkIn,
+                    CheckOut: checkOut,
+                    HotelCodes: hotelCode.toString().trim(), // Ensure it's a string and not empty
+                    GuestNationality: 'AE',
+                    PaxRooms: [
+                        {
+                            Adults: parseInt(adults) || 1,
+                            Children: 0,
+                            ChildrenAges: []
+                        }
+                    ],
+                    ResponseTime: 18,
+                    IsDetailedResponse: true,
+                    Filters: {
+                        Refundable: true,
+                        NoOfRooms: 0,
+                        MealType: 'All'
+                    }
+                };
+
+                // Call search API
+                fetch("{{ route('hotel.search', ['locale' => app()->getLocale()]) }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(searchData)
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('Failed to search hotels');
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    // Handle API error response
+                    if (data.Status && data.Status.Code !== 200) {
+                        const errorMsg = data.Status.Description || 'Failed to search hotels';
+                        throw new Error(errorMsg);
+                    }
+
+                    // Handle error response
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    // Store search results in sessionStorage and redirect to hotels page
+                    sessionStorage.setItem('hotelSearchResults', JSON.stringify(data));
+                    sessionStorage.setItem('searchParams', JSON.stringify(searchData));
+                    
+                    // Redirect to hotels page with search results
+                    const url = "{{ route('hotels.search', ['locale' => app()->getLocale()]) }}";
+                    window.location.href = url;
+                })
+                .catch(err => {
+                    console.error("Error searching hotels:", err);
+                    const errorMessage = err.message || "{{ __('Failed to search hotels. Please try again.') }}";
+                    showToast(errorMessage, "error");
+                    
+                    // Re-enable button
+                    searchBtn.disabled = false;
+                    if (btnText) btnText.classList.remove("hidden");
+                    if (btnLoader) btnLoader.classList.add("hidden");
+                });
             });
 
         });
