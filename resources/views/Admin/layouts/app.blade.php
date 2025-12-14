@@ -33,6 +33,12 @@
             overflow-x: hidden;
         }
 
+        .max-h-screen {
+            max-width: 0;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
         .admin-content {
             max-width: 100%;
             overflow-x: hidden;
