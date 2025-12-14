@@ -1,8 +1,13 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\CarRentalBookingController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FlightBookingController;
+use App\Http\Controllers\Admin\PackageContactController;
+use App\Http\Controllers\Admin\TransferBookingController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Admin\VisaBookingController;
 use App\Http\Controllers\Web\V1\AuthController;
 use App\Http\Controllers\Web\V1\CarRentalController;
 use App\Http\Controllers\Web\V1\FlightController;
@@ -10,7 +15,9 @@ use App\Http\Controllers\Web\V1\HomeController;
 use App\Http\Controllers\Web\V1\HotelController;
 use App\Http\Controllers\Web\V1\PackageController;
 use App\Http\Controllers\Web\V1\PaymentController;
+use App\Http\Controllers\Web\V1\ProfileController;
 use App\Http\Controllers\Web\V1\TransferController;
+use App\Http\Controllers\Web\V1\VisaController;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
@@ -53,9 +60,7 @@ Route::group([
     Route::get('/hotels', [HotelController::class, 'getAllHotels'])->name('all.hotels');
 
     // Hotel Details with Rooms
-    Route::get('/hotel/{id}', function ($id) {
-        return view('Web.hotel-details', ['hotelId' => $id]);
-    })->name('hotel.details');
+    Route::get('/hotel/{id}', [HotelController::class, 'show'])->name('hotel.details');
 
     // Room Reservation
     Route::get('/reservation', function () {
@@ -87,10 +92,15 @@ Route::group([
     Route::post('/car-rental/book', [CarRentalController::class, 'book'])->name('car-rental.book');
     Route::get('/car-rental/cities/{countryId}', [CarRentalController::class, 'getCitiesByCountry'])->name('car-rental.cities');
 
-    // Profile & Requests Routes (temporarily accessible without auth for development)
-    Route::get('/profile', function () {
-        return view('Web.profile');
-    })->name('profile');
+    // Visa Service
+    Route::get('/visa', [VisaController::class, 'index'])->name('visa');
+    Route::post('/visa/book', [VisaController::class, 'book'])->name('visa.book');
+
+    // Profile Routes
+    Route::middleware('auth')->group(function () {
+        Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    });
 
     Route::get('/requests', function () {
         return view('Web.requests');
@@ -103,7 +113,7 @@ Route::group([
             request()->session()->invalidate();
             request()->session()->regenerateToken();
 
-            return redirect()->route('home');
+            return redirect()->route('home', ['locale' => app()->getLocale()]);
         })->name('logout');
     });
 
@@ -130,6 +140,26 @@ Route::prefix(LaravelLocalization::setLocale().'/admin')->name('admin.')->middle
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::get('/users', [UsersController::class, 'index'])->name('users');
+
+        // Package Contacts
+        Route::get('/package-contacts', [PackageContactController::class, 'index'])->name('package-contacts.index');
+        Route::patch('/package-contacts/{packageContact}/status', [PackageContactController::class, 'updateStatus'])->name('package-contacts.update-status');
+
+        // Flight Bookings
+        Route::get('/flight-bookings', [FlightBookingController::class, 'index'])->name('flight-bookings.index');
+        Route::patch('/flight-bookings/{flightBooking}/status', [FlightBookingController::class, 'updateStatus'])->name('flight-bookings.update-status');
+
+        // Transfer Bookings
+        Route::get('/transfer-bookings', [TransferBookingController::class, 'index'])->name('transfer-bookings.index');
+        Route::patch('/transfer-bookings/{transferBooking}/status', [TransferBookingController::class, 'updateStatus'])->name('transfer-bookings.update-status');
+
+        // Car Rental Bookings
+        Route::get('/car-rental-bookings', [CarRentalBookingController::class, 'index'])->name('car-rental-bookings.index');
+        Route::patch('/car-rental-bookings/{carRentalBooking}/status', [CarRentalBookingController::class, 'updateStatus'])->name('car-rental-bookings.update-status');
+
+        // Visa Bookings
+        Route::get('/visa-bookings', [VisaBookingController::class, 'index'])->name('visa-bookings.index');
+        Route::patch('/visa-bookings/{visaBooking}/status', [VisaBookingController::class, 'updateStatus'])->name('visa-bookings.update-status');
 
         Route::get('/bookings', function () {
             return view('Admin.bookings');

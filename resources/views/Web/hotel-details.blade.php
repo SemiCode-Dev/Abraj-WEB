@@ -7,7 +7,7 @@
 <section class="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center mb-4">
-            <a href="{{ route('hotels.search', ['locale' => app()->getLocale()]) }}?destination={{ request('destination') }}&check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}" 
+            <a href="{{ route('hotels.search') }}?destination={{ request('destination') }}&check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}" 
                class="text-white/80 hover:text-white transition">
                 <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i> {{ __('Back to List') }}
             </a>
@@ -325,7 +325,7 @@
                                             </div>
                                             @endif
                                         </div>
-                                        <a href="{{ route('reservation', ['locale' => app()->getLocale()]) }}?hotel_id={{ $hotelId }}&room_type={{ $i }}&check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}" 
+                                        <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&room_type={{ $i }}&check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}" 
                                            class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
                                             {{ __('Book Now') }}
                                         </a>
@@ -522,73 +522,263 @@
         }
     });
 
-    // Set minimum date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('checkInDate')?.setAttribute('min', today);
-    document.getElementById('checkOutDate')?.setAttribute('min', today);
+    // Set default dates and minimum dates
+    const today = new Date();
+    const nextMonth = new Date(today);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    
+    const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const todayStr = formatDate(today);
+    const nextMonthStr = formatDate(nextMonth);
+
+    const checkInInput = document.getElementById('checkInDate');
+    const checkOutInput = document.getElementById('checkOutDate');
+    const guestsSelect = document.getElementById('guestsSelect');
+
+    // Set default dates if not in URL
+    if (checkInInput && !checkInInput.value) {
+        checkInInput.value = todayStr;
+    }
+    if (checkOutInput && !checkOutInput.value) {
+        checkOutInput.value = nextMonthStr;
+    }
+
+    // Set minimum dates
+    if (checkInInput) {
+        checkInInput.setAttribute('min', todayStr);
+    }
+    if (checkOutInput) {
+        checkOutInput.setAttribute('min', todayStr);
+    }
 
     // Update check-out minimum date when check-in changes
-    document.getElementById('checkInDate')?.addEventListener('change', function() {
-        const checkInDate = this.value;
-        const checkOutInput = document.getElementById('checkOutDate');
-        if (checkOutInput && checkInDate) {
-            const nextDay = new Date(checkInDate);
-            nextDay.setDate(nextDay.getDate() + 1);
-            checkOutInput.setAttribute('min', nextDay.toISOString().split('T')[0]);
-            if (checkOutInput.value && checkOutInput.value <= checkInDate) {
-                checkOutInput.value = nextDay.toISOString().split('T')[0];
+    if (checkInInput) {
+        checkInInput.addEventListener('change', function() {
+            const checkInDate = this.value;
+            if (checkOutInput && checkInDate) {
+                const nextDay = new Date(checkInDate);
+                nextDay.setDate(nextDay.getDate() + 1);
+                checkOutInput.setAttribute('min', formatDate(nextDay));
+                if (checkOutInput.value && checkOutInput.value <= checkInDate) {
+                    checkOutInput.value = formatDate(nextDay);
+                }
             }
-        }
-    });
+        });
+    }
 
-    // Check availability button
-    document.getElementById('checkAvailabilityBtn')?.addEventListener('click', function() {
-        const checkIn = document.getElementById('checkInDate').value;
-        const checkOut = document.getElementById('checkOutDate').value;
-        const guests = document.getElementById('guestsSelect').value;
+    // Function to search for rooms
+    async function searchRooms() {
+        const checkIn = checkInInput?.value || todayStr;
+        const checkOut = checkOutInput?.value || nextMonthStr;
+        const guests = guestsSelect?.value || '2';
         const roomsContainer = document.getElementById('roomsContainer');
         const roomsList = document.getElementById('roomsList');
         const noRoomsMessage = document.getElementById('noRoomsMessage');
         const availabilityMessage = document.getElementById('availabilityMessage');
+        const checkAvailabilityBtn = document.getElementById('checkAvailabilityBtn');
 
         if (!checkIn || !checkOut) {
-            availabilityMessage.textContent = '{{ __('Please select check-in and check-out dates') }}';
-            availabilityMessage.className = 'text-sm text-red-600';
-            availabilityMessage.classList.remove('hidden');
+            if (availabilityMessage) {
+                availabilityMessage.textContent = '{{ __('Please select check-in and check-out dates') }}';
+                availabilityMessage.className = 'text-sm text-red-600';
+                availabilityMessage.classList.remove('hidden');
+            }
             return;
         }
 
         if (checkOut <= checkIn) {
-            availabilityMessage.textContent = '{{ __('Check Out date must be after Check In date') }}';
-            availabilityMessage.className = 'text-sm text-red-600';
-            availabilityMessage.classList.remove('hidden');
+            if (availabilityMessage) {
+                availabilityMessage.textContent = '{{ __('Check Out date must be after Check In date') }}';
+                availabilityMessage.className = 'text-sm text-red-600';
+                availabilityMessage.classList.remove('hidden');
+            }
             return;
         }
+
+        // Show loading
+        if (checkAvailabilityBtn) {
+            checkAvailabilityBtn.disabled = true;
+            checkAvailabilityBtn.innerHTML = '<i class="fas fa-spinner fa-spin {{ app()->getLocale() === "ar" ? "ml-2" : "mr-2" }}"></i>{{ __("Loading...") }}';
+        }
+        if (roomsList) roomsList.innerHTML = '';
+        if (noRoomsMessage) noRoomsMessage.classList.add('hidden');
+        if (availabilityMessage) {
+            availabilityMessage.textContent = '{{ __("Searching for available rooms...") }}';
+            availabilityMessage.className = 'text-sm text-blue-600';
+            availabilityMessage.classList.remove('hidden');
+        }
+
+        // Prepare search data
+        const searchData = {
+            CheckIn: checkIn,
+            CheckOut: checkOut,
+            HotelCodes: '{{ $hotelId }}',
+            GuestNationality: 'AE',
+            PaxRooms: [
+                {
+                    Adults: parseInt(guests) || 2,
+                    Children: 0,
+                    ChildrenAges: []
+                }
+            ],
+            ResponseTime: 18,
+            IsDetailedResponse: true,
+            Filters: {
+                Refundable: true,
+                NoOfRooms: 0,
+                MealType: 'All'
+            }
+        };
+
+        try {
+            // Call search API
+            const response = await fetch("{{ route('hotel.search') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(searchData)
+            });
+
+            const data = await response.json();
+
+            // Handle API error response
+            if (data.Status && data.Status.Code !== 200) {
+                throw new Error(data.Status.Description || 'Failed to search rooms');
+            }
+
+            // Handle error response
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            // Display rooms from API response
+            displayRooms(data, checkIn, checkOut, guests);
+
+        } catch (err) {
+            console.error("Error searching rooms:", err);
+            if (availabilityMessage) {
+                availabilityMessage.textContent = err.message || '{{ __("Failed to search rooms. Please try again.") }}';
+                availabilityMessage.className = 'text-sm text-red-600';
+                availabilityMessage.classList.remove('hidden');
+            }
+            if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
+        } finally {
+            if (checkAvailabilityBtn) {
+                checkAvailabilityBtn.disabled = false;
+                checkAvailabilityBtn.innerHTML = '<i class="fas fa-search {{ app()->getLocale() === "ar" ? "ml-2" : "mr-2" }}"></i>{{ __("Check Availability") }}';
+            }
+        }
+    }
+
+    // Function to display rooms from API response
+    function displayRooms(data, checkIn, checkOut, guests) {
+        const roomsList = document.getElementById('roomsList');
+        const noRoomsMessage = document.getElementById('noRoomsMessage');
+        const availabilityMessage = document.getElementById('availabilityMessage');
+
+        // Get hotels from response
+        const hotels = data.Hotels || [];
+        let allRooms = [];
+
+        // Extract rooms from all hotels
+        hotels.forEach(hotel => {
+            if (hotel.Rooms && Array.isArray(hotel.Rooms)) {
+                hotel.Rooms.forEach(room => {
+                    allRooms.push({
+                        ...room,
+                        HotelCode: hotel.HotelCode,
+                        HotelName: hotel.HotelName
+                    });
+                });
+            }
+        });
+
+        if (allRooms.length === 0) {
+            if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
+            if (roomsList) roomsList.classList.add('hidden');
+            if (availabilityMessage) {
+                availabilityMessage.textContent = '{{ __("No rooms available for selected dates") }}';
+                availabilityMessage.className = 'text-sm text-gray-600';
+            }
+            return;
+        }
+
+        // Clear existing rooms
+        if (roomsList) {
+            roomsList.innerHTML = '';
+            roomsList.classList.remove('hidden');
+        }
+        if (noRoomsMessage) noRoomsMessage.classList.add('hidden');
+
+        // Display rooms
+        allRooms.forEach((room, index) => {
+            const roomCard = createRoomCard(room, index, checkIn, checkOut, guests);
+            if (roomsList) roomsList.appendChild(roomCard);
+        });
 
         // Calculate nights
         const checkInDate = new Date(checkIn);
         const checkOutDate = new Date(checkOut);
         const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
 
-        // Show rooms
-        roomsList.classList.remove('hidden');
-        noRoomsMessage.classList.add('hidden');
-        availabilityMessage.textContent = `{{ __('Found') }} ${roomsList.children.length} {{ __('Available Rooms') }}`;
-        availabilityMessage.className = 'text-sm text-green-600';
-        availabilityMessage.classList.remove('hidden');
-
-        // Update room booking links with new dates
-        const roomLinks = roomsList.querySelectorAll('a[href*="reservation"]');
-        roomLinks.forEach(link => {
-            const url = new URL(link.href);
-            url.searchParams.set('check_in', checkIn);
-            url.searchParams.set('check_out', checkOut);
-            url.searchParams.set('guests', guests);
-            link.href = url.toString();
-        });
+        if (availabilityMessage) {
+            availabilityMessage.textContent = `{{ __('Found') }} ${allRooms.length} {{ __('Available Rooms') }}`;
+            availabilityMessage.className = 'text-sm text-green-600';
+            availabilityMessage.classList.remove('hidden');
+        }
 
         // Update booking summary sidebar
         updateBookingSummary(checkIn, checkOut, guests, nights);
+    }
+
+    // Function to create room card
+    function createRoomCard(room, index, checkIn, checkOut, guests) {
+        const div = document.createElement('div');
+        div.className = 'border-2 border-gray-200 rounded-2xl p-6 hover:border-orange-500 transition';
+        
+        const roomName = room.RoomTypeName || room.RoomName || `{{ __('Room') }} ${index + 1}`;
+        const roomDescription = room.RoomDescription || '';
+        const price = room.Rate || room.Price || 0;
+        const currency = room.Currency || 'SAR';
+        const imageUrl = room.ImageUrl || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+
+        div.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="relative h-48 md:h-full min-h-[200px]">
+                    <img src="${imageUrl}" alt="${roomName}" class="w-full h-full object-cover rounded-xl">
+                </div>
+                <div class="md:col-span-2">
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">${roomName}</h3>
+                    ${roomDescription ? `<p class="text-gray-600 text-sm mb-3">${roomDescription}</p>` : ''}
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                        <div>
+                            <span class="text-3xl font-extrabold text-orange-600">${price}</span>
+                            <span class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}">${currency}</span>
+                            <div class="text-xs text-gray-400">{{ __('per night') }}</div>
+                        </div>
+                        <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&room_type=${index}&check_in=${checkIn}&check_out=${checkOut}&guests=${guests}" 
+                           class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
+                            {{ __('Book Now') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        return div;
+    }
+
+    // Check availability button
+    document.getElementById('checkAvailabilityBtn')?.addEventListener('click', function() {
+        searchRooms();
     });
 
     // Update booking summary sidebar
@@ -602,12 +792,13 @@
         window.history.replaceState({}, '', currentUrl);
     }
 
-    // If dates are already in URL, show rooms automatically
-    @if(request('check_in') && request('check_out'))
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('checkAvailabilityBtn')?.click();
-        });
-    @endif
+    // Auto-search rooms on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wait a bit for dates to be set
+        setTimeout(() => {
+            searchRooms();
+        }, 500);
+    });
 </script>
 @endpush
 

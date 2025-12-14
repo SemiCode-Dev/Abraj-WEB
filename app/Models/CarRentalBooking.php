@@ -24,6 +24,7 @@ class CarRentalBooking extends Model
         'return_time',
         'drivers',
         'notes',
+        'status',
     ];
 
     protected $casts = [

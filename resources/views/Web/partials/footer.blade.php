@@ -34,7 +34,7 @@
                 <h4 class="font-semibold mb-4 text-center text-gray-900 dark:text-gray-100">{{ __('Support') }}</h4>
                 <ul class="space-y-2 text-sm text-gray-600 text-center">
                     <li><a href="#" class="hover:text-orange-500 transition">{{ __('FAQ') }}</a></li>
-                    <li><a href="{{ route('contact', ['locale' => app()->getLocale()]) }}" class="hover:text-orange-500 transition">{{ __('Contact Us') }}</a></li>
+                    <li><a href="{{ route('contact') }}" class="hover:text-orange-500 transition">{{ __('Contact Us') }}</a></li>
                     <li><a href="#" class="hover:text-orange-500 transition">{{ __('Privacy Policy') }}</a></li>
                     <li><a href="#" class="hover:text-orange-500 transition">{{ __('Terms of Use') }}</a></li>
                 </ul>

@@ -15,9 +15,9 @@
 <section class="py-16 bg-gray-50 dark:bg-gray-900">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
-            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+            <!-- <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
                 {{ __('Booking Form') }}
-            </h2>
+            </h2> -->
 
             @if(session('success'))
                 <div class="mb-6 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-lg">
@@ -31,7 +31,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('flights.book', ['locale' => app()->getLocale()]) }}" method="POST" class="space-y-6">
+            <form action="{{ route('flights.book') }}" method="POST" class="space-y-6">
                 @csrf
 
                 @if(!auth()->check())
@@ -66,6 +66,7 @@
                     </div>
                 @endif
 
+                @if(!auth()->check())
                 <div class="mb-6">
                     <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
                         {{ __('Phone Number') }} <span class="text-red-500">*</span>
@@ -85,6 +86,7 @@
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
+                @endif
 
                 <div class="mb-6">
                     <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">

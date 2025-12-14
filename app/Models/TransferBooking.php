@@ -25,6 +25,7 @@ class TransferBooking extends Model
         'return_time',
         'passengers',
         'notes',
+        'status',
     ];
 
     protected $casts = [

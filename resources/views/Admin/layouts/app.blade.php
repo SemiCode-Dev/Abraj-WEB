@@ -184,7 +184,7 @@
             <div class="flex flex-col h-screen overflow-hidden">
                 <!-- Logo Section -->
                 <div class="flex items-center justify-between h-20 px-6 border-b border-white/10 flex-shrink-0">
-                    <a href="{{ route('admin.dashboard', ['locale' => app()->getLocale()]) }}" class="flex items-center gap-3">
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
                         <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
                             <i class="fas fa-hotel text-white text-xl"></i>
                         </div>
@@ -200,32 +200,52 @@
 
                 <!-- Navigation -->
                 <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto min-h-0">
-                    <a href="{{ route('admin.dashboard', ['locale' => app()->getLocale()]) }}" class="admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('admin.dashboard') }}" class="admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                         <i class="fas fa-chart-line"></i>
                         <span>Dashboard</span>
                     </a>
 
-                    <a href="{{ route('admin.users', ['locale' => app()->getLocale()]) }}" class="admin-nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.users') }}" class="admin-nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
                         <i class="fas fa-users"></i>
                         <span>Users</span>
                     </a>
-                    <a href="{{ route('admin.bookings', ['locale' => app()->getLocale()]) }}" class="admin-nav-link {{ request()->routeIs('admin.bookings*') ? 'active' : '' }}">
-                        <i class="fas fa-calendar-check"></i>
-                        <span>Bookings</span>
-                        <span class="admin-badge">24</span>
-                    </a>
 
-                    <a href="{{ route('admin.transactions', ['locale' => app()->getLocale()]) }}" class="admin-nav-link {{ request()->routeIs('admin.transactions*') ? 'active' : '' }}">
+                    <!-- Bookings Section -->
+                    <div class="pt-2">
+                        <div class="px-4 mb-2 text-xs font-semibold text-white/60 uppercase tracking-wider">{{ __('Bookings') }}</div>
+                        <a href="{{ route('admin.package-contacts.index') }}" class="admin-nav-link {{ request()->routeIs('admin.package-contacts*') ? 'active' : '' }}">
+                            <i class="fas fa-box"></i>
+                            <span>{{ __('Package Contacts') }}</span>
+                        </a>
+                        <a href="{{ route('admin.flight-bookings.index') }}" class="admin-nav-link {{ request()->routeIs('admin.flight-bookings*') ? 'active' : '' }}">
+                            <i class="fas fa-plane"></i>
+                            <span>{{ __('Flight Bookings') }}</span>
+                        </a>
+                        <a href="{{ route('admin.transfer-bookings.index') }}" class="admin-nav-link {{ request()->routeIs('admin.transfer-bookings*') ? 'active' : '' }}">
+                            <i class="fas fa-car"></i>
+                            <span>{{ __('Transfer Bookings') }}</span>
+                        </a>
+                        <a href="{{ route('admin.car-rental-bookings.index') }}" class="admin-nav-link {{ request()->routeIs('admin.car-rental-bookings*') ? 'active' : '' }}">
+                            <i class="fas fa-car-side"></i>
+                            <span>{{ __('Car Rental Bookings') }}</span>
+                        </a>
+                        <a href="{{ route('admin.visa-bookings.index') }}" class="admin-nav-link {{ request()->routeIs('admin.visa-bookings*') ? 'active' : '' }}">
+                            <i class="fas fa-passport"></i>
+                            <span>{{ __('Visa Bookings') }}</span>
+                        </a>
+                    </div>
+
+                    <a href="{{ route('admin.transactions') }}" class="admin-nav-link {{ request()->routeIs('admin.transactions*') ? 'active' : '' }}">
                         <i class="fas fa-credit-card"></i>
                         <span>Transactions</span>
                     </a>
 
-                    <a href="{{ route('admin.reviews', ['locale' => app()->getLocale()]) }}" class="admin-nav-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reviews') }}" class="admin-nav-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}">
                         <i class="fas fa-star"></i>
                         <span>Client Reviews</span>
                     </a>
 
-                    <a href="{{ route('admin.reports', ['locale' => app()->getLocale()]) }}" class="admin-nav-link {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports') }}" class="admin-nav-link {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
                         <i class="fas fa-exclamation-triangle"></i>
                         <span>User Reports</span>
                         <span class="admin-badge">5</span>
@@ -235,7 +255,7 @@
                     <div class="pt-6 mt-6 border-t border-white/10">
                         <div class="px-4 mb-3 sidebar-section-title">Settings</div>
 
-                        <a href="{{ route('admin.settings', ['locale' => app()->getLocale()]) }}" class="admin-nav-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.settings') }}" class="admin-nav-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                             <i class="fas fa-cog"></i>
                             <span>Settings</span>
                         </a>
@@ -266,7 +286,7 @@
                                 <i class="fas fa-key w-5 {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }} text-gray-400"></i>Change Password
                             </a>
                             <hr class="my-2 border-gray-200 dark:border-gray-700">
-                            <a href="{{ route('home', ['locale' => app()->getLocale()]) }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                            <a href="{{ route('home') }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                                 <i class="fas fa-home w-5 {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }} text-gray-400"></i>View Website
                             </a>
                             <hr class="my-2 border-gray-200 dark:border-gray-700">

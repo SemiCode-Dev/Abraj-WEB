@@ -24,12 +24,11 @@ class CarRentalBookingRequest extends FormRequest
             'pickup_time' => ['required'],
             'return_date' => ['required', 'date', 'after:pickup_date'],
             'return_time' => ['required'],
-            'drivers' => ['required', 'integer', 'min:1', 'max:10'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
 
         if (auth()->check()) {
-            unset($rules['name'], $rules['email']);
+            unset($rules['name'], $rules['email'], $rules['phone'], $rules['phone_country_code']);
         }
 
         return $rules;
@@ -53,8 +52,6 @@ class CarRentalBookingRequest extends FormRequest
             'return_date.required' => __('Return date is required.'),
             'return_date.after' => __('Return date must be after pickup date.'),
             'return_time.required' => __('Return time is required.'),
-            'drivers.required' => __('Number of drivers is required.'),
-            'drivers.min' => __('At least one driver is required.'),
         ];
     }
 }

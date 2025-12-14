@@ -30,7 +30,7 @@ class FlightBookingRequest extends FormRequest
         ];
 
         if (auth()->check()) {
-            unset($rules['name'], $rules['email']);
+            unset($rules['name'], $rules['email'], $rules['phone'], $rules['phone_country_code']);
         }
 
         return $rules;

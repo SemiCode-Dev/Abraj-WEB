@@ -6,27 +6,34 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PackageContact extends Model
+class VisaBooking extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'package_id',
         'user_id',
         'name',
-        'email',
+        'phone_country_code',
         'phone',
-        'message',
+        'visa_type',
+        'country_id',
+        'duration',
+        'passport_number',
+        'comment',
         'status',
     ];
 
-    public function package(): BelongsTo
-    {
-        return $this->belongsTo(Package::class);
-    }
+    protected $casts = [
+        'duration' => 'integer',
+    ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class);
     }
 }

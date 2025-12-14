@@ -25,6 +25,7 @@ class FlightBooking extends Model
         'departure_date',
         'return_date',
         'notes',
+        'status',
     ];
 
     protected $casts = [

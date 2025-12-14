@@ -28,15 +28,15 @@ class CarRentalController extends Controller
                 'user_id' => $user?->id,
                 'name' => $user ? $user->name : $request->name,
                 'email' => $user ? $user->email : $request->email,
-                'phone_country_code' => $request->phone_country_code,
-                'phone' => $request->phone,
+                'phone_country_code' => $user ? '966' : $request->phone_country_code,
+                'phone' => $user ? ($user->phone ?? '') : $request->phone,
                 'destination_country_id' => $request->destination_country_id,
                 'destination_city_id' => $request->destination_city_id,
                 'pickup_date' => $request->pickup_date,
                 'pickup_time' => $request->pickup_time,
                 'return_date' => $request->return_date,
                 'return_time' => $request->return_time,
-                'drivers' => $request->drivers,
+                'drivers' => 1, // Default value
                 'notes' => $request->notes,
             ]);
 

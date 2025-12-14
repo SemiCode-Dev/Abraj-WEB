@@ -204,16 +204,6 @@
                             <div class="relative h-64 md:h-full min-h-[250px]">
                                 <img src="{{ $hotel['ImageUrls'][0]['ImageUrl'] ?? 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}" 
                                      alt="فندق" class="w-full h-full object-cover">
-                                <div class="absolute top-4 left-4 flex gap-2">
-                                    <div class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-900 shadow-lg">
-                                        <i class="fas fa-star text-yellow-500 ml-1"></i> {{ $hotel['HotelRating'] }}
-                                    </div>
-                                    {{-- @if($i % 2 == 0)
-                                    <div class="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                                        <i class="fas fa-fire {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Discount') }} 30%
-                                    </div>
-                                    @endif --}}
-                                </div>
                             </div>
                             
                             <!-- Hotel Info -->
@@ -274,7 +264,7 @@
                                         </div>
                                         {{-- <div class="text-xs text-gray-400">/ {{ __('per night') }} • {{ __('including taxes') }}</div> --}}
                                     </div>
-                                    <a href="{{ route('hotel.details',1) }}?check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}" 
+                                    <a href="{{ route('hotel.details', ['id' => $hotel['HotelCode'] ?? $hotel['HotelCode'] ?? 1, 'locale' => app()->getLocale()]) }}?check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}" 
                                        class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
                                         {{ __('View Rooms') }}
                                     </a>
@@ -287,19 +277,72 @@
                     </div>
 
                     <!-- Pagination -->
+                    @if(isset($totalPages) && $totalPages > 1)
                     <div class="mt-8 flex justify-center">
-                        <div class="flex gap-2">
-                            <button
-                                class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-orange-50 hover:border-orange-600 transition">{{ __('Previous') }}</button>
-                            <button class="px-4 py-2 bg-orange-600 text-white rounded-lg">1</button>
-                            <button
-                                class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-orange-50 hover:border-orange-600 transition">2</button>
-                            <button
-                                class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-orange-50 hover:border-orange-600 transition">3</button>
-                            <button
-                                class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-orange-50 hover:border-orange-600 transition">{{ __('Next') }}</button>
+                        <div class="flex gap-2 items-center flex-wrap justify-center">
+                            <!-- Previous Button -->
+                            @if(isset($currentPage) && $currentPage > 1)
+                            <a href="{{ request()->fullUrlWithQuery(['page' => $currentPage - 1]) }}"
+                                class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-orange-50 hover:border-orange-600 transition flex items-center">
+                                <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Previous') }}
+                            </a>
+                            @else
+                            <span class="px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-400 cursor-not-allowed flex items-center">
+                                <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Previous') }}
+                            </span>
+                            @endif
+
+                            <!-- Page Numbers -->
+                            @php
+                                $currentPage = $currentPage ?? 1;
+                                $totalPages = $totalPages ?? 1;
+                                $startPage = max(1, $currentPage - 2);
+                                $endPage = min($totalPages, $currentPage + 2);
+                            @endphp
+
+                            @if($startPage > 1)
+                                <a href="{{ request()->fullUrlWithQuery(['page' => 1]) }}"
+                                    class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-orange-50 hover:border-orange-600 transition">1</a>
+                                @if($startPage > 2)
+                                    <span class="px-2 text-gray-500">...</span>
+                                @endif
+                            @endif
+
+                            @for($i = $startPage; $i <= $endPage; $i++)
+                                @if($i == $currentPage)
+                                    <span class="px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold">{{ $i }}</span>
+                                @else
+                                    <a href="{{ request()->fullUrlWithQuery(['page' => $i]) }}"
+                                        class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-orange-50 hover:border-orange-600 transition">{{ $i }}</a>
+                                @endif
+                            @endfor
+
+                            @if($endPage < $totalPages)
+                                @if($endPage < $totalPages - 1)
+                                    <span class="px-2 text-gray-500">...</span>
+                                @endif
+                                <a href="{{ request()->fullUrlWithQuery(['page' => $totalPages]) }}"
+                                    class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-orange-50 hover:border-orange-600 transition">{{ $totalPages }}</a>
+                            @endif
+
+                            <!-- Next Button -->
+                            @if(isset($currentPage) && $currentPage < $totalPages)
+                            <a href="{{ request()->fullUrlWithQuery(['page' => $currentPage + 1]) }}"
+                                class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-orange-50 hover:border-orange-600 transition flex items-center">
+                                {{ __('Next') }}
+                                <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}"></i>
+                            </a>
+                            @else
+                            <span class="px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-400 cursor-not-allowed flex items-center">
+                                {{ __('Next') }}
+                                <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}"></i>
+                            </span>
+                            @endif
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>

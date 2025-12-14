@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Services\Api\V1\HotelApiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class HotelController extends Controller
@@ -77,7 +78,8 @@ class HotelController extends Controller
     public function getHotels($cityCode)
     {
         try {
-            $response = $this->hotelApi->getCityHotels($cityCode);
+            // Get all hotels from all pages
+            $response = $this->hotelApi->getAllCityHotels($cityCode, true);
 
             $hotels = $response['Hotels'] ?? [];
 
@@ -109,30 +111,137 @@ class HotelController extends Controller
 
     public function getCityHotels($cityCode)
     {
-        $response = $this->hotelApi->getCityHotels($cityCode);
+        try {
+            // Get current page from request
+            $page = (int) request('page', 1);
+            $perPage = 12; // Hotels per page
 
-        $hotels = $response['Hotels'] ?? [];
+            // Cache key for this specific city
+            $cacheKey = 'city_hotels_'.$cityCode;
 
-        return view('Web.hotels', [
+            // Cache for 24 hours - hotels don't change frequently
+            $allHotels = Cache::remember($cacheKey, 86400, function () use ($cityCode) {
+                try {
+                    // Get all hotels from all pages
+                    $response = $this->hotelApi->getAllCityHotels($cityCode, true);
 
-            'hotels' => $hotels,
-        ]);
+                    $hotels = $response['Hotels'] ?? [];
+
+                    if (! is_array($hotels)) {
+                        $hotels = json_decode(json_encode($hotels), true);
+                    }
+
+                    return $hotels;
+                } catch (\Exception $e) {
+                    Log::error('Failed to fetch city hotels from API: '.$e->getMessage());
+
+                    return [];
+                }
+            });
+
+            // Calculate pagination
+            $totalHotels = count($allHotels);
+            $totalPages = (int) ceil($totalHotels / $perPage);
+            $offset = ($page - 1) * $perPage;
+
+            // Get hotels for current page
+            $hotels = array_slice($allHotels, $offset, $perPage);
+
+            return view('Web.hotels', [
+                'hotels' => $hotels,
+                'currentPage' => $page,
+                'totalPages' => $totalPages,
+                'totalHotels' => $totalHotels,
+                'perPage' => $perPage,
+                'cityCode' => $cityCode,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch city hotels: '.$e->getMessage());
+
+            return view('Web.hotels', [
+                'hotels' => [],
+                'currentPage' => 1,
+                'totalPages' => 1,
+                'totalHotels' => 0,
+                'perPage' => 12,
+                'cityCode' => $cityCode,
+            ]);
+        }
     }
 
     public function getAllHotels()
     {
-        $cities = City::select('code')->get();
+        try {
+            // Get current page from request
+            $page = (int) request('page', 1);
+            $perPage = 12; // Hotels per page
 
-        $randomCity = $cities->random();
+            // Get city codes from database
+            $cityCodes = City::whereNotNull('code')
+                ->where('code', '!=', '')
+                ->pluck('code')
+                ->toArray();
 
-        $response = $this->hotelApi->getCityHotels($randomCity->code);
+            if (empty($cityCodes)) {
+                return view('Web.hotels', [
+                    'hotels' => [],
+                    'currentPage' => 1,
+                    'totalPages' => 1,
+                    'totalHotels' => 0,
+                    'perPage' => $perPage,
+                ]);
+            }
 
-        $hotels = $response['Hotels'] ?? [];
+            // Use cache key based on city codes count (changes when cities are added/removed)
+            $cacheKey = 'all_hotels_'.md5(implode(',', $cityCodes));
 
-        return view('Web.hotels', [
+            // Cache for 24 hours - hotels don't change frequently
+            $allHotels = \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function () use ($cityCodes) {
+                try {
+                    // Get hotels from all cities using TBOHotelCodeList
+                    // Limit to 5 hotels per city for faster loading (can be increased if needed)
+                    $response = $this->hotelApi->getHotelsFromMultipleCities($cityCodes, true, 5);
 
-            'hotels' => $hotels,
-        ]);
+                    $hotels = $response['Hotels'] ?? [];
+
+                    if (! is_array($hotels)) {
+                        $hotels = json_decode(json_encode($hotels), true);
+                    }
+
+                    return $hotels;
+                } catch (\Exception $e) {
+                    Log::error('Failed to fetch all hotels from API: '.$e->getMessage());
+
+                    return [];
+                }
+            });
+
+            // Calculate pagination
+            $totalHotels = count($allHotels);
+            $totalPages = (int) ceil($totalHotels / $perPage);
+            $offset = ($page - 1) * $perPage;
+
+            // Get hotels for current page
+            $hotels = array_slice($allHotels, $offset, $perPage);
+
+            return view('Web.hotels', [
+                'hotels' => $hotels,
+                'currentPage' => $page,
+                'totalPages' => $totalPages,
+                'totalHotels' => $totalHotels,
+                'perPage' => $perPage,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch all hotels: '.$e->getMessage());
+
+            return view('Web.hotels', [
+                'hotels' => [],
+                'currentPage' => 1,
+                'totalPages' => 1,
+                'totalHotels' => 0,
+                'perPage' => 12,
+            ]);
+        }
     }
 
     public function getCitiesByCountry($countryCode)
@@ -165,5 +274,12 @@ class HotelController extends Controller
 
             return response()->json(['error' => 'Failed to fetch cities'], 500);
         }
+    }
+
+    public function show($id)
+    {
+        return view('Web.hotel-details', [
+            'hotelId' => $id,
+        ]);
     }
 }

@@ -896,11 +896,11 @@
             </p>
             
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="{{ route('hotels.search', ['locale' => app()->getLocale()]) }}" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 min-w-[200px]">
+                <a href="{{ route('hotels.search') }}" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 min-w-[200px]">
                     <i class="fas fa-calendar-check"></i>
                     {{ __('Book Now') }}
                 </a>
-                <a href="{{ route('contact', ['locale' => app()->getLocale()]) }}" class="inline-flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-8 py-4 rounded-xl font-semibold text-lg border-2 border-gray-300 dark:border-gray-700 hover:border-orange-500 dark:hover:border-orange-500 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 min-w-[200px]">
+                <a href="{{ route('contact') }}" class="inline-flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-8 py-4 rounded-xl font-semibold text-lg border-2 border-gray-300 dark:border-gray-700 hover:border-orange-500 dark:hover:border-orange-500 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 min-w-[200px]">
                     <i class="fas fa-envelope"></i>
                     {{ __('Contact Us') }}
                 </a>
@@ -1811,7 +1811,7 @@
                 };
 
                 // Call search API
-                fetch("{{ route('hotel.search', ['locale' => app()->getLocale()]) }}", {
+                fetch("{{ route('hotel.search') }}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1842,7 +1842,7 @@
                     sessionStorage.setItem('searchParams', JSON.stringify(searchData));
                     
                     // Redirect to hotels page with search results
-                    const url = "{{ route('hotels.search', ['locale' => app()->getLocale()]) }}";
+                    const url = "{{ route('hotels.search') }}";
                     window.location.href = url;
                 })
                 .catch(err => {

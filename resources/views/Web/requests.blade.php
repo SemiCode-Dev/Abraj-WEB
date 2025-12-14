@@ -23,7 +23,7 @@
                 <p class="text-gray-600 dark:text-gray-400 mb-6">
                     {{ __('Your booking requests will appear here once you make a reservation.') }}
                 </p>
-                <a href="{{ route('hotels.search', ['locale' => app()->getLocale()]) }}" 
+                <a href="{{ route('hotels.search') }}" 
                    class="inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-xl hover:from-orange-600 hover:to-orange-700 transition font-semibold shadow-lg">
                     {{ __('Browse Hotels') }}
                 </a>
