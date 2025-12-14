@@ -211,8 +211,8 @@
                     </a>
 
                     <!-- Bookings Section -->
-                    <div class="pt-2">
-                        <div class="px-4 mb-2 text-xs font-semibold text-white/60 uppercase tracking-wider">{{ __('Bookings') }}</div>
+                    <div class="border-t border-white/10">
+                        <div class="px-4 mb-2 mt-2 text-xs font-semibold sidebar-section-title uppercase tracking-wider">{{ __('Bookings') }}</div>
                         <a href="{{ route('admin.package-contacts.index') }}" class="admin-nav-link {{ request()->routeIs('admin.package-contacts*') ? 'active' : '' }}">
                             <i class="fas fa-box"></i>
                             <span>{{ __('Package Contacts') }}</span>
@@ -332,13 +332,6 @@
 
                     <!-- Right Section -->
                     <div class="flex items-center gap-2">
-                        <!-- Notifications -->
-                        <button class="relative p-2.5 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition group">
-                            <i class="fas fa-bell text-xl"></i>
-                            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-gray-800"></span>
-                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition">3</span>
-                        </button>
-
                         <!-- Language Toggle -->
                         @php
                             $currentPath = request()->path();

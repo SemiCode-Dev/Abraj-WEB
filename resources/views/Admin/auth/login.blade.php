@@ -19,7 +19,7 @@
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #1e3a8a 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -40,7 +40,7 @@
         }
 
         .login-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #1e3a8a 100%);
             padding: 40px 30px;
             text-align: center;
             color: white;
@@ -56,6 +56,20 @@
             font-size: 14px;
             opacity: 0.9;
             margin: 0;
+        }
+
+        .login-logo {
+            max-width: 200px;
+            max-height: 80px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            margin: 0 auto;
+            display: block;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .login-body {
@@ -86,8 +100,8 @@
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
         }
 
         .form-group input::placeholder {
@@ -132,8 +146,8 @@
         }
 
         .checkbox:checked {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-color: #667eea;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            border-color: #f97316;
             position: relative;
         }
 
@@ -156,7 +170,7 @@
         .submit-btn {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -173,7 +187,8 @@
 
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 25px rgba(249, 115, 22, 0.4);
+            background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
         }
 
         .submit-btn:active {
@@ -205,9 +220,13 @@
         }
 
         .help-text a {
-            color: #667eea;
+            color: #f97316;
             text-decoration: none;
             font-weight: 600;
+        }
+
+        .help-text a:hover {
+            color: #ea580c;
         }
 
         .help-text a:hover {
@@ -237,7 +256,11 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <h1>{{ __('Abraj Stay') }}</h1>
+                @if(file_exists(public_path('images/abraj-stay-logo.png')))
+                    <img src="{{ asset('images/abraj-stay-logo.png') }}" alt="ABRAJ STAY" class="login-logo">
+                @else
+                    <h1>{{ __('Abraj Stay') }}</h1>
+                @endif
             </div>
 
             <div class="login-body">
@@ -274,7 +297,7 @@
                         @enderror
                     </div>
 
-                    <div class="form-group @error('password') is-invalid @enderror">
+                    <div class="pb-4 pt-4 form-group @error('password') is-invalid @enderror">
                         <label for="password">{{ __('Password') }}</label>
                         <input
                             type="password"
@@ -289,11 +312,6 @@
                                 {{ $message }}
                             </div>
                         @enderror
-                    </div>
-
-                    <div class="remember-group">
-                        <input type="checkbox" id="remember" name="remember" class="checkbox">
-                        <label for="remember" class="remember-text">{{ __('Remember me') }}</label>
                     </div>
 
                     <button type="submit" class="submit-btn">

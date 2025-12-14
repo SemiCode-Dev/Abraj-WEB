@@ -201,7 +201,7 @@
                              <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
                             <!-- Hotel Image -->
-                            <div class="relative h-64 md:h-full min-h-[250px]">
+                            <div class="relative h-64 md:h-full max-h-[250px]">
                                 <img src="{{ $hotel['ImageUrls'][0]['ImageUrl'] ?? 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}" 
                                      alt="فندق" class="w-full h-full object-cover">
                             </div>
