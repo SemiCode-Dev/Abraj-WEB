@@ -72,8 +72,12 @@ class HotelApiService
             ],
         ];
 
-        // Use 'search' endpoint (lowercase) to match API documentation
-        return $this->sendRequest('search', $payload);
+        // Debug logging for TBO API requests/responses
+        file_put_contents(public_path('tbo_debug.txt'), "REQUEST:\n" . print_r($payload, true) . "\n\n", FILE_APPEND);
+        $response = $this->sendRequest('Search', $payload);
+        file_put_contents(public_path('tbo_debug.txt'), "RESPONSE:\n" . print_r($response, true) . "\n-------------------\n\n", FILE_APPEND);
+        
+        return $response;
     }
 
     public function getHotels($cityCode, int $page = 1)
