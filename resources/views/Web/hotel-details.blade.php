@@ -12,12 +12,38 @@
                 <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i> {{ __('Back to List') }}
             </a>
         </div>
-        <h1 class="text-4xl md:text-5xl font-bold mb-4">{{ __('International Luxury Hotel') }} {{ $hotelId }}</h1>
+        @php
+            $hotel = $hotelDetails['HotelDetails'][0] ?? null;
+        @endphp
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">
+            @if($hotel && isset($hotel['HotelName']))
+                {{ $hotel['HotelName'] }}
+            @else
+                {{ __('International Luxury Hotel') }} {{ $hotelId }}
+            @endif
+        </h1>
         <div class="flex items-center gap-4 flex-wrap">
+            @if($hotel && isset($hotel['Address']))
+            <div class="flex items-center">
+                <i class="fas fa-map-marker-alt {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                <span>{{ $hotel['Address'] }}@if(isset($hotel['CityName'])), {{ $hotel['CityName'] }}@endif @if(isset($hotel['CountryName'])), {{ $hotel['CountryName'] }}@endif</span>
+            </div>
+            @else
             <div class="flex items-center">
                 <i class="fas fa-map-marker-alt {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
                 <span>{{ request('destination', __('Riyadh')) }}, {{ __('Saudi Arabia') }}</span>
             </div>
+            @endif
+            @if($hotel && isset($hotel['HotelRating']))
+            <div class="flex items-center">
+                <div class="flex text-yellow-500 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}">
+                    @for($i = 0; $i < $hotel['HotelRating']; $i++)
+                    <i class="fas fa-star"></i>
+                    @endfor
+                </div>
+                <span class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">{{ $hotel['HotelRating'] }}</span>
+            </div>
+            @else
             <div class="flex items-center">
                 <div class="flex text-yellow-500 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}">
                     @for($i = 0; $i < 5; $i++)
@@ -25,8 +51,8 @@
                     @endfor
                 </div>
                 <span class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">4.8</span>
-                <span class="text-white/70">(245 {{ __('reviews') }})</span>
             </div>
+            @endif
         </div>
     </div>
 </section>
@@ -34,27 +60,46 @@
 <!-- Hotel Images Gallery -->
 <section class="py-8 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        @php
+            $hotel = $hotelDetails['HotelDetails'][0] ?? null;
+            $images = [];
+            if ($hotel && isset($hotel['Images']) && is_array($hotel['Images'])) {
+                // Images is an array of URLs
+                foreach ($hotel['Images'] as $imgUrl) {
+                    $images[] = ['ImageUrl' => $imgUrl];
+                }
+            } elseif ($hotel && isset($hotel['Image']) && !empty($hotel['Image'])) {
+                // Single Image field
+                $images[] = ['ImageUrl' => $hotel['Image']];
+            } elseif ($hotel && isset($hotel['ImageUrls']) && is_array($hotel['ImageUrls'])) {
+                $images = $hotel['ImageUrls'];
+            }
+            // Default images if none from API
+            if (empty($images)) {
+                $images = [
+                    ['ImageUrl' => 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'],
+                    ['ImageUrl' => 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'],
+                    ['ImageUrl' => 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'],
+                    ['ImageUrl' => 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'],
+                    ['ImageUrl' => 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'],
+                ];
+            }
+        @endphp
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="hotelGallery">
-            <div class="md:col-span-2 md:row-span-2 cursor-pointer" onclick="openImageModal(0)">
-                <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-                     alt="فندق" class="w-full h-full object-cover rounded-2xl hover:opacity-90 transition">
-            </div>
-            <div class="cursor-pointer" onclick="openImageModal(1)">
-                <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
-                     alt="فندق" class="w-full h-48 object-cover rounded-2xl hover:opacity-90 transition">
-            </div>
-            <div class="cursor-pointer" onclick="openImageModal(2)">
-                <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
-                     alt="فندق" class="w-full h-48 object-cover rounded-2xl hover:opacity-90 transition">
-            </div>
-            <div class="cursor-pointer" onclick="openImageModal(3)">
-                <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
-                     alt="فندق" class="w-full h-48 object-cover rounded-2xl hover:opacity-90 transition">
-            </div>
-            <div class="cursor-pointer" onclick="openImageModal(4)">
-                <img src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
-                     alt="فندق" class="w-full h-48 object-cover rounded-2xl hover:opacity-90 transition">
-            </div>
+            @foreach($images as $index => $image)
+                @php
+                    $imageUrl = $image['ImageUrl'] ?? (is_string($image) ? $image : '');
+                @endphp
+                @if($index == 0)
+                <div class="md:col-span-2 md:row-span-2 cursor-pointer" onclick="openImageModal({{ $index }})">
+                    <img src="{{ $imageUrl }}" alt="{{ $hotel['HotelName'] ?? 'فندق' }}" class="w-full h-full object-cover rounded-2xl hover:opacity-90 transition">
+                </div>
+                @elseif($index < 5)
+                <div class="cursor-pointer" onclick="openImageModal({{ $index }})">
+                    <img src="{{ $imageUrl }}" alt="{{ $hotel['HotelName'] ?? 'فندق' }}" class="w-full h-48 object-cover rounded-2xl hover:opacity-90 transition">
+                </div>
+                @endif
+            @endforeach
         </div>
     </div>
 </section>
@@ -98,17 +143,55 @@
                 <!-- Description -->
                 <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ __('About the Hotel') }}</h2>
-                    <p class="text-gray-700 leading-relaxed mb-4">
-                        {{ __('Hotel Description 1') }}
-                    </p>
-                    <p class="text-gray-700 leading-relaxed">
-                        {{ __('Hotel Description 2') }}
-                    </p>
+                    @php
+                        $hotel = $hotelDetails['HotelDetails'][0] ?? null;
+                    @endphp
+                    @if($hotel && isset($hotel['Description']))
+                        <div class="text-gray-700 leading-relaxed">
+                            {!! $hotel['Description'] !!}
+                        </div>
+                    @else
+                        <p class="text-gray-700 leading-relaxed mb-4">
+                            {{ __('Hotel Description 1') }}
+                        </p>
+                        <p class="text-gray-700 leading-relaxed">
+                            {{ __('Hotel Description 2') }}
+                        </p>
+                    @endif
                 </div>
                 
                 <!-- Amenities -->
                 <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ __('Facilities and Services') }}</h2>
+                    @php
+                        $hotel = $hotelDetails['HotelDetails'][0] ?? null;
+                        $facilities = $hotel['HotelFacilities'] ?? [];
+                        $totalFacilities = count($facilities);
+                        $showLimit = 10;
+                        $hasMore = $totalFacilities > $showLimit;
+                    @endphp
+                    @if(!empty($facilities) && is_array($facilities))
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="facilitiesList">
+                        @foreach($facilities as $index => $facility)
+                        <div class="flex items-center facility-item {{ $index >= $showLimit ? 'hidden' : '' }}">
+                            <i class="fas fa-check-circle text-orange-600 text-lg {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
+                            <span class="text-gray-700">{{ $facility }}</span>
+                        </div>
+                        @endforeach
+                    </div>
+                    @if($hasMore)
+                    <div class="mt-4 text-center">
+                        <button type="button" id="showMoreFacilities" class="text-orange-600 hover:text-orange-700 font-semibold transition">
+                            <i class="fas fa-chevron-down {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                            {{ __('Show More') }} ({{ $totalFacilities - $showLimit }} {{ __('more') }})
+                        </button>
+                        <button type="button" id="showLessFacilities" class="text-orange-600 hover:text-orange-700 font-semibold transition hidden">
+                            <i class="fas fa-chevron-up {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                            {{ __('Show Less') }}
+                        </button>
+                    </div>
+                    @endif
+                    @else
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div class="flex items-center">
                             <i class="fas fa-wifi text-orange-600 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
@@ -134,19 +217,8 @@
                             <i class="fas fa-parking text-orange-600 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
                             <span class="text-gray-700">{{ __('Parking') }}</span>
                         </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-concierge-bell text-orange-600 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
-                            <span class="text-gray-700">{{ __('Room Service') }}</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-shield-alt text-orange-600 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
-                            <span class="text-gray-700">{{ __('Safe') }}</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-air-conditioner text-orange-600 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
-                            <span class="text-gray-700">{{ __('Air Conditioning') }}</span>
-                        </div>
                     </div>
+                    @endif
                 </div>
                 
                 <!-- Date Selection & Availability Check -->
@@ -158,7 +230,7 @@
                                 <i class="fas fa-calendar-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                 {{ __('Check In') }}
                             </label>
-                            <input type="date" id="checkInDate" name="check_in" value="{{ request('check_in') }}" required
+                            <input type="date" id="checkInDate" name="check_in" value="{{ request('check_in') ?: '' }}" required
                                 class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
                         </div>
                         <div>
@@ -166,7 +238,7 @@
                                 <i class="fas fa-calendar-check text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                 {{ __('Check Out') }}
                             </label>
-                            <input type="date" id="checkOutDate" name="check_out" value="{{ request('check_out') }}" required
+                            <input type="date" id="checkOutDate" name="check_out" value="{{ request('check_out') ?: '' }}" required
                                 class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
                         </div>
                         <div>
@@ -267,7 +339,7 @@
                             <p class="text-sm mt-2">{{ __('Please select check-in and check-out dates') }}</p>
                         </div>
                         
-                        <div id="roomsList" class="space-y-6">
+                        <div id="roomsList" class="space-y-6 hidden">
                         @for($i = 1; $i <= 3; $i++)
                         <div class="border-2 border-gray-200 rounded-2xl p-6 hover:border-orange-500 transition">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -325,7 +397,7 @@
                                             </div>
                                             @endif
                                         </div>
-                                        <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&room_type={{ $i }}&check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}" 
+                                        <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}" 
                                            class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
                                             {{ __('Book Now') }}
                                         </a>
@@ -345,7 +417,9 @@
                     <!-- Hotel Quick Info -->
                     <div class="bg-white rounded-2xl shadow-lg p-6">
                         <h3 class="text-xl font-bold text-gray-900 mb-6">{{ __('Hotel Information') }}</h3>
-                    
+                    @php
+                        $hotel = $hotelDetails['HotelDetails'][0] ?? null;
+                    @endphp
                     <div class="space-y-4">
                         <!-- Location -->
                         <div class="flex items-start">
@@ -355,8 +429,17 @@
                             <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
                                 <div class="font-semibold text-gray-900 mb-1">{{ __('Location') }}</div>
                                 <p class="text-sm text-gray-600">
-                                    {{ request('destination', __('Riyadh')) }}, {{ __('Saudi Arabia') }}<br>
-                                    King Fahd Road, Building 123
+                                    @if($hotel && isset($hotel['Address']))
+                                        {{ $hotel['Address'] }}@if(isset($hotel['PinCode'])), {{ $hotel['PinCode'] }}@endif<br>
+                                        @if(isset($hotel['CityName']))
+                                            {{ $hotel['CityName'] }}, 
+                                        @endif
+                                        @if(isset($hotel['CountryName']))
+                                            {{ $hotel['CountryName'] }}
+                                        @endif
+                                    @else
+                                        {{ request('destination', __('Riyadh')) }}, {{ __('Saudi Arabia') }}
+                                    @endif
                                 </p>
                             </div>
                         </div>
@@ -370,16 +453,17 @@
                                 <div class="font-semibold text-gray-900 mb-1">{{ __('Rating') }}</div>
                                 <div class="flex items-center">
                                     <div class="flex text-yellow-500 text-sm {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}">
-                                        @for($i = 0; $i < 5; $i++)
+                                        @for($i = 0; $i < ($hotel['HotelRating'] ?? 5); $i++)
                                         <i class="fas fa-star"></i>
                                         @endfor
                                     </div>
-                                    <span class="text-sm text-gray-600">4.8 (245 {{ __('reviews') }})</span>
+                                    <span class="text-sm text-gray-600">{{ $hotel['HotelRating'] ?? '4.8' }} @if(isset($hotel['HotelRating'])){{ __('Stars') }}@endif</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Check-in/out Times -->
+                        @if($hotel && (isset($hotel['CheckInTime']) || isset($hotel['CheckOutTime'])))
                         <div class="flex items-start">
                             <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                 <i class="fas fa-clock text-orange-600"></i>
@@ -387,11 +471,27 @@
                             <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
                                 <div class="font-semibold text-gray-900 mb-1">{{ __('Check-in / Check-out') }}</div>
                                 <p class="text-sm text-gray-600">
-                                    {{ __('Check-in') }}: 2:00 PM<br>
-                                    {{ __('Check-out') }}: 12:00 PM
+                                    {{ __('Check-in') }}: {{ $hotel['CheckInTime'] ?? '2:00 PM' }}<br>
+                                    {{ __('Check-out') }}: {{ $hotel['CheckOutTime'] ?? '12:00 PM' }}
                                 </p>
                             </div>
                         </div>
+                        @endif
+
+                        <!-- Website -->
+                        @if($hotel && isset($hotel['HotelWebsiteUrl']))
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-globe text-orange-600"></i>
+                            </div>
+                            <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
+                                <div class="font-semibold text-gray-900 mb-1">{{ __('Website') }}</div>
+                                <p class="text-sm text-gray-600">
+                                    <a href="{{ $hotel['HotelWebsiteUrl'] }}" target="_blank" class="hover:text-orange-600 break-all">{{ $hotel['HotelWebsiteUrl'] }}</a>
+                                </p>
+                            </div>
+                        </div>
+                        @endif
                     </div>
                     </div>
 
@@ -437,17 +537,40 @@
 
                     <!-- Contact Hotel -->
                     <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4">{{ __('Contact Hotel') }}</h3>
-                        
-                        <div class="space-y-3">
-                            <a href="tel:+966123456789" class="flex items-center text-gray-700 hover:text-orange-600 transition">
-                                <i class="fas fa-phone text-orange-600 {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
-                                <span>+966 12 345 6789</span>
-                            </a>
-                            <a href="mailto:info@hotel.com" class="flex items-center text-gray-700 hover:text-orange-600 transition">
-                                <i class="fas fa-envelope text-orange-600 {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
-                                <span>info@hotel.com</span>
-                            </a>
+                        <h3 class="text-xl font-bold text-gray-900 mb-6">{{ __('Contact Hotel') }}</h3>
+                        @php
+                            $hotel = $hotelDetails['HotelDetails'][0] ?? null;
+                        @endphp
+                        <div class="space-y-4">
+                            <!-- Phone -->
+                            @if($hotel && isset($hotel['PhoneNumber']))
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-phone text-orange-600"></i>
+                                </div>
+                                <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
+                                    <div class="font-semibold text-gray-900 mb-1">{{ __('Phone') }}</div>
+                                    <p class="text-sm text-gray-600">
+                                        <a href="tel:{{ $hotel['PhoneNumber'] }}" class="hover:text-orange-600">{{ $hotel['PhoneNumber'] }}</a>
+                                    </p>
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- Email -->
+                            @if($hotel && isset($hotel['Email']))
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-envelope text-orange-600"></i>
+                                </div>
+                                <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
+                                    <div class="font-semibold text-gray-900 mb-1">{{ __('Email') }}</div>
+                                    <p class="text-sm text-gray-600">
+                                        <a href="mailto:{{ $hotel['Email'] }}" class="hover:text-orange-600 break-all">{{ $hotel['Email'] }}</a>
+                                    </p>
+                                </div>
+                            </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -459,14 +582,27 @@
 
 @push('scripts')
 <script>
-    // Hotel Images Gallery
-    const hotelImages = [
-        'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'
-    ];
+    // Hotel Images Gallery - Get images from API or use defaults
+    @php
+        $hotel = $hotelDetails['HotelDetails'][0] ?? null;
+        $apiImages = [];
+        if ($hotel && isset($hotel['Images']) && is_array($hotel['Images'])) {
+            // Images is an array of URLs
+            $apiImages = array_slice($hotel['Images'], 0, 5);
+        } elseif ($hotel && isset($hotel['Image']) && !empty($hotel['Image'])) {
+            // Single Image field
+            $apiImages = [$hotel['Image']];
+        }
+        $defaultImages = [
+            'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'
+        ];
+        $hotelImagesArray = !empty($apiImages) ? $apiImages : $defaultImages;
+    @endphp
+    const hotelImages = @json($hotelImagesArray);
     
     let currentImageIndex = 0;
     
@@ -541,12 +677,16 @@
     const checkOutInput = document.getElementById('checkOutDate');
     const guestsSelect = document.getElementById('guestsSelect');
 
-    // Set default dates if not in URL
-    if (checkInInput && !checkInInput.value) {
+    // Set default dates if not in URL or if empty string
+    if (checkInInput && (!checkInInput.value || checkInInput.value.trim() === '')) {
         checkInInput.value = todayStr;
     }
-    if (checkOutInput && !checkOutInput.value) {
-        checkOutInput.value = nextMonthStr;
+    if (checkOutInput && (!checkOutInput.value || checkOutInput.value.trim() === '')) {
+        // Set check-out to at least one day after check-in
+        const checkInDate = checkInInput?.value || todayStr;
+        const nextDay = new Date(checkInDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        checkOutInput.value = formatDate(nextDay);
     }
 
     // Set minimum dates
@@ -574,15 +714,30 @@
 
     // Function to search for rooms
     async function searchRooms() {
-        const checkIn = checkInInput?.value || todayStr;
-        const checkOut = checkOutInput?.value || nextMonthStr;
+        // Get values and handle empty strings properly
+        let checkIn = checkInInput?.value?.trim() || '';
+        let checkOut = checkOutInput?.value?.trim() || '';
         const guests = guestsSelect?.value || '2';
+        
+        // Use defaults if empty
+        if (!checkIn) {
+            checkIn = todayStr;
+            if (checkInInput) checkInInput.value = checkIn;
+        }
+        if (!checkOut) {
+            const nextDay = new Date(checkIn);
+            nextDay.setDate(nextDay.getDate() + 1);
+            checkOut = formatDate(nextDay);
+            if (checkOutInput) checkOutInput.value = checkOut;
+        }
+        
         const roomsContainer = document.getElementById('roomsContainer');
         const roomsList = document.getElementById('roomsList');
         const noRoomsMessage = document.getElementById('noRoomsMessage');
         const availabilityMessage = document.getElementById('availabilityMessage');
         const checkAvailabilityBtn = document.getElementById('checkAvailabilityBtn');
 
+        // Validate dates are not empty (shouldn't happen after above, but double-check)
         if (!checkIn || !checkOut) {
             if (availabilityMessage) {
                 availabilityMessage.textContent = '{{ __('Please select check-in and check-out dates') }}';
@@ -592,14 +747,21 @@
             return;
         }
 
+        // Validate check-out is after check-in
         if (checkOut <= checkIn) {
-            if (availabilityMessage) {
-                availabilityMessage.textContent = '{{ __('Check Out date must be after Check In date') }}';
-                availabilityMessage.className = 'text-sm text-red-600';
-                availabilityMessage.classList.remove('hidden');
-            }
-            return;
+            // Auto-adjust check-out to be one day after check-in
+            const checkInDate = new Date(checkIn);
+            checkInDate.setDate(checkInDate.getDate() + 1);
+            checkOut = formatDate(checkInDate);
+            if (checkOutInput) checkOutInput.value = checkOut;
         }
+
+        // Update URL immediately with selected parameters
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('check_in', checkIn);
+        currentUrl.searchParams.set('check_out', checkOut);
+        currentUrl.searchParams.set('guests', guests);
+        window.history.replaceState({}, '', currentUrl);
 
         // Show loading
         if (checkAvailabilityBtn) {
@@ -614,7 +776,7 @@
             availabilityMessage.classList.remove('hidden');
         }
 
-        // Prepare search data
+        // Prepare search data - ensure dates are in correct format (YYYY-MM-DD)
         const searchData = {
             CheckIn: checkIn,
             CheckOut: checkOut,
@@ -622,7 +784,7 @@
             GuestNationality: 'AE',
             PaxRooms: [
                 {
-                    Adults: parseInt(guests) || 2,
+                    Adults: parseInt(guests) || 1,
                     Children: 0,
                     ChildrenAges: []
                 }
@@ -636,6 +798,9 @@
             }
         };
 
+        // Log search data for debugging
+        console.log('Searching for rooms with data:', searchData);
+
         try {
             // Call search API
             const response = await fetch("{{ route('hotel.search') }}", {
@@ -647,16 +812,42 @@
                 body: JSON.stringify(searchData)
             });
 
+            // Check if response is ok
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Network error' }));
+                throw new Error(errorData.Status?.Description || errorData.error || `HTTP error! status: ${response.status}`);
+            }
+
             const data = await response.json();
+            
+            // Log response for debugging
+            console.log('API Response:', data);
 
             // Handle API error response
             if (data.Status && data.Status.Code !== 200) {
-                throw new Error(data.Status.Description || 'Failed to search rooms');
+                const errorMsg = data.Status.Description || 'Failed to search rooms';
+                console.error('API Error:', errorMsg);
+                throw new Error(errorMsg);
             }
 
             // Handle error response
             if (data.error) {
+                console.error('Error in response:', data.error);
                 throw new Error(data.error);
+            }
+
+            // Check if response has Hotels or HotelResult array
+            const hasHotels = (data.Hotels && Array.isArray(data.Hotels)) || (data.HotelResult && Array.isArray(data.HotelResult));
+            if (!hasHotels) {
+                console.warn('No Hotels or HotelResult array in response:', data);
+                if (availabilityMessage) {
+                    availabilityMessage.textContent = '{{ __("No rooms available for selected dates") }}';
+                    availabilityMessage.className = 'text-sm text-gray-600';
+                    availabilityMessage.classList.remove('hidden');
+                }
+                if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
+                if (roomsList) roomsList.classList.add('hidden');
+                return;
             }
 
             // Display rooms from API response
@@ -670,6 +861,7 @@
                 availabilityMessage.classList.remove('hidden');
             }
             if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
+            if (roomsList) roomsList.classList.add('hidden');
         } finally {
             if (checkAvailabilityBtn) {
                 checkAvailabilityBtn.disabled = false;
@@ -684,45 +876,108 @@
         const noRoomsMessage = document.getElementById('noRoomsMessage');
         const availabilityMessage = document.getElementById('availabilityMessage');
 
-        // Get hotels from response
-        const hotels = data.Hotels || [];
+        console.log('Displaying rooms from data:', data);
+
+        // Get hotels from response - handle different response structures
+        let hotels = [];
+        if (data.HotelResult && Array.isArray(data.HotelResult)) {
+            // New API structure: HotelResult array
+            hotels = data.HotelResult;
+        } else if (data.Hotels && Array.isArray(data.Hotels)) {
+            // Old API structure: Hotels array
+            hotels = data.Hotels;
+        } else if (data.hotels && Array.isArray(data.hotels)) {
+            hotels = data.hotels;
+        } else if (Array.isArray(data)) {
+            hotels = data;
+        }
+        
         let allRooms = [];
 
         // Extract rooms from all hotels
         hotels.forEach(hotel => {
+            const hotelCode = hotel.HotelCode || hotel.HotelID;
+            const hotelName = hotel.HotelName || '';
+            const currency = hotel.Currency || 'USD';
+            
+            console.log('Processing hotel:', hotelCode, hotelName);
+            
+            // Handle different room structures
+            let rooms = [];
             if (hotel.Rooms && Array.isArray(hotel.Rooms)) {
-                hotel.Rooms.forEach(room => {
+                rooms = hotel.Rooms;
+            } else if (hotel.rooms && Array.isArray(hotel.rooms)) {
+                rooms = hotel.rooms;
+            } else if (hotel.RoomDetails && Array.isArray(hotel.RoomDetails)) {
+                rooms = hotel.RoomDetails;
+            }
+            
+            if (rooms.length > 0) {
+                console.log(`Found ${rooms.length} rooms in hotel ${hotelCode}`);
+                rooms.forEach(room => {
                     allRooms.push({
                         ...room,
-                        HotelCode: hotel.HotelCode,
-                        HotelName: hotel.HotelName
+                        HotelCode: hotelCode,
+                        HotelName: hotelName,
+                        Currency: currency // Add currency from hotel level
                     });
                 });
+            } else {
+                console.warn(`No rooms found in hotel ${hotelCode}`, hotel);
             }
         });
 
+        console.log(`Total rooms found: ${allRooms.length}`);
+
         if (allRooms.length === 0) {
+            console.warn('No rooms found in response');
             if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
             if (roomsList) roomsList.classList.add('hidden');
             if (availabilityMessage) {
                 availabilityMessage.textContent = '{{ __("No rooms available for selected dates") }}';
                 availabilityMessage.className = 'text-sm text-gray-600';
+                availabilityMessage.classList.remove('hidden');
             }
             return;
         }
 
-        // Clear existing rooms
+        // Clear existing rooms and show rooms list
         if (roomsList) {
             roomsList.innerHTML = '';
             roomsList.classList.remove('hidden');
+            console.log('Rooms list is now visible');
         }
         if (noRoomsMessage) noRoomsMessage.classList.add('hidden');
 
         // Display rooms
+        console.log(`Adding ${allRooms.length} rooms to the list`);
         allRooms.forEach((room, index) => {
             const roomCard = createRoomCard(room, index, checkIn, checkOut, guests);
-            if (roomsList) roomsList.appendChild(roomCard);
+            if (roomsList && roomCard) {
+                roomsList.appendChild(roomCard);
+                // Get room name for logging
+                let roomNameForLog = 'Unknown';
+                if (room.Name && Array.isArray(room.Name) && room.Name.length > 0) {
+                    roomNameForLog = room.Name[0];
+                } else if (room.Name && typeof room.Name === 'string') {
+                    roomNameForLog = room.Name;
+                } else if (room.RoomTypeName) {
+                    roomNameForLog = room.RoomTypeName;
+                } else if (room.RoomName) {
+                    roomNameForLog = room.RoomName;
+                }
+                console.log(`Added room ${index + 1}:`, roomNameForLog);
+            }
         });
+
+        // Verify rooms were added
+        if (roomsList) {
+            const addedRooms = roomsList.children.length;
+            console.log(`Total rooms in DOM: ${addedRooms}`);
+            if (addedRooms === 0) {
+                console.error('No rooms were added to the DOM!');
+            }
+        }
 
         // Calculate nights
         const checkInDate = new Date(checkIn);
@@ -741,39 +996,113 @@
 
     // Function to create room card
     function createRoomCard(room, index, checkIn, checkOut, guests) {
-        const div = document.createElement('div');
-        div.className = 'border-2 border-gray-200 rounded-2xl p-6 hover:border-orange-500 transition';
-        
-        const roomName = room.RoomTypeName || room.RoomName || `{{ __('Room') }} ${index + 1}`;
-        const roomDescription = room.RoomDescription || '';
-        const price = room.Rate || room.Price || 0;
-        const currency = room.Currency || 'SAR';
-        const imageUrl = room.ImageUrl || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+        try {
+            const div = document.createElement('div');
+            div.className = 'border-2 border-gray-200 rounded-2xl p-6 hover:border-orange-500 transition';
+            
+            // Handle room name - could be array or string
+            let roomName = `{{ __('Room') }} ${index + 1}`;
+            if (room.Name && Array.isArray(room.Name) && room.Name.length > 0) {
+                roomName = room.Name[0];
+            } else if (room.Name && typeof room.Name === 'string') {
+                roomName = room.Name;
+            } else if (room.RoomTypeName) {
+                roomName = room.RoomTypeName;
+            } else if (room.RoomName) {
+                roomName = room.RoomName;
+            } else if (room.RoomType) {
+                roomName = room.RoomType;
+            }
+            
+            // Handle room description/inclusion
+            const roomDescription = room.RoomDescription || room.Description || '';
+            const inclusion = room.Inclusion || '';
+            const mealType = room.MealType || '';
+            
+            // Handle price - prioritize TotalFare, then calculate from DayRates
+            let price = 0;
+            if (room.TotalFare !== undefined && room.TotalFare !== null) {
+                price = parseFloat(room.TotalFare) || 0;
+            } else if (room.Rate) {
+                price = typeof room.Rate === 'object' ? (room.Rate.Amount || room.Rate.TotalAmount || 0) : parseFloat(room.Rate) || 0;
+            } else if (room.Price) {
+                price = typeof room.Price === 'object' ? (room.Price.Amount || room.Price.TotalAmount || 0) : parseFloat(room.Price) || 0;
+            } else if (room.Amount) {
+                price = parseFloat(room.Amount) || 0;
+            } else if (room.DayRates && Array.isArray(room.DayRates) && room.DayRates.length > 0) {
+                // Calculate total from DayRates
+                const dayRates = room.DayRates[0];
+                if (Array.isArray(dayRates)) {
+                    price = dayRates.reduce((sum, day) => {
+                        return sum + (parseFloat(day.BasePrice) || 0);
+                    }, 0);
+                }
+            }
+            
+            // Calculate per night price
+            const checkInDate = new Date(checkIn);
+            const checkOutDate = new Date(checkOut);
+            const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+            const pricePerNight = nights > 0 ? (price / nights).toFixed(2) : price.toFixed(2);
+            
+            const currency = room.Currency || 'USD';
+            const imageUrl = room.ImageUrl || room.Image || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
 
-        div.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="relative h-48 md:h-full min-h-[200px]">
-                    <img src="${imageUrl}" alt="${roomName}" class="w-full h-full object-cover rounded-xl">
-                </div>
-                <div class="md:col-span-2">
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">${roomName}</h3>
-                    ${roomDescription ? `<p class="text-gray-600 text-sm mb-3">${roomDescription}</p>` : ''}
-                    <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                        <div>
-                            <span class="text-3xl font-extrabold text-orange-600">${price}</span>
-                            <span class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}">${currency}</span>
-                            <div class="text-xs text-gray-400">{{ __('per night') }}</div>
+            console.log(`Creating room card ${index + 1}:`, { roomName, price, pricePerNight, currency, nights, bookingCode: room.BookingCode });
+
+            // Build room features/info
+            let roomInfo = [];
+            if (inclusion) {
+                roomInfo.push(`<span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg"><i class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> ${inclusion}</span>`);
+            }
+            if (mealType) {
+                const mealTypeText = mealType.replace('_', ' ').replace(/([A-Z])/g, ' $1').trim();
+                roomInfo.push(`<span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg"><i class="fas fa-coffee {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> ${mealTypeText}</span>`);
+            }
+            if (room.IsRefundable) {
+                roomInfo.push(`<span class="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg"><i class="fas fa-shield-alt {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Refundable') }}</span>`);
+            }
+            if (room.RoomPromotion && Array.isArray(room.RoomPromotion) && room.RoomPromotion.length > 0) {
+                roomInfo.push(`<span class="px-2 py-1 bg-orange-50 text-orange-700 text-xs rounded-lg"><i class="fas fa-tag {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> ${room.RoomPromotion[0]}</span>`);
+            }
+
+            // Build reservation URL with all required data
+            const bookingCode = room.BookingCode || '';
+            const totalFare = price.toFixed(2); // Use total price, not per night
+            const reservationUrl = `{{ route('reservation') }}?hotel_id={{ $hotelId }}&check_in=${checkIn}&check_out=${checkOut}&guests=${guests}&booking_code=${encodeURIComponent(bookingCode)}&total_fare=${totalFare}&currency=${currency}&room_name=${encodeURIComponent(roomName)}&inclusion=${encodeURIComponent(inclusion)}`;
+
+            div.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="relative h-48 md:h-full min-h-[200px]">
+                        <img src="${imageUrl}" alt="${roomName}" class="w-full h-full object-cover rounded-xl">
+                    </div>
+                    <div class="md:col-span-2">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">${roomName}</h3>
+                        ${roomDescription ? `<p class="text-gray-600 text-sm mb-3">${roomDescription}</p>` : ''}
+                        ${roomInfo.length > 0 ? `<div class="flex flex-wrap gap-2 mb-3">${roomInfo.join('')}</div>` : ''}
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                            <div>
+                                <div class="flex items-baseline">
+                                    <span class="text-3xl font-extrabold text-orange-600">${pricePerNight}</span>
+                                    <span class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">${currency}</span>
+                                </div>
+                                <div class="text-xs text-gray-400">{{ __('per night') }}</div>
+                                ${nights > 1 ? `<div class="text-xs text-gray-500 mt-1">{{ __('Total') }}: ${totalFare} ${currency} {{ __('for') }} ${nights} {{ __('nights') }}</div>` : ''}
+                            </div>
+                            <a href="${reservationUrl}" 
+                               class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
+                                {{ __('Book Now') }}
+                            </a>
                         </div>
-                        <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&room_type=${index}&check_in=${checkIn}&check_out=${checkOut}&guests=${guests}" 
-                           class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
-                            {{ __('Book Now') }}
-                        </a>
                     </div>
                 </div>
-            </div>
-        `;
-        
-        return div;
+            `;
+            
+            return div;
+        } catch (error) {
+            console.error('Error creating room card:', error, room);
+            return null;
+        }
     }
 
     // Check availability button
@@ -792,12 +1121,49 @@
         window.history.replaceState({}, '', currentUrl);
     }
 
-    // Auto-search rooms on page load
+    // Auto-search rooms on page load only if we have valid dates
     document.addEventListener('DOMContentLoaded', function() {
-        // Wait a bit for dates to be set
+        // Hide default rooms immediately
+        const roomsList = document.getElementById('roomsList');
+        if (roomsList) {
+            roomsList.classList.add('hidden');
+            roomsList.innerHTML = ''; // Clear default content
+        }
+        
+        // Wait a bit for dates to be set and inputs to be ready
         setTimeout(() => {
-            searchRooms();
+            // Only auto-search if we have valid dates (not empty strings)
+            const hasValidDates = checkInInput?.value?.trim() && checkOutInput?.value?.trim();
+            if (hasValidDates || (!checkInInput?.value && !checkOutInput?.value)) {
+                // Either we have valid dates from URL, or no dates at all (will use defaults)
+                searchRooms();
+            }
         }, 500);
+
+        // Facilities Show More/Less functionality
+        const showMoreBtn = document.getElementById('showMoreFacilities');
+        const showLessBtn = document.getElementById('showLessFacilities');
+        const facilityItems = document.querySelectorAll('.facility-item');
+
+        if (showMoreBtn && showLessBtn) {
+            showMoreBtn.addEventListener('click', function() {
+                facilityItems.forEach(item => {
+                    item.classList.remove('hidden');
+                });
+                showMoreBtn.classList.add('hidden');
+                showLessBtn.classList.remove('hidden');
+            });
+
+            showLessBtn.addEventListener('click', function() {
+                facilityItems.forEach((item, index) => {
+                    if (index >= 10) {
+                        item.classList.add('hidden');
+                    }
+                });
+                showMoreBtn.classList.remove('hidden');
+                showLessBtn.classList.add('hidden');
+            });
+        }
     });
 </script>
 @endpush

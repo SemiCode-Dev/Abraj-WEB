@@ -63,9 +63,7 @@ Route::group([
     Route::get('/hotel/{id}', [HotelController::class, 'show'])->name('hotel.details');
 
     // Room Reservation
-    Route::get('/reservation', function () {
-        return view('Web.reservation');
-    })->name('reservation');
+    Route::get('/reservation', [HotelController::class, 'reservation'])->name('reservation');
 
     // Contact Us
     Route::get('/contact', function () {

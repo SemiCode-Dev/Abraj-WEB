@@ -23,6 +23,13 @@ class HotelApiService
     {
         $url = rtrim($this->baseUrl, '/').'/'.$endpoint;
 
+        // Log full URL for debugging
+        \Illuminate\Support\Facades\Log::info('TBO API Request', [
+            'url' => $url,
+            'endpoint' => $endpoint,
+            'method' => 'POST',
+        ]);
+
         return Http::timeout(30) // 30 seconds timeout
             ->retry(2, 100) // Retry 2 times with 100ms delay
             ->withBasicAuth($this->username, $this->password)
@@ -65,7 +72,8 @@ class HotelApiService
             ],
         ];
 
-        return $this->sendRequest('Search', $payload);
+        // Use 'search' endpoint (lowercase) to match API documentation
+        return $this->sendRequest('search', $payload);
     }
 
     public function getHotels($cityCode, int $page = 1)
@@ -266,5 +274,27 @@ class HotelApiService
         ];
 
         return $this->sendRequest('CityList', $payload);
+    }
+
+    public function getHotelDetails(string $hotelCode, string $language = 'ar')
+    {
+        // Validate hotel code
+        if (empty($hotelCode)) {
+            throw new \InvalidArgumentException('HotelCodes cannot be null or empty');
+        }
+
+        $payload = [
+            'Hotelcodes' => (string) $hotelCode,
+            'Language' => $language,
+        ];
+
+        // Log request for debugging
+        \Illuminate\Support\Facades\Log::info('Hotel details API request', [
+            'endpoint' => 'Hoteldetails',
+            'payload' => $payload,
+            'base_url' => $this->baseUrl,
+        ]);
+
+        return $this->sendRequest('Hoteldetails', $payload);
     }
 }

@@ -395,27 +395,16 @@
                                     <span class="text-xs font-bold text-gray-900">{{ $count }}</span>
                                 </div>
                             </div>
-                            <div class="flex items-center mb-4">
-                                <span class="text-3xl font-extrabold text-orange-600">250</span>
-                                <span
-                                    class="text-gray-500 @if ($loop->first) dark:text-gray-300 @endif text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">{{ __('SAR') }}</span>
-                                <span
-                                    class="text-gray-400 @if ($loop->first) dark:text-gray-500 @endif line-through text-sm">420
-                                    {{ __('SAR') }}</span>
-                            </div>
                             <div
                                 class="flex items-center text-xs text-gray-600 @if ($loop->first) dark:text-gray-300 @endif mb-4">
                                 <i class="fas fa-map-marker-alt ml-1"></i>
                                 <span>{{ Str::limit($hotel['Address'], 30) }}</span>
                             </div>
 
-                            <form id="apsForm{{ $loop->index }}" method="POST" 
-                                action="https://sbcheckout.payfort.com/FortAPI/paymentPage">
-                                @foreach ($data as $k => $v)
-                                    <input type="hidden" name="{{ $k }}" value="{{ $v }}">
-                                @endforeach
-                                <button type="submit" class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">{{ __('Book Now') }}</button>
-                            </form>
+                            <a href="{{ route('hotel.details', ['locale' => app()->getLocale(), 'id' => $hotel['HotelCode'] ?? $hotel['HotelId'] ?? 0]) }}" 
+                               class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">
+                                {{ __('Book Now') }}
+                            </a>
 
                            
 
