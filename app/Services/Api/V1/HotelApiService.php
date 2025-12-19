@@ -23,15 +23,8 @@ class HotelApiService
     {
         $url = rtrim($this->baseUrl, '/').'/'.$endpoint;
 
-        // Log full URL for debugging
-        \Illuminate\Support\Facades\Log::info('TBO API Request', [
-            'url' => $url,
-            'endpoint' => $endpoint,
-            'method' => 'POST',
-        ]);
-
-        return Http::timeout(30) // 30 seconds timeout
-            ->retry(2, 100) // Retry 2 times with 100ms delay
+        return Http::timeout(10) // 10 seconds timeout (reduced from 30s)
+            ->retry(1, 200) // Retry 1 time with 200ms delay (reduced from 2 retries)
             ->withBasicAuth($this->username, $this->password)
             ->withHeaders([
                 'Content-Type' => 'application/json',
@@ -72,10 +65,19 @@ class HotelApiService
             ],
         ];
 
-        // Debug logging for TBO API requests/responses
-        file_put_contents(public_path('tbo_debug.txt'), "REQUEST:\n" . print_r($payload, true) . "\n\n", FILE_APPEND);
+        // Debug logging for TBO API requests/responses (only in debug mode)
+        if (config('app.debug')) {
+            \Log::debug('TBO API Search Request', $payload);
+        }
+        
         $response = $this->sendRequest('Search', $payload);
-        file_put_contents(public_path('tbo_debug.txt'), "RESPONSE:\n" . print_r($response, true) . "\n-------------------\n\n", FILE_APPEND);
+        
+        if (config('app.debug')) {
+            \Log::debug('TBO API Search Response', [
+                'status_code' => $response['Status']['Code'] ?? 'unknown',
+                'hotels_count' => isset($response['Hotels']) ? count($response['Hotels']) : 0,
+            ]);
+        }
         
         return $response;
     }
@@ -109,7 +111,7 @@ class HotelApiService
     {
         $allHotels = [];
         $page = 1;
-        $maxPages = 100; // Safety limit to prevent infinite loops
+        $maxPages = 3; // Reduced from 100 to 3 for faster performance
 
         do {
             try {
@@ -152,7 +154,7 @@ class HotelApiService
                 }
 
                 // Small delay to avoid rate limiting
-                usleep(100000); // 0.1 second
+                usleep(50000); // 0.05 second (reduced from 0.1s)
             } catch (\Exception $e) {
                 // Log error but continue with what we have
                 \Illuminate\Support\Facades\Log::warning('Error fetching hotels page '.$page.': '.$e->getMessage());
@@ -261,8 +263,8 @@ class HotelApiService
     {
         $url = rtrim($this->baseUrl, '/').'/CountryList';
 
-        return Http::timeout(30) // 30 seconds timeout
-            ->retry(2, 100) // Retry 2 times with 100ms delay
+        return Http::timeout(10) // 10 seconds timeout (reduced from 30s)
+            ->retry(1, 200) // Retry 1 time with 200ms delay (reduced from 2 retries)
             ->withBasicAuth($this->username, $this->password)
             ->withHeaders([
                 'Content-Type' => 'application/json',

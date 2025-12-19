@@ -348,7 +348,7 @@
                     
                     <!-- Submit Button -->
                     @if(isset($paymentData))
-                    <form id="paymentForm" method="POST" action="https://sbcheckout.payfort.com/FortAPI/paymentPage">
+                    <form id="paymentForm" method="POST" action="{{ config('services.sbc.checkout_url') }}">
                         @foreach ($paymentData as $k => $v)
                             <input type="hidden" name="{{ $k }}" value="{{ $v }}">
                         @endforeach

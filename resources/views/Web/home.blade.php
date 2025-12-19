@@ -5,107 +5,74 @@
 @section('content')
     <section id="home"
         class="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16 md:py-24 overflow-hidden min-h-[600px] md:min-h-[700px]">
-        
+
         <!-- Hero Image Slider Background -->
         <div class="absolute inset-0 hero-slider-container" role="region" aria-label="{{ __('Hero Image Slider') }}">
             <div class="hero-slider-wrapper">
                 <!-- Slide 1 -->
-                <div class="hero-slide active" 
-                     data-slide="0"
-                     aria-label="{{ __('Slide') }} 1">
-                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
-                         alt="{{ __('Luxury Hotel') }}" 
-                         class="hero-slide-image" 
-                         loading="eager">
-            </div>
+                <div class="hero-slide active" data-slide="0" aria-label="{{ __('Slide') }} 1">
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+                        alt="{{ __('Luxury Hotel') }}" class="hero-slide-image" loading="eager">
+                </div>
                 <!-- Slide 2 -->
-                <div class="hero-slide" 
-                     data-slide="1"
-                     aria-label="{{ __('Slide') }} 2">
-                    <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
-                         alt="{{ __('Modern Hotel Room') }}" 
-                         class="hero-slide-image" 
-                         loading="lazy">
+                <div class="hero-slide" data-slide="1" aria-label="{{ __('Slide') }} 2">
+                    <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+                        alt="{{ __('Modern Hotel Room') }}" class="hero-slide-image" loading="lazy">
                 </div>
                 <!-- Slide 3 -->
-                <div class="hero-slide" 
-                     data-slide="2"
-                     aria-label="{{ __('Slide') }} 3">
-                    <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
-                         alt="{{ __('Hotel Pool') }}" 
-                         class="hero-slide-image" 
-                         loading="lazy">
+                <div class="hero-slide" data-slide="2" aria-label="{{ __('Slide') }} 3">
+                    <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+                        alt="{{ __('Hotel Pool') }}" class="hero-slide-image" loading="lazy">
                 </div>
                 <!-- Slide 4 -->
-                <div class="hero-slide" 
-                     data-slide="3"
-                     aria-label="{{ __('Slide') }} 4">
-                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
-                         alt="{{ __('Hotel Lobby') }}" 
-                         class="hero-slide-image" 
-                         loading="lazy">
+                <div class="hero-slide" data-slide="3" aria-label="{{ __('Slide') }} 4">
+                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+                        alt="{{ __('Hotel Lobby') }}" class="hero-slide-image" loading="lazy">
                 </div>
                 <!-- Slide 5 -->
-                <div class="hero-slide" 
-                     data-slide="4"
-                     aria-label="{{ __('Slide') }} 5">
-                    <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
-                         alt="{{ __('Hotel Suite') }}" 
-                         class="hero-slide-image" 
-                         loading="lazy">
+                <div class="hero-slide" data-slide="4" aria-label="{{ __('Slide') }} 5">
+                    <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+                        alt="{{ __('Hotel Suite') }}" class="hero-slide-image" loading="lazy">
                 </div>
             </div>
             <!-- Overlay -->
             <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60 z-10"></div>
-            
+
             <!-- Slider Navigation Arrows - Centered Vertically -->
-            <button id="hero-slider-prev" 
-                    class="absolute {{ app()->getLocale() === 'ar' ? 'right-4' : 'left-4' }} z-30 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 active:scale-95"
-                    style="top: 50%; transform: translateY(-50%);"
-                    aria-label="{{ __('Previous slide') }}"
-                    type="button">
+            <button id="hero-slider-prev"
+                class="absolute {{ app()->getLocale() === 'ar' ? 'right-4' : 'left-4' }} z-30 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 active:scale-95"
+                style="top: 50%; transform: translateY(-50%);" aria-label="{{ __('Previous slide') }}" type="button">
                 <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} text-xl"></i>
             </button>
-            <button id="hero-slider-next" 
-                    class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} z-30 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 active:scale-95"
-                    style="top: 50%; transform: translateY(-50%);"
-                    aria-label="{{ __('Next slide') }}"
-                    type="button">
+            <button id="hero-slider-next"
+                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} z-30 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 active:scale-95"
+                style="top: 50%; transform: translateY(-50%);" aria-label="{{ __('Next slide') }}" type="button">
                 <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} text-xl"></i>
             </button>
-            
+
             <!-- Slider Dots Indicator - Bottom Center -->
-            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2 justify-center items-center" role="tablist" aria-label="{{ __('Slide indicators') }}">
-                <button class="hero-slider-dot active w-2.5 h-2.5 rounded-full bg-white transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50" 
-                        data-slide="0"
-                        role="tab"
-                        aria-selected="true"
-                        aria-label="{{ __('Go to slide') }} 1"
-                        type="button"></button>
-                <button class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50" 
-                        data-slide="1"
-                        role="tab"
-                        aria-selected="false"
-                        aria-label="{{ __('Go to slide') }} 2"
-                        type="button"></button>
-                <button class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50" 
-                        data-slide="2"
-                        role="tab"
-                        aria-selected="false"
-                        aria-label="{{ __('Go to slide') }} 3"
-                        type="button"></button>
-                <button class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50" 
-                        data-slide="3"
-                        role="tab"
-                        aria-selected="false"
-                        aria-label="{{ __('Go to slide') }} 4"
-                        type="button"></button>
-                <button class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50" 
-                        data-slide="4"
-                        role="tab"
-                        aria-selected="false"
-                        aria-label="{{ __('Go to slide') }} 5"
-                        type="button"></button>
+            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2 justify-center items-center"
+                role="tablist" aria-label="{{ __('Slide indicators') }}">
+                <button
+                    class="hero-slider-dot active w-2.5 h-2.5 rounded-full bg-white transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    data-slide="0" role="tab" aria-selected="true" aria-label="{{ __('Go to slide') }} 1"
+                    type="button"></button>
+                <button
+                    class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    data-slide="1" role="tab" aria-selected="false" aria-label="{{ __('Go to slide') }} 2"
+                    type="button"></button>
+                <button
+                    class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    data-slide="2" role="tab" aria-selected="false" aria-label="{{ __('Go to slide') }} 3"
+                    type="button"></button>
+                <button
+                    class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    data-slide="3" role="tab" aria-selected="false" aria-label="{{ __('Go to slide') }} 4"
+                    type="button"></button>
+                <button
+                    class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    data-slide="4" role="tab" aria-selected="false" aria-label="{{ __('Go to slide') }} 5"
+                    type="button"></button>
             </div>
         </div>
 
@@ -137,7 +104,8 @@
                     </p>
                 </div>
                 <!-- Search Form -->
-                <form id="searchForm" action="{{ route('city.hotels', ['cityCode' => 'PLACEHOLDER']) }}" method="GET" class="space-y-3">
+                <form id="searchForm" action="{{ route('city.hotels', ['cityCode' => 'PLACEHOLDER']) }}" method="GET"
+                    class="space-y-3">
 
                     <!-- Row 1: Country Select, City Select, Hotel Search, Guests -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -153,7 +121,8 @@
                                 <option value="">{{ __('Select Country') }}</option>
                                 @if (is_array($countries) && count($countries) > 0)
                                     @foreach ($countries as $country)
-                                        <option value="{{ $country['Code'] ?? $country['CountryCode'] ?? '' }}">{{ $country['Name'] ?? $country['CountryName'] ?? '' }}</option>
+                                        <option value="{{ $country['Code'] ?? ($country['CountryCode'] ?? '') }}">
+                                            {{ $country['Name'] ?? ($country['CountryName'] ?? '') }}</option>
                                     @endforeach
                                 @endif
                             </select>
@@ -170,8 +139,9 @@
                                     class="fas fa-map-marker-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                 {{ __('City') }}
                             </label>
-                            <input type="text" id="citySelect" autocomplete="off" placeholder="{{ __('Select City') }}"
-                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg"
+                            <input type="text" id="citySelect" autocomplete="off"
+                                placeholder="{{ __('Select City') }}"
+                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg !text-gray-900 dark:!text-white"
                                 disabled>
 
                             <input type="hidden" name="destination" id="destinationCode">
@@ -203,7 +173,7 @@
                             </div>
                         </div>
 
-                        
+
                     </div>
 
                     <!-- Row 2: Check In, Check Out, and Search Button -->
@@ -260,8 +230,8 @@
                                 <span class="btn-text">{{ __('Search') }}</span>
                                 <svg class="btn-loader hidden animate-spin h-5 w-5 text-white {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}"
                                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                        stroke-width="4"></circle>
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor"
                                         d="M4 12a8 8 0 018-8v4l3-3-3-3v4a12 12 0 00-12 12h4z">
                                     </path>
@@ -401,12 +371,12 @@
                                 <span>{{ Str::limit($hotel['Address'], 30) }}</span>
                             </div>
 
-                            <a href="{{ route('hotel.details', ['locale' => app()->getLocale(), 'id' => $hotel['HotelCode'] ?? $hotel['HotelId'] ?? 0]) }}" 
-                               class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">
+                            <a href="{{ route('hotel.details', ['locale' => app()->getLocale(), 'id' => $hotel['HotelCode'] ?? ($hotel['HotelId'] ?? 0)]) }}"
+                                class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">
                                 {{ __('Book Now') }}
                             </a>
 
-                           
+
 
                         </div>
                     </div>
@@ -498,126 +468,141 @@
             <div class="relative">
                 <!-- Slider Wrapper -->
                 <div class="hotels-slider-wrapper overflow-hidden">
-                    <div class="hotels-slider-track py-12 flex gap-6 transition-transform duration-500 ease-in-out" style="transform: translateX(0);">
-                <!-- Hotel 1 -->
-                @foreach ($hotels2 as $hotel2)
-                    <div
-                        class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
-                        <div class="relative h-64 overflow-hidden">
-                            <img src="{{ $hotel2['ImageUrls'][0]['ImageUrl'] ?? 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}"
-                                alt="فندق"
-                                class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                            <div class="absolute top-4 left-4 flex gap-2">
-                                <div class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-900 shadow-lg">
-                                    @php
-                                        $stars = [
-                                            'FiveStar' => 5,
-                                            'FourStar' => 4,
-                                            'ThreeStar' => 3,
-                                            'TwoStar' => 2,
-                                            'OneStar' => 1,
-                                        ];
-                                        $count = $stars[$hotel2['HotelRating']] ?? 5;
-                                    @endphp
-                                    <i class="fas fa-star text-yellow-500 ml-1"></i> {{ $count }}
-                                </div>
-                                <div class="bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                                    <i class="fas fa-fire {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Popular') }}
-                                </div>
-                            </div>
+                    <div class="hotels-slider-track py-12 flex gap-6 transition-transform duration-500 ease-in-out"
+                        style="transform: translateX(0);">
+                        <!-- Hotel 1 -->
+                        @foreach ($hotels2 as $hotel2)
                             <div
-                                class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-semibold text-gray-900">
-                                <i class="fas fa-images {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('photos') }}
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <div class="flex items-start justify-between mb-3">
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-900 mb-1">{{ $hotel2['HotelName'] }}
-                                    </h3>
-                                    <p class="text-gray-600 text-sm flex items-center">
-                                        <i class="fas fa-map-marker-alt text-orange-600 ml-1 text-xs"></i>
-                                        {{ $hotel2['CityName'] }}, {{ $hotel2['CountryName'] }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="flex flex-wrap gap-2 mb-4">
-                                <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
-                                    <i class="fas fa-wifi {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('WiFi') }}
-                                </span>
-                                <span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
-                                    <i
-                                        class="fas fa-swimming-pool {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Pool') }}
-                                </span>
-                                <span class="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
-                                    <i class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Restaurant') }}
-                                </span>
-                            </div>
-
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center">
-                                    <div class="flex text-yellow-500 text-sm ml-2">
-                                        @for ($i = 0; $i < $count; $i++)
-                                            <i class="fas fa-star"></i>
-                                        @endfor
-
+                                class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
+                                <div class="relative h-64 overflow-hidden">
+                                    <img src="{{ $hotel2['ImageUrls'][0]['ImageUrl'] ?? 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}"
+                                        alt="فندق"
+                                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                                    <div class="absolute top-4 left-4 flex gap-2">
+                                        <div
+                                            class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-900 shadow-lg">
+                                            @php
+                                                $stars = [
+                                                    'FiveStar' => 5,
+                                                    'FourStar' => 4,
+                                                    'ThreeStar' => 3,
+                                                    'TwoStar' => 2,
+                                                    'OneStar' => 1,
+                                                ];
+                                                $count = $stars[$hotel2['HotelRating']] ?? 5;
+                                            @endphp
+                                            <i class="fas fa-star text-yellow-500 ml-1"></i> {{ $count }}
+                                        </div>
+                                        <div
+                                            class="bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                                            <i
+                                                class="fas fa-fire {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                            {{ __('Popular') }}
+                                        </div>
                                     </div>
-                                    <span class="text-sm text-gray-500">({{ $count }} {{ __('reviews') }})</span>
+                                    <div
+                                        class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-semibold text-gray-900">
+                                        <i class="fas fa-images {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                        {{ __('photos') }}
+                                    </div>
                                 </div>
-                            </div>
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div>
+                                            <h3 class="text-xl font-bold text-gray-900 mb-1">{{ $hotel2['HotelName'] }}
+                                            </h3>
+                                            <p class="text-gray-600 text-sm flex items-center">
+                                                <i class="fas fa-map-marker-alt text-orange-600 ml-1 text-xs"></i>
+                                                {{ $hotel2['CityName'] }}, {{ $hotel2['CountryName'] }}
+                                            </p>
+                                        </div>
+                                    </div>
 
-                            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                                <div>
-                                    <span class="text-3xl font-extrabold text-orange-600">350</span>
-                                    <span
-                                        class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}">{{ __('SAR') }}</span>
-                                    <div class="text-xs text-gray-400">{{ __('per night') }}</div>
+                                    <div class="flex flex-wrap gap-2 mb-4">
+                                        <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
+                                            <i
+                                                class="fas fa-wifi {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                            {{ __('WiFi') }}
+                                        </span>
+                                        <span
+                                            class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
+                                            <i
+                                                class="fas fa-swimming-pool {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                            {{ __('Pool') }}
+                                        </span>
+                                        <span
+                                            class="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
+                                            <i
+                                                class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                            {{ __('Restaurant') }}
+                                        </span>
+                                    </div>
+
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center">
+                                            <div class="flex text-yellow-500 text-sm ml-2">
+                                                @for ($i = 0; $i < $count; $i++)
+                                                    <i class="fas fa-star"></i>
+                                                @endfor
+
+                                            </div>
+                                            <span class="text-sm text-gray-500">({{ $count }}
+                                                {{ __('reviews') }})</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                                        <div>
+                                            <span class="text-3xl font-extrabold text-orange-600">350</span>
+                                            <span
+                                                class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-1' : 'ml-1' }}">{{ __('SAR') }}</span>
+                                            <div class="text-xs text-gray-400">{{ __('per night') }}</div>
+                                        </div>
+                                        <a href="#"
+                                            class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-6 py-2 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
+                                            احجز الآن
+                                        </a>
+                                    </div>
                                 </div>
-                                <a href="#"
-                                    class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-6 py-2 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
-                                    احجز الآن
-                                </a>
                             </div>
-                        </div>
-                    </div>
-                @endforeach
-                </div>
+                        @endforeach
                     </div>
                 </div>
-                <!-- Navigation Arrows -->
-                <button class="hotels-slider-prev absolute {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-orange-600 text-gray-700 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 -translate-x-1/2 {{ app()->getLocale() === 'ar' ? 'translate-x-1/2' : '' }}"
-                        aria-label="{{ __('Previous') }}"
-                        type="button">
-                    <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} text-xl"></i>
-                </button>
-                <button class="hotels-slider-next absolute {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-orange-600 text-gray-700 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 translate-x-1/2 {{ app()->getLocale() === 'ar' ? '-translate-x-1/2' : '' }}"
-                        aria-label="{{ __('Next') }}"
-                        type="button">
-                    <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} text-xl"></i>
-                </button>
             </div>
+            <!-- Navigation Arrows -->
+            <button
+                class="hotels-slider-prev absolute {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-orange-600 text-gray-700 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 -translate-x-1/2 {{ app()->getLocale() === 'ar' ? 'translate-x-1/2' : '' }}"
+                aria-label="{{ __('Previous') }}" type="button">
+                <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} text-xl"></i>
+            </button>
+            <button
+                class="hotels-slider-next absolute {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-orange-600 text-gray-700 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 translate-x-1/2 {{ app()->getLocale() === 'ar' ? '-translate-x-1/2' : '' }}"
+                aria-label="{{ __('Next') }}" type="button">
+                <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} text-xl"></i>
+            </button>
+        </div>
         </div>
     </section>
 
     <!-- Customer Reviews - Enhanced & Professional -->
-    <section class="py-20 bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+    <section
+        class="py-20 bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
         <!-- Decorative Background Elements -->
         <div class="absolute top-0 left-0 w-full h-full opacity-5">
-            <div class="absolute top-20 {{ app()->getLocale() === 'ar' ? 'left-20' : 'right-20' }} w-96 h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl"></div>
-            <div class="absolute bottom-20 {{ app()->getLocale() === 'ar' ? 'right-20' : 'left-20' }} w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl"></div>
+            <div
+                class="absolute top-20 {{ app()->getLocale() === 'ar' ? 'left-20' : 'right-20' }} w-96 h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl">
+            </div>
+            <div
+                class="absolute bottom-20 {{ app()->getLocale() === 'ar' ? 'right-20' : 'left-20' }} w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl">
+            </div>
         </div>
 
         <div class="relative max-w-7xl mx-auto p-4 sm:px-6 lg:px-8">
             <!-- Header Section -->
             <div class="text-center mb-16">
                 <div class="inline-block mb-4">
-                    <span class="px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full text-sm font-semibold">
+                    <span
+                        class="px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full text-sm font-semibold">
                         {{ __('Testimonials') }}
                     </span>
                 </div>
@@ -627,9 +612,10 @@
                 <p class="text-gray-600 dark:text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
                     {{ __('Real reviews from our distinguished customers') }}
                 </p>
-                
+
                 <!-- Rating Badge -->
-                <div class="inline-flex items-center gap-3 bg-white dark:bg-gray-800 rounded-2xl px-6 py-4 shadow-lg border border-gray-100 dark:border-gray-700">
+                <div
+                    class="inline-flex items-center gap-3 bg-white dark:bg-gray-800 rounded-2xl px-6 py-4 shadow-lg border border-gray-100 dark:border-gray-700">
                     <div class="flex text-yellow-500 text-2xl">
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
@@ -640,7 +626,8 @@
                     <div class="h-8 w-px bg-gray-300 dark:bg-gray-600"></div>
                     <div>
                         <div class="text-2xl font-bold text-gray-900 dark:text-white">4.8</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('Based on') }} 2,458 {{ __('reviews') }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('Based on') }} 2,458
+                            {{ __('reviews') }}</div>
                     </div>
                 </div>
             </div>
@@ -649,105 +636,117 @@
             <div class="relative">
                 <!-- Slider Wrapper -->
                 <div class="testimonials-slider-wrapper overflow-hidden">
-                    <div class="testimonials-slider-track flex gap-8 transition-transform duration-500 ease-in-out" style="transform: translateX(0);">
+                    <div class="testimonials-slider-track flex gap-8 transition-transform duration-500 ease-in-out"
+                        style="transform: translateX(0);">
                         <!-- Review 1 - Featured Style -->
-                <div class="group relative bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                    <!-- Quote Icon -->
-                    <div class="absolute top-6 {{ app()->getLocale() === 'ar' ? 'right-6' : 'left-6' }} text-orange-500/10 dark:text-orange-400/20 text-6xl font-serif">
-                        "
-                        </div>
-                    
-                    <!-- Rating Stars -->
-                    <div class="flex text-yellow-500 text-lg mb-4 relative z-10">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                </div>
-                    
-                    <!-- Review Text -->
-                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6 relative z-10 text-lg">
-                        "{{ __('Review 1 Text') }}"
-                    </p>
-                    
-                    <!-- Customer Info -->
-                    <div class="flex items-center gap-4 pt-6 border-t border-gray-100 dark:border-gray-700 relative z-10">
-                        <div class="relative">
-                            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg transform group-hover:scale-110 transition duration-300">
-                                أ
+                        <div
+                            class="group relative bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                            <!-- Quote Icon -->
+                            <div
+                                class="absolute top-6 {{ app()->getLocale() === 'ar' ? 'right-6' : 'left-6' }} text-orange-500/10 dark:text-orange-400/20 text-6xl font-serif">
+                                "
                             </div>
-                            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center">
-                                <i class="fas fa-check text-white text-xs"></i>
-                        </div>
-                    </div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-gray-900 dark:text-white text-lg mb-1">أحمد محمد</h4>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">3 {{ __('days ago') }}</p>
-                    </div>
-                </div>
 
-                    <!-- Verified Badge -->
-                    <div class="absolute bottom-6 {{ app()->getLocale() === 'ar' ? 'left-6' : 'right-6' }} flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">
-                        <i class="fas fa-check-circle"></i>
-                        <span>{{ __('Verified Booking') }}</span>
-                        </div>
-                </div>
-
-                <!-- Review 2 - Modern Style -->
-                <div class="group relative bg-gradient-to-br from-white to-orange-50/50 dark:from-gray-800 dark:to-orange-900/20 rounded-3xl p-8 shadow-lg border-2 border-orange-100 dark:border-orange-900/30 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                    <!-- Decorative Corner -->
-                    <div class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-24 h-24 bg-gradient-to-br from-orange-500/10 to-transparent rounded-bl-3xl {{ app()->getLocale() === 'ar' ? 'rounded-br-0 rounded-tr-3xl' : 'rounded-br-3xl rounded-tl-0' }}"></div>
-                    
-                    <!-- Rating Stars -->
-                    <div class="flex text-yellow-500 text-lg mb-4">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                </div>
-                    
-                    <!-- Review Text -->
-                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6 text-lg">
-                        "{{ __('Review 2 Text') }}"
-                    </p>
-                    
-                    <!-- Customer Info -->
-                    <div class="flex items-center gap-4 pt-6 border-t border-orange-100 dark:border-orange-900/30">
-                        <div class="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg transform group-hover:rotate-6 transition duration-300">
-                            س
+                            <!-- Rating Stars -->
+                            <div class="flex text-yellow-500 text-lg mb-4 relative z-10">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
                             </div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-gray-900 dark:text-white text-lg mb-1">سارة علي</h4>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('week ago') }}</p>
+
+                            <!-- Review Text -->
+                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6 relative z-10 text-lg">
+                                "{{ __('Review 1 Text') }}"
+                            </p>
+
+                            <!-- Customer Info -->
+                            <div
+                                class="flex items-center gap-4 pt-6 border-t border-gray-100 dark:border-gray-700 relative z-10">
+                                <div class="relative">
+                                    <div
+                                        class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg transform group-hover:scale-110 transition duration-300">
+                                        أ
+                                    </div>
+                                    <div
+                                        class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center">
+                                        <i class="fas fa-check text-white text-xs"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-gray-900 dark:text-white text-lg mb-1">أحمد محمد</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">3 {{ __('days ago') }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Verified Badge -->
+                            <div
+                                class="absolute bottom-6 {{ app()->getLocale() === 'ar' ? 'left-6' : 'right-6' }} flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">
+                                <i class="fas fa-check-circle"></i>
+                                <span>{{ __('Verified Booking') }}</span>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <!-- Verified Badge -->
-                    <div class="mt-4 flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">
-                        <i class="fas fa-check-circle"></i>
-                        <span>{{ __('Verified Booking') }}</span>
+
+                        <!-- Review 2 - Modern Style -->
+                        <div
+                            class="group relative bg-gradient-to-br from-white to-orange-50/50 dark:from-gray-800 dark:to-orange-900/20 rounded-3xl p-8 shadow-lg border-2 border-orange-100 dark:border-orange-900/30 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                            <!-- Decorative Corner -->
+                            <div
+                                class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-24 h-24 bg-gradient-to-br from-orange-500/10 to-transparent rounded-bl-3xl {{ app()->getLocale() === 'ar' ? 'rounded-br-0 rounded-tr-3xl' : 'rounded-br-3xl rounded-tl-0' }}">
+                            </div>
+
+                            <!-- Rating Stars -->
+                            <div class="flex text-yellow-500 text-lg mb-4">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+
+                            <!-- Review Text -->
+                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6 text-lg">
+                                "{{ __('Review 2 Text') }}"
+                            </p>
+
+                            <!-- Customer Info -->
+                            <div class="flex items-center gap-4 pt-6 border-t border-orange-100 dark:border-orange-900/30">
+                                <div
+                                    class="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg transform group-hover:rotate-6 transition duration-300">
+                                    س
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-gray-900 dark:text-white text-lg mb-1">سارة علي</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('week ago') }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Verified Badge -->
+                            <div
+                                class="mt-4 flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">
+                                <i class="fas fa-check-circle"></i>
+                                <span>{{ __('Verified Booking') }}</span>
+                            </div>
+                        </div>
+
+
                     </div>
                 </div>
 
-              
-            </div>
-        </div>
-                
                 <!-- Navigation Arrows -->
-                <button class="testimonials-slider-prev absolute {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg hover:bg-orange-600 dark:hover:bg-orange-600 text-gray-700 dark:text-gray-300 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 -translate-x-1/2 {{ app()->getLocale() === 'ar' ? 'translate-x-1/2' : '' }}"
-                        aria-label="{{ __('Previous') }}"
-                        type="button">
+                <button
+                    class="testimonials-slider-prev absolute {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg hover:bg-orange-600 dark:hover:bg-orange-600 text-gray-700 dark:text-gray-300 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 -translate-x-1/2 {{ app()->getLocale() === 'ar' ? 'translate-x-1/2' : '' }}"
+                    aria-label="{{ __('Previous') }}" type="button">
                     <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} text-xl"></i>
                 </button>
-                <button class="testimonials-slider-next absolute {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg hover:bg-orange-600 dark:hover:bg-orange-600 text-gray-700 dark:text-gray-300 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 translate-x-1/2 {{ app()->getLocale() === 'ar' ? '-translate-x-1/2' : '' }}"
-                        aria-label="{{ __('Next') }}"
-                        type="button">
+                <button
+                    class="testimonials-slider-next absolute {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg hover:bg-orange-600 dark:hover:bg-orange-600 text-gray-700 dark:text-gray-300 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 translate-x-1/2 {{ app()->getLocale() === 'ar' ? '-translate-x-1/2' : '' }}"
+                    aria-label="{{ __('Next') }}" type="button">
                     <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} text-xl"></i>
                 </button>
             </div>
-            </div>
+        </div>
     </section>
 
     <!-- Why Choose Us - Modern Split Layout -->
@@ -755,38 +754,51 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                 <!-- Left Section - Text Content -->
-                <div class="{{ app()->getLocale() === 'ar' ? 'lg:text-right' : 'lg:text-left' }} text-center lg:text-left">
+                <div
+                    class="{{ app()->getLocale() === 'ar' ? 'lg:text-right' : 'lg:text-left' }} text-center lg:text-left">
                     <!-- Badge -->
                     <div class="inline-block mb-6">
-                        <span class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-semibold">
+                        <span
+                            class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-semibold">
                             {{ __('Why Choose Us') }}
                         </span>
-        </div>
+                    </div>
 
                     <!-- Main Heading -->
-                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">
+                    <h2
+                        class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">
                         {{ __('Dare to live the life you\'ve always wanted') }}
                     </h2>
-                    
+
                     <!-- Description -->
-                    <p class="text-lg text-gray-600 dark:text-gray-400 mb-8 leading-relaxed max-w-xl {{ app()->getLocale() === 'ar' ? 'lg:mr-0 lg:ml-auto' : 'lg:ml-0 lg:mr-auto' }}">
+                    <p
+                        class="text-lg text-gray-600 dark:text-gray-400 mb-8 leading-relaxed max-w-xl {{ app()->getLocale() === 'ar' ? 'lg:mr-0 lg:ml-auto' : 'lg:ml-0 lg:mr-auto' }}">
                         {{ __('Discover how you can offset your adventure\'s carbon emissions and support the sustainable initiatives practiced by our operators worldwide.') }}
                     </p>
-                    
+
                     <!-- App Download Buttons -->
-                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 justify-center lg:justify-start max-w-md">
-                        <a href="#" class="w-full sm:w-auto flex items-center gap-3 bg-black text-white px-8 py-4 rounded-lg hover:bg-gray-800 transition shadow-lg min-w-[200px]">
-                            <svg class="w-8 h-8 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L16.81,12L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" fill="#00D9FF"/>
+                    <div
+                        class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 justify-center lg:justify-start max-w-md">
+                        <a href="#"
+                            class="w-full sm:w-auto flex items-center gap-3 bg-black text-white px-8 py-4 rounded-lg hover:bg-gray-800 transition shadow-lg min-w-[200px]">
+                            <svg class="w-8 h-8 flex-shrink-0" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L16.81,12L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"
+                                    fill="#00D9FF" />
                             </svg>
                             <div class="text-left">
                                 <div class="text-xs">GET IT ON</div>
                                 <div class="text-base font-bold">Google Play</div>
                             </div>
                         </a>
-                        <a href="#" class="w-full sm:w-auto flex items-center gap-3 bg-black text-white px-8 py-4 rounded-lg hover:bg-gray-800 transition shadow-lg min-w-[200px]">
-                            <svg class="w-8 h-8 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.09,16.67C20.06,16.74 19.67,18.11 18.71,19.5M13,3.5C13.73,2.67 14.94,2.04 15.94,2C16.07,3.17 15.6,4.35 14.9,5.19C14.21,6.04 13.07,6.7 11.95,6.61C11.8,5.46 12.36,4.26 13,3.5Z" fill="#FFFFFF"/>
+                        <a href="#"
+                            class="w-full sm:w-auto flex items-center gap-3 bg-black text-white px-8 py-4 rounded-lg hover:bg-gray-800 transition shadow-lg min-w-[200px]">
+                            <svg class="w-8 h-8 flex-shrink-0" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.09,16.67C20.06,16.74 19.67,18.11 18.71,19.5M13,3.5C13.73,2.67 14.94,2.04 15.94,2C16.07,3.17 15.6,4.35 14.9,5.19C14.21,6.04 13.07,6.7 11.95,6.61C11.8,5.46 12.36,4.26 13,3.5Z"
+                                    fill="#FFFFFF" />
                             </svg>
                             <div class="text-left">
                                 <div class="text-xs">Download on the</div>
@@ -794,17 +806,21 @@
                             </div>
                         </a>
                     </div>
-            </div>
+                </div>
 
                 <!-- Right Section - Feature Cards Grid (2 columns) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <!-- Card 1 - Destinations (Orange) -->
-                    <div class="group relative bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 text-white shadow-2xl overflow-hidden transform hover:scale-105 hover:shadow-orange-500/50 transition-all duration-300">
+                    <div
+                        class="group relative bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 text-white shadow-2xl overflow-hidden transform hover:scale-105 hover:shadow-orange-500/50 transition-all duration-300">
                         <!-- Decorative Background Pattern -->
-                        <div class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                        <div
+                            class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2">
+                        </div>
                         <div class="relative z-10">
                             <div class="mb-4 flex items-center justify-between">
-                                <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
+                                <div
+                                    class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
                                     <i class="fas fa-suitcase-rolling text-3xl"></i>
                                 </div>
                                 <div class="text-4xl font-extrabold opacity-20">01</div>
@@ -817,17 +833,22 @@
                     </div>
 
                     <!-- Card 2 - 24/7 Support (White) -->
-                    <div class="group relative bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-2xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden transform hover:scale-105 hover:shadow-blue-500/20 hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300">
+                    <div
+                        class="group relative bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-2xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden transform hover:scale-105 hover:shadow-blue-500/20 hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300">
                         <!-- Decorative Background Pattern -->
-                        <div class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 h-32 bg-blue-100 dark:bg-blue-900/30 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                        <div
+                            class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 h-32 bg-blue-100 dark:bg-blue-900/30 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2">
+                        </div>
                         <div class="relative z-10">
                             <div class="mb-4 flex items-center justify-between">
-                                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300 shadow-lg">
+                                <div
+                                    class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300 shadow-lg">
                                     <i class="fas fa-headset text-3xl text-white"></i>
                                 </div>
                                 <div class="text-4xl font-extrabold text-gray-100 dark:text-gray-800">02</div>
                             </div>
-                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ __('Great 24/7 Support') }}</h3>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                                {{ __('Great 24/7 Support') }}</h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                                 {{ __('We are here to help, before, during, and even after your trip.') }}
                             </p>
@@ -835,17 +856,22 @@
                     </div>
 
                     <!-- Card 3 - Fast Booking (White) -->
-                    <div class="group relative bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-2xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden transform hover:scale-105 hover:shadow-green-500/20 hover:border-green-200 dark:hover:border-green-800 transition-all duration-300">
+                    <div
+                        class="group relative bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-2xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden transform hover:scale-105 hover:shadow-green-500/20 hover:border-green-200 dark:hover:border-green-800 transition-all duration-300">
                         <!-- Decorative Background Pattern -->
-                        <div class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 h-32 bg-green-100 dark:bg-green-900/30 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                        <div
+                            class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 h-32 bg-green-100 dark:bg-green-900/30 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2">
+                        </div>
                         <div class="relative z-10">
                             <div class="mb-4 flex items-center justify-between">
-                                <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300 shadow-lg">
+                                <div
+                                    class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300 shadow-lg">
                                     <i class="fas fa-bolt text-3xl text-white"></i>
                                 </div>
                                 <div class="text-4xl font-extrabold text-gray-100 dark:text-gray-800">03</div>
                             </div>
-                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ __('Fast Booking') }}</h3>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ __('Fast Booking') }}
+                            </h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                                 {{ __('Secure payment and instant confirmation.') }}
                             </p>
@@ -853,12 +879,16 @@
                     </div>
 
                     <!-- Card 4 - Best Price (Orange) -->
-                    <div class="group relative bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 text-white shadow-2xl overflow-hidden transform hover:scale-105 hover:shadow-orange-500/50 transition-all duration-300">
+                    <div
+                        class="group relative bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 text-white shadow-2xl overflow-hidden transform hover:scale-105 hover:shadow-orange-500/50 transition-all duration-300">
                         <!-- Decorative Background Pattern -->
-                        <div class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                        <div
+                            class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2">
+                        </div>
                         <div class="relative z-10">
                             <div class="mb-4 flex items-center justify-between">
-                                <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
+                                <div
+                                    class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
                                     <i class="fas fa-money-bill-wave text-3xl"></i>
                                 </div>
                                 <div class="text-4xl font-extrabold opacity-20">04</div>
@@ -875,7 +905,8 @@
     </section>
 
     <!-- Book Your Trip Now Section -->
-    <section class="py-20 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
+    <section
+        class="py-20 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-4">
                 {{ __('Book Your Trip Now') }}
@@ -883,13 +914,15 @@
             <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-10">
                 {{ __('Start Your Journey With Us') }}
             </p>
-            
+
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="{{ route('hotels.search') }}" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 min-w-[200px]">
+                <a href="{{ route('hotels.search') }}"
+                    class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 min-w-[200px]">
                     <i class="fas fa-calendar-check"></i>
                     {{ __('Book Now') }}
                 </a>
-                <a href="{{ route('contact') }}" class="inline-flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-8 py-4 rounded-xl font-semibold text-lg border-2 border-gray-300 dark:border-gray-700 hover:border-orange-500 dark:hover:border-orange-500 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 min-w-[200px]">
+                <a href="{{ route('contact') }}"
+                    class="inline-flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-8 py-4 rounded-xl font-semibold text-lg border-2 border-gray-300 dark:border-gray-700 hover:border-orange-500 dark:hover:border-orange-500 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 min-w-[200px]">
                     <i class="fas fa-envelope"></i>
                     {{ __('Contact Us') }}
                 </a>
@@ -964,7 +997,7 @@
             z-index: 2;
             pointer-events: auto;
         }
-        
+
         .hero-slide:not(.active) {
             opacity: 0.05;
         }
@@ -1004,7 +1037,7 @@
                 width: 2rem;
                 height: 2rem;
             }
-            
+
             .hero-slider-dot.active {
                 width: 2rem;
             }
@@ -1027,8 +1060,8 @@
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .hotels-slider-track > div,
-        .testimonials-slider-track > div {
+        .hotels-slider-track>div,
+        .testimonials-slider-track>div {
             flex: 0 0 100%;
             min-width: 0;
             padding: 15px;
@@ -1036,15 +1069,17 @@
         }
 
         @media (min-width: 768px) {
-            .hotels-slider-track > div,
-            .testimonials-slider-track > div {
+
+            .hotels-slider-track>div,
+            .testimonials-slider-track>div {
                 flex: 0 0 50%;
             }
         }
 
         @media (min-width: 1024px) {
-            .hotels-slider-track > div,
-            .testimonials-slider-track > div {
+
+            .hotels-slider-track>div,
+            .testimonials-slider-track>div {
                 flex: 0 0 33.333%;
             }
         }
@@ -1065,6 +1100,7 @@
         }
 
         @media (max-width: 768px) {
+
             .hotels-slider-prev,
             .hotels-slider-next,
             .testimonials-slider-prev,
@@ -1107,14 +1143,14 @@
 
             function showSlide(index, direction = 'next') {
                 if (isTransitioning || index < 0 || index >= slides.length || index === currentSlide) return;
-                
+
                 isTransitioning = true;
-                
+
                 // Remove active class from all slides and dots
                 slides.forEach((slide) => {
                     slide.classList.remove('active', 'fade-in', 'fade-out');
                 });
-                
+
                 dots.forEach((dot) => {
                     dot.classList.remove('active');
                     dot.setAttribute('aria-selected', 'false');
@@ -1128,9 +1164,9 @@
                     dots[index].classList.add('active');
                     dots[index].setAttribute('aria-selected', 'true');
                 }
-                
+
                 currentSlide = index;
-                
+
                 // Reset transition flag after animation completes
                 setTimeout(() => {
                     isTransitioning = false;
@@ -1193,7 +1229,7 @@
             function handleSwipe() {
                 const diff = touchStartX - touchEndX;
                 const isRTL = document.documentElement.dir === 'rtl';
-                
+
                 if (Math.abs(diff) > SWIPE_THRESHOLD) {
                     if ((diff > 0 && !isRTL) || (diff < 0 && isRTL)) {
                         nextSlide();
@@ -1209,7 +1245,7 @@
                 if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                     e.preventDefault();
                     const isRTL = document.documentElement.dir === 'rtl';
-                    
+
                     if ((e.key === 'ArrowLeft' && !isRTL) || (e.key === 'ArrowRight' && isRTL)) {
                         prevSlide();
                     } else {
@@ -1240,14 +1276,20 @@
 
             // Touch events for mobile swipe
             if (sliderContainer) {
-                sliderContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
-                sliderContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
-                sliderContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
-                
+                sliderContainer.addEventListener('touchstart', handleTouchStart, {
+                    passive: false
+                });
+                sliderContainer.addEventListener('touchmove', handleTouchMove, {
+                    passive: false
+                });
+                sliderContainer.addEventListener('touchend', handleTouchEnd, {
+                    passive: true
+                });
+
                 // Pause on hover (desktop)
                 sliderContainer.addEventListener('mouseenter', pauseAutoSlide);
                 sliderContainer.addEventListener('mouseleave', startAutoSlide);
-                
+
                 // Pause when tab is hidden
                 document.addEventListener('visibilitychange', () => {
                     if (document.visibilityState === 'hidden') {
@@ -1270,7 +1312,7 @@
                     dots[0].setAttribute('aria-selected', 'true');
                 }
                 currentSlide = 0;
-                
+
                 // Start auto slide after a delay
                 setTimeout(() => {
                     startAutoSlide();
@@ -1300,9 +1342,9 @@
                 const maxIndex = Math.max(0, hotelsItems.length - itemsPerView);
                 const translateX = -(hotelsCurrentIndex * (100 / itemsPerView));
                 const isRTL = document.documentElement.dir === 'rtl';
-                
+
                 hotelsTrack.style.transform = `translateX(${isRTL ? -translateX : translateX}%)`;
-                
+
                 hotelsPrev.style.opacity = hotelsCurrentIndex === 0 ? '0.5' : '1';
                 hotelsPrev.style.pointerEvents = hotelsCurrentIndex === 0 ? 'none' : 'auto';
                 hotelsNext.style.opacity = hotelsCurrentIndex >= maxIndex ? '0.5' : '1';
@@ -1332,13 +1374,15 @@
 
             hotelsTrack.addEventListener('touchstart', (e) => {
                 hotelsTouchStartX = e.touches[0].clientX;
-            }, { passive: true });
+            }, {
+                passive: true
+            });
 
             hotelsTrack.addEventListener('touchend', (e) => {
                 hotelsTouchEndX = e.changedTouches[0].clientX;
                 const diff = hotelsTouchStartX - hotelsTouchEndX;
                 const isRTL = document.documentElement.dir === 'rtl';
-                
+
                 if (Math.abs(diff) > SWIPE_THRESHOLD) {
                     if ((diff > 0 && !isRTL) || (diff < 0 && isRTL)) {
                         hotelsNext.click();
@@ -1346,7 +1390,9 @@
                         hotelsPrev.click();
                     }
                 }
-            }, { passive: true });
+            }, {
+                passive: true
+            });
 
             // Responsive update
             let hotelsResizeTimeout;
@@ -1354,7 +1400,8 @@
                 clearTimeout(hotelsResizeTimeout);
                 hotelsResizeTimeout = setTimeout(() => {
                     const itemsPerView = hotelsItemsPerView();
-                    hotelsCurrentIndex = Math.min(hotelsCurrentIndex, Math.max(0, hotelsItems.length - itemsPerView));
+                    hotelsCurrentIndex = Math.min(hotelsCurrentIndex, Math.max(0, hotelsItems.length -
+                        itemsPerView));
                     updateHotelsSlider();
                 }, 250);
             });
@@ -1383,9 +1430,9 @@
                 const maxIndex = Math.max(0, testimonialsItems.length - itemsPerView);
                 const translateX = -(testimonialsCurrentIndex * (100 / itemsPerView));
                 const isRTL = document.documentElement.dir === 'rtl';
-                
+
                 testimonialsTrack.style.transform = `translateX(${isRTL ? -translateX : translateX}%)`;
-                
+
                 testimonialsPrev.style.opacity = testimonialsCurrentIndex === 0 ? '0.5' : '1';
                 testimonialsPrev.style.pointerEvents = testimonialsCurrentIndex === 0 ? 'none' : 'auto';
                 testimonialsNext.style.opacity = testimonialsCurrentIndex >= maxIndex ? '0.5' : '1';
@@ -1415,13 +1462,15 @@
 
             testimonialsTrack.addEventListener('touchstart', (e) => {
                 testimonialsTouchStartX = e.touches[0].clientX;
-            }, { passive: true });
+            }, {
+                passive: true
+            });
 
             testimonialsTrack.addEventListener('touchend', (e) => {
                 testimonialsTouchEndX = e.changedTouches[0].clientX;
                 const diff = testimonialsTouchStartX - testimonialsTouchEndX;
                 const isRTL = document.documentElement.dir === 'rtl';
-                
+
                 if (Math.abs(diff) > SWIPE_THRESHOLD) {
                     if ((diff > 0 && !isRTL) || (diff < 0 && isRTL)) {
                         testimonialsNext.click();
@@ -1429,7 +1478,9 @@
                         testimonialsPrev.click();
                     }
                 }
-            }, { passive: true });
+            }, {
+                passive: true
+            });
 
             // Responsive update
             let testimonialsResizeTimeout;
@@ -1437,7 +1488,8 @@
                 clearTimeout(testimonialsResizeTimeout);
                 testimonialsResizeTimeout = setTimeout(() => {
                     const itemsPerView = testimonialsItemsPerView();
-                    testimonialsCurrentIndex = Math.min(testimonialsCurrentIndex, Math.max(0, testimonialsItems.length - itemsPerView));
+                    testimonialsCurrentIndex = Math.min(testimonialsCurrentIndex, Math.max(0,
+                        testimonialsItems.length - itemsPerView));
                     updateTestimonialsSlider();
                 }, 250);
             });
@@ -1501,7 +1553,7 @@
             const today = new Date();
             const nextMonth = new Date(today);
             nextMonth.setMonth(nextMonth.getMonth() + 1);
-            
+
             const formatDate = (date) => {
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -1526,7 +1578,7 @@
                         const checkInDate = new Date(this.value);
                         checkInDate.setDate(checkInDate.getDate() + 1);
                         checkOutInput.min = formatDate(checkInDate);
-                        
+
                         if (checkOutInput.value && checkOutInput.value <= this.value) {
                             checkOutInput.value = formatDate(checkInDate);
                         }
@@ -1539,7 +1591,7 @@
             // -------------------------------------------------------------
             countrySelect.addEventListener("change", function() {
                 const countryCode = this.value;
-                
+
                 // Reset city input
                 cityInput.value = "";
                 destinationCode.value = "";
@@ -1568,12 +1620,12 @@
                         if (data.error) {
                             throw new Error(data.error);
                         }
-                        
+
                         filteredCities = data;
                         cities = data;
                         cityInput.disabled = false;
                         cityInput.placeholder = "{{ __('Select City') }}";
-                        
+
                         if (data.length === 0) {
                             cityInput.placeholder = "{{ __('No cities available') }}";
                         }
@@ -1630,7 +1682,7 @@
                         cityInput.value = city.Name || city.Name_ar;
                         destinationCode.value = city.Code;
                         cityBox.classList.add("hidden");
-                        
+
                         // Load hotels for selected city
                         loadHotelsForCity(city.Code);
                     });
@@ -1662,7 +1714,7 @@
             // HOTEL SELECTION
             // -------------------------------------------------------------
             const hotelSelect = document.getElementById("hotelSelect");
-            
+
             function loadHotelsForCity(cityCode) {
                 if (!cityCode) {
                     hotelSelect.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
@@ -1689,9 +1741,10 @@
                         }
 
                         hotelSelect.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
-                        
+
                         if (data.length === 0) {
-                            hotelSelect.innerHTML = '<option value="">{{ __('No hotels available') }}</option>';
+                            hotelSelect.innerHTML =
+                                '<option value="">{{ __('No hotels available') }}</option>';
                             hotelSelect.disabled = true;
                             return;
                         }
@@ -1783,13 +1836,11 @@
                     CheckOut: checkOut,
                     HotelCodes: hotelCode.toString().trim(), // Ensure it's a string and not empty
                     GuestNationality: 'AE',
-                    PaxRooms: [
-                        {
-                            Adults: parseInt(adults) || 1,
-                            Children: 0,
-                            ChildrenAges: []
-                        }
-                    ],
+                    PaxRooms: [{
+                        Adults: parseInt(adults) || 1,
+                        Children: 0,
+                        ChildrenAges: []
+                    }],
                     ResponseTime: 18,
                     IsDetailedResponse: true,
                     Filters: {
@@ -1801,49 +1852,51 @@
 
                 // Call search API
                 fetch("{{ route('hotel.search') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify(searchData)
-                })
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error('Failed to search hotels');
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    // Handle API error response
-                    if (data.Status && data.Status.Code !== 200) {
-                        const errorMsg = data.Status.Description || 'Failed to search hotels';
-                        throw new Error(errorMsg);
-                    }
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute('content') || '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify(searchData)
+                    })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error('Failed to search hotels');
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        // Handle API error response
+                        if (data.Status && data.Status.Code !== 200) {
+                            const errorMsg = data.Status.Description || 'Failed to search hotels';
+                            throw new Error(errorMsg);
+                        }
 
-                    // Handle error response
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
+                        // Handle error response
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
 
-                    // Store search results in sessionStorage and redirect to hotels page
-                    sessionStorage.setItem('hotelSearchResults', JSON.stringify(data));
-                    sessionStorage.setItem('searchParams', JSON.stringify(searchData));
-                    
-                    // Redirect to hotels page with search results
-                    const url = "{{ route('hotels.search') }}";
-                    window.location.href = url;
-                })
-                .catch(err => {
-                    console.error("Error searching hotels:", err);
-                    const errorMessage = err.message || "{{ __('Failed to search hotels. Please try again.') }}";
-                    showToast(errorMessage, "error");
-                    
-                    // Re-enable button
-                    searchBtn.disabled = false;
-                    if (btnText) btnText.classList.remove("hidden");
-                    if (btnLoader) btnLoader.classList.add("hidden");
-                });
+                        // Store search results in sessionStorage and redirect to hotels page
+                        sessionStorage.setItem('hotelSearchResults', JSON.stringify(data));
+                        sessionStorage.setItem('searchParams', JSON.stringify(searchData));
+
+                        // Redirect to hotels page with search results
+                        const url = "{{ route('hotels.search') }}";
+                        window.location.href = url;
+                    })
+                    .catch(err => {
+                        console.error("Error searching hotels:", err);
+                        const errorMessage = err.message ||
+                            "{{ __('Failed to search hotels. Please try again.') }}";
+                        showToast(errorMessage, "error");
+
+                        // Re-enable button
+                        searchBtn.disabled = false;
+                        if (btnText) btnText.classList.remove("hidden");
+                        if (btnLoader) btnLoader.classList.add("hidden");
+                    });
             });
 
         });

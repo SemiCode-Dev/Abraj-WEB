@@ -82,12 +82,19 @@ class HotelController extends Controller
             // Log request data for debugging
             Log::info('Hotel search request', $data);
 
-            $response = $this->hotelApi->searchHotel($data);
+            // Create cache key based on search parameters
+            $cacheKey = 'hotel_search_' . md5(json_encode($data));
+            
+            // Cache search results for 1 hour (3600 seconds)
+            $response = Cache::remember($cacheKey, 3600, function () use ($data) {
+                return $this->hotelApi->searchHotel($data);
+            });
 
             // Log response for debugging
             Log::info('Hotel search response', [
                 'status_code' => $response['Status']['Code'] ?? 'unknown',
                 'hotels_count' => isset($response['Hotels']) ? count($response['Hotels']) : 0,
+                'cached' => Cache::has($cacheKey),
             ]);
 
             return response()->json($response);

@@ -44,5 +44,9 @@ return [
     'sha_response' => env('APS_SHA_RESPONSE'),
     ],
 
+    'sbc' => [
+        'checkout_url' => env('API_CHECKOUT_URL'),
+    ],
+
 
 ];

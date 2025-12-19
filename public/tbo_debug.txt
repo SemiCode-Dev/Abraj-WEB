@@ -3424,3 +3424,325 @@ Array
 
 -------------------
 
+REQUEST:
+Array
+(
+    [CheckIn] => 2025-12-17
+    [CheckOut] => 2025-12-18
+    [HotelCodes] => 1252812
+    [GuestNationality] => AE
+    [PaxRooms] => Array
+        (
+            [0] => Array
+                (
+                    [Adults] => 2
+                    [Children] => 0
+                    [ChildrenAges] => Array
+                        (
+                        )
+
+                )
+
+        )
+
+    [ResponseTime] => 18
+    [IsDetailedResponse] => 1
+    [Filters] => Array
+        (
+            [Refundable] => 
+            [NoOfRooms] => 0
+            [MealType] => All
+        )
+
+)
+
+
+RESPONSE:
+Array
+(
+    [Status] => Array
+        (
+            [Code] => 201
+            [Description] => No Available rooms for given criteria
+        )
+
+)
+
+-------------------
+
+REQUEST:
+Array
+(
+    [CheckIn] => 2025-12-17
+    [CheckOut] => 2025-12-18
+    [HotelCodes] => 1876287
+    [GuestNationality] => AE
+    [PaxRooms] => Array
+        (
+            [0] => Array
+                (
+                    [Adults] => 2
+                    [Children] => 0
+                    [ChildrenAges] => Array
+                        (
+                        )
+
+                )
+
+        )
+
+    [ResponseTime] => 18
+    [IsDetailedResponse] => 1
+    [Filters] => Array
+        (
+            [Refundable] => 
+            [NoOfRooms] => 0
+            [MealType] => All
+        )
+
+)
+
+
+RESPONSE:
+Array
+(
+    [Status] => Array
+        (
+            [Code] => 201
+            [Description] => No Available rooms for given criteria
+        )
+
+)
+
+-------------------
+
+REQUEST:
+Array
+(
+    [CheckIn] => 2025-12-17
+    [CheckOut] => 2025-12-18
+    [HotelCodes] => 1628309
+    [GuestNationality] => AE
+    [PaxRooms] => Array
+        (
+            [0] => Array
+                (
+                    [Adults] => 2
+                    [Children] => 0
+                    [ChildrenAges] => Array
+                        (
+                        )
+
+                )
+
+        )
+
+    [ResponseTime] => 18
+    [IsDetailedResponse] => 1
+    [Filters] => Array
+        (
+            [Refundable] => 
+            [NoOfRooms] => 0
+            [MealType] => All
+        )
+
+)
+
+
+RESPONSE:
+Array
+(
+    [Status] => Array
+        (
+            [Code] => 201
+            [Description] => No Available rooms for given criteria
+        )
+
+)
+
+-------------------
+
+REQUEST:
+Array
+(
+    [CheckIn] => 2025-12-17
+    [CheckOut] => 2025-12-18
+    [HotelCodes] => 1041780
+    [GuestNationality] => AE
+    [PaxRooms] => Array
+        (
+            [0] => Array
+                (
+                    [Adults] => 2
+                    [Children] => 0
+                    [ChildrenAges] => Array
+                        (
+                        )
+
+                )
+
+        )
+
+    [ResponseTime] => 18
+    [IsDetailedResponse] => 1
+    [Filters] => Array
+        (
+            [Refundable] => 
+            [NoOfRooms] => 0
+            [MealType] => All
+        )
+
+)
+
+
+RESPONSE:
+Array
+(
+    [Status] => Array
+        (
+            [Code] => 201
+            [Description] => No Available rooms for given criteria
+        )
+
+)
+
+-------------------
+
+REQUEST:
+Array
+(
+    [CheckIn] => 2025-12-17
+    [CheckOut] => 2025-12-18
+    [HotelCodes] => 1067262
+    [GuestNationality] => AE
+    [PaxRooms] => Array
+        (
+            [0] => Array
+                (
+                    [Adults] => 2
+                    [Children] => 0
+                    [ChildrenAges] => Array
+                        (
+                        )
+
+                )
+
+        )
+
+    [ResponseTime] => 18
+    [IsDetailedResponse] => 1
+    [Filters] => Array
+        (
+            [Refundable] => 
+            [NoOfRooms] => 0
+            [MealType] => All
+        )
+
+)
+
+
+RESPONSE:
+Array
+(
+    [Status] => Array
+        (
+            [Code] => 201
+            [Description] => No Available rooms for given criteria
+        )
+
+)
+
+-------------------
+
+REQUEST:
+Array
+(
+    [CheckIn] => 2025-12-19
+    [CheckOut] => 2026-01-19
+    [HotelCodes] => 1628309
+    [GuestNationality] => AE
+    [PaxRooms] => Array
+        (
+            [0] => Array
+                (
+                    [Adults] => 2
+                    [Children] => 0
+                    [ChildrenAges] => Array
+                        (
+                        )
+
+                )
+
+        )
+
+    [ResponseTime] => 18
+    [IsDetailedResponse] => 1
+    [Filters] => Array
+        (
+            [Refundable] => 1
+            [NoOfRooms] => 0
+            [MealType] => All
+        )
+
+)
+
+
+RESPONSE:
+Array
+(
+    [Status] => Array
+        (
+            [Code] => 201
+            [Description] => No Available rooms for given criteria
+        )
+
+)
+
+-------------------
+
+REQUEST:
+Array
+(
+    [CheckIn] => 2025-12-19
+    [CheckOut] => 2026-01-19
+    [HotelCodes] => 1222024
+    [GuestNationality] => AE
+    [PaxRooms] => Array
+        (
+            [0] => Array
+                (
+                    [Adults] => 2
+                    [Children] => 0
+                    [ChildrenAges] => Array
+                        (
+                        )
+
+                )
+
+        )
+
+    [ResponseTime] => 18
+    [IsDetailedResponse] => 1
+    [Filters] => Array
+        (
+            [Refundable] => 1
+            [NoOfRooms] => 0
+            [MealType] => All
+        )
+
+)
+
+
+RESPONSE:
+Array
+(
+    [Status] => Array
+        (
+            [Code] => 201
+            [Description] => No Available rooms for given criteria
+        )
+
+)
+
+-------------------
+
