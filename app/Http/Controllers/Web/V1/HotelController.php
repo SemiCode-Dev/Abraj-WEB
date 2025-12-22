@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Web\V1\ReservationReviewRequest;
 use App\Models\City;
 use App\Services\Api\V1\HotelApiService;
 use App\Services\Api\V1\PaymentService;
@@ -327,7 +328,7 @@ class HotelController extends Controller
         try {
             $request = request();
             $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
-            
+
             // 1. Get static hotel details (always needed for description, images, etc.)
             // We use a cache key that depends on the ID and language
             $hotelDetails = Cache::remember("hotel_details_{$id}_{$language}", 86400, function () use ($id, $language) {
@@ -347,7 +348,7 @@ class HotelController extends Controller
                 $request->merge([
                     'check_in' => $checkIn,
                     'check_out' => $checkOut,
-                    'guests' => $guests
+                    'guests' => $guests,
                 ]);
             }
 
@@ -376,24 +377,24 @@ class HotelController extends Controller
 
                     // Fetch availability for this specific hotel
                     $searchResponse = $this->hotelApi->searchHotel($searchData); // Uses 'Search' endpoint
-                    
+
                     // Log the raw response for debugging
                     Log::info("Hotel Availability Response for ID {$id}:", ['status' => $searchResponse['Status']['Code'] ?? 'unknown', 'count' => count($searchResponse['HotelResult'] ?? [])]);
 
                     if (isset($searchResponse['Status']['Code']) && $searchResponse['Status']['Code'] == 200) {
-                        if (!empty($searchResponse['HotelResult']) && is_array($searchResponse['HotelResult'])) {
+                        if (! empty($searchResponse['HotelResult']) && is_array($searchResponse['HotelResult'])) {
                             // TBO returns a list of hotels, we expect one since we searched by ID
                             $availableRooms = $searchResponse['HotelResult'][0]['Rooms'] ?? [];
-                        } elseif (!empty($searchResponse['Hotels']) && is_array($searchResponse['Hotels'])) {
-                             // Fallback for different response structures
-                             $availableRooms = $searchResponse['Hotels'][0]['Rooms'] ?? [];
+                        } elseif (! empty($searchResponse['Hotels']) && is_array($searchResponse['Hotels'])) {
+                            // Fallback for different response structures
+                            $availableRooms = $searchResponse['Hotels'][0]['Rooms'] ?? [];
                         }
                     } else {
-                        Log::warning("Availability check failed for Hotel ID {$id}: " . ($searchResponse['Status']['Description'] ?? 'Unknown error'));
+                        Log::warning("Availability check failed for Hotel ID {$id}: ".($searchResponse['Status']['Description'] ?? 'Unknown error'));
                     }
 
                 } catch (\Exception $e) {
-                    Log::error("Error fetching room availability: " . $e->getMessage());
+                    Log::error('Error fetching room availability: '.$e->getMessage());
                 }
             }
 
@@ -534,6 +535,14 @@ class HotelController extends Controller
                 'merchant_reference' => 'hotel_'.$hotelId.'_'.uniqid(),
             ]);
 
+            // If request is AJAX and wants JSON response (for payment data)
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'paymentData' => $paymentData,
+                ]);
+            }
+
             return view('Web.reservation', [
                 'hotelId' => $hotelId,
                 'hotelDetails' => $hotelDetails,
@@ -544,12 +553,156 @@ class HotelController extends Controller
                 'guests' => $guests,
                 'nights' => $nights,
                 'paymentData' => $paymentData,
+                'totalFare' => $totalFare,
+                'currency' => $currency,
             ]);
         } catch (\Exception $e) {
             Log::error('Reservation page error: '.$e->getMessage());
 
             return redirect()->route('hotel.details', ['locale' => app()->getLocale(), 'id' => $request->input('hotel_id', 1)])
                 ->with('error', __('Failed to load reservation page'));
+        }
+    }
+
+    public function review(ReservationReviewRequest $request)
+    {
+        try {
+            $hotelId = $request->input('hotel_id');
+            $bookingCode = $request->input('booking_code');
+            $checkIn = $request->input('check_in');
+            $checkOut = $request->input('check_out');
+            $guests = $request->input('guests', 1);
+
+            // Get guest information
+            $guestName = $request->input('name');
+            $guestEmail = $request->input('email');
+            $guestPhone = $request->input('phone');
+            $guestNotes = $request->input('notes', '');
+
+            // If user is authenticated, use their data if form data is not provided
+            if (auth()->check()) {
+                $user = auth()->user();
+                $guestName = $guestName ?: $user->name;
+                $guestEmail = $guestEmail ?: $user->email;
+                $guestPhone = $guestPhone ?: ($user->phone ?? '');
+            }
+
+            // Get hotel details
+            $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
+            $hotelDetails = null;
+            $roomData = null;
+
+            try {
+                $hotelDetails = $this->hotelApi->getHotelDetails($hotelId, $language);
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch hotel details for review: '.$e->getMessage());
+            }
+
+            // Search for room details using booking_code
+            if ($bookingCode && $checkIn && $checkOut) {
+                try {
+                    $searchData = [
+                        'CheckIn' => $checkIn,
+                        'CheckOut' => $checkOut,
+                        'HotelCodes' => $hotelId,
+                        'GuestNationality' => 'AE',
+                        'PaxRooms' => [
+                            [
+                                'Adults' => (int) $guests,
+                                'Children' => 0,
+                                'ChildrenAges' => [],
+                            ],
+                        ],
+                        'ResponseTime' => 18,
+                        'IsDetailedResponse' => true,
+                        'Filters' => [
+                            'Refundable' => true,
+                            'NoOfRooms' => 0,
+                            'MealType' => 'All',
+                        ],
+                    ];
+
+                    $searchResponse = $this->hotelApi->searchHotel($searchData);
+
+                    // Find the room with matching booking_code
+                    if (isset($searchResponse['HotelResult']) && is_array($searchResponse['HotelResult'])) {
+                        foreach ($searchResponse['HotelResult'] as $hotel) {
+                            if (isset($hotel['Rooms']) && is_array($hotel['Rooms'])) {
+                                foreach ($hotel['Rooms'] as $room) {
+                                    if (isset($room['BookingCode']) && $room['BookingCode'] === $bookingCode) {
+                                        $roomData = $room;
+                                        $roomData['Currency'] = $hotel['Currency'] ?? 'USD';
+                                        break 2;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to fetch room details for review: '.$e->getMessage());
+                }
+            }
+
+            // If room data not found from API, use URL parameters as fallback
+            if (! $roomData) {
+                $roomData = [
+                    'BookingCode' => $bookingCode,
+                    'Name' => [$request->input('room_name', 'Room')],
+                    'TotalFare' => (float) $request->input('total_fare', 0),
+                    'Currency' => $request->input('currency', 'USD'),
+                    'Inclusion' => $request->input('inclusion', ''),
+                    'TotalTax' => 0,
+                ];
+            }
+
+            // Calculate nights
+            $checkInDate = Carbon::parse($checkIn);
+            $checkOutDate = Carbon::parse($checkOut);
+            $nights = $checkInDate->diffInDays($checkOutDate);
+
+            // Get payment data for PayFort
+            $totalFare = 0;
+            $currency = 'USD';
+
+            if ($roomData && isset($roomData['TotalFare']) && $roomData['TotalFare'] > 0) {
+                $totalFare = (float) $roomData['TotalFare'];
+                $currency = $roomData['Currency'] ?? 'USD';
+            } elseif ($request->input('total_fare')) {
+                $totalFare = (float) $request->input('total_fare');
+                $currency = $request->input('currency', 'USD');
+            }
+
+            // Generate payment data
+            $paymentData = $this->paymentService->apsPaymentForReservation([
+                'amount' => $totalFare,
+                'currency' => $currency,
+                'customer_email' => $guestEmail,
+                'merchant_reference' => 'hotel_'.$hotelId.'_'.uniqid(),
+            ]);
+
+            return view('Web.reservation-review', [
+                'hotelId' => $hotelId,
+                'hotelDetails' => $hotelDetails,
+                'roomData' => $roomData,
+                'bookingCode' => $bookingCode,
+                'checkIn' => $checkIn,
+                'checkOut' => $checkOut,
+                'guests' => $guests,
+                'nights' => $nights,
+                'paymentData' => $paymentData,
+                'totalFare' => $totalFare,
+                'currency' => $currency,
+                'guestName' => $guestName,
+                'guestEmail' => $guestEmail,
+                'guestPhone' => $guestPhone,
+                'guestNotes' => $guestNotes,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Review page error: '.$e->getMessage());
+
+            return redirect()->route('reservation', ['locale' => app()->getLocale()])
+                ->withInput()
+                ->with('error', __('Failed to load review page'));
         }
     }
 
@@ -850,17 +1003,20 @@ class HotelController extends Controller
             if (stripos($name, 'Al Lith') !== false) {
                 $city['CityName'] = 'الليث';
                 $city['Name'] = 'الليث';
+
                 continue;
             }
             if (stripos($name, 'Al Qunfudhah') !== false) {
                 $city['CityName'] = 'القنفذة';
                 $city['Name'] = 'القنفذة';
+
                 continue;
             }
             if (stripos($name, 'Al Madinah Province') !== false) {
-                 $city['CityName'] = 'منطقة المدينة المنورة';
-                 $city['Name'] = 'منطقة المدينة المنورة';
-                 continue;
+                $city['CityName'] = 'منطقة المدينة المنورة';
+                $city['Name'] = 'منطقة المدينة المنورة';
+
+                continue;
             }
 
             if (isset($arabicMap[$code])) {

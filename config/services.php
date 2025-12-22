@@ -32,21 +32,18 @@ return [
     ],
 
     'tbo' => [
-    'base_url' => env('TBO_BASE_URL'),
-    'username' => env('TBO_USERNAME'),
-    'password' => env('TBO_PASSWORD'),
+        'base_url' => env('TBO_BASE_URL'),
+        'username' => env('TBO_USERNAME'),
+        'password' => env('TBO_PASSWORD'),
     ],
 
     'aps' => [
-    'merchant_id' => env('APS_MERCHANT_ID'),
-    'access_code' => env('APS_ACCESS_CODE'),
-    'sha_request' => env('APS_SHA_REQUEST'),
-    'sha_response' => env('APS_SHA_RESPONSE'),
+        'merchant_id' => env('APS_MERCHANT_ID'),
+        'access_code' => env('APS_ACCESS_CODE'),
+        'sha_request' => env('APS_SHA_REQUEST'),
+        'sha_response' => env('APS_SHA_RESPONSE'),
+        'payment_url' => env('APS_PAYMENT_URL'),
+        'callback_url' => env('APS_CALLBACK_URL'),
     ],
-
-    'sbc' => [
-        'checkout_url' => env('API_CHECKOUT_URL'),
-    ],
-
 
 ];

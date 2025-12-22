@@ -64,6 +64,8 @@ Route::group([
 
     // Room Reservation
     Route::get('/reservation', [HotelController::class, 'reservation'])->name('reservation');
+    Route::post('/reservation/review', [HotelController::class, 'review'])->name('reservation.review');
+    Route::post('/reservation', [HotelController::class, 'reservation'])->name('reservation.submit');
 
     // Contact Us
     Route::get('/contact', function () {

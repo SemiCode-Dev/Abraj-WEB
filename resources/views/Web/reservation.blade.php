@@ -4,28 +4,40 @@
 
 @section('content')
 <!-- Reservation Header -->
-<section class="bg-gradient-to-r from-orange-500 via-orange-600 to-blue-900 text-white py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center mb-4">
-            <a href="{{ route('hotel.details', ['locale' => app()->getLocale(), 'id' => request('hotel_id', 1)]) }}?check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}" 
-               class="text-white/80 hover:text-white transition">
-                <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i> {{ __('Back') }}
+<section class="bg-gradient-to-br from-orange-500 via-orange-600 to-blue-900 text-white py-16 relative overflow-hidden">
+    <div class="absolute inset-0 bg-black/10"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="flex items-center mb-6">
+            <a href="{{ route('hotel.details', ['id' => request('hotel_id', 1)]) }}?check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}" 
+               class="flex items-center text-white/90 hover:text-white transition-all duration-300 group">
+                <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }} group-hover:translate-x-{{ app()->getLocale() === 'ar' ? '-1' : '1' }} transition-transform"></i> 
+                <span class="font-semibold">{{ __('Back') }}</span>
             </a>
         </div>
-        <h1 class="text-4xl md:text-5xl font-bold mb-2">{{ __('Confirm Reservation') }}</h1>
-        <p class="text-orange-100 text-lg">{{ __('Complete your information to complete the reservation process') }}</p>
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                <i class="fas fa-calendar-check text-2xl"></i>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold">{{ __('Confirm Reservation') }}</h1>
+        </div>
+        <p class="text-orange-100 text-lg max-w-2xl">{{ __('Complete your information to complete the reservation process') }}</p>
     </div>
 </section>
 
 <!-- Reservation Form -->
-<section class="py-12 bg-gray-50">
+<section class="py-12 bg-gradient-to-b from-gray-50 to-gray-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Reservation Form -->
-            <div class="lg:col-span-3">
+            <div class="lg:col-span-2 space-y-6">
                 <!-- Booking Summary Card -->
-                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ __('Booking Summary') }}</h2>
+                <div class="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-orange-600">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-hotel text-orange-600"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">{{ __('Booking Summary') }}</h2>
+                    </div>
                     @php
                         $hotel = $hotelDetails['HotelDetails'][0] ?? null;
                         $roomName = 'Room';
@@ -37,18 +49,21 @@
                             }
                         }
                     @endphp
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <div class="text-sm text-gray-500 mb-2">{{ __('Hotel') }}</div>
-                            <div class="font-bold text-gray-900">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-gray-50 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-hotel text-orange-600"></i>
+                                <div class="text-xs text-gray-500 uppercase tracking-wide">{{ __('Hotel') }}</div>
+                            </div>
+                            <div class="font-bold text-gray-900 text-lg">
                                 @if($hotel && isset($hotel['HotelName']))
                                     {{ $hotel['HotelName'] }}
                                 @else
                                     {{ __('International Luxury Hotel') }} {{ $hotelId }}
                                 @endif
-                            </div>
-                            <div class="text-sm text-gray-600 mt-1">
-                                <i class="fas fa-map-marker-alt {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                        </div>
+                            <div class="text-sm text-gray-600 mt-2 flex items-center">
+                                <i class="fas fa-map-marker-alt {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }} text-orange-600"></i>
                                 @if($hotel && isset($hotel['Address']))
                                     {{ $hotel['Address'] }}@if(isset($hotel['CityName'])), {{ $hotel['CityName'] }}@endif
                                 @else
@@ -56,9 +71,12 @@
                                 @endif
                             </div>
                         </div>
-                        <div>
-                            <div class="text-sm text-gray-500 mb-2">{{ __('Room Type') }}</div>
-                            <div class="font-bold text-gray-900">
+                        <div class="bg-gray-50 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-bed text-orange-600"></i>
+                                <div class="text-xs text-gray-500 uppercase tracking-wide">{{ __('Room Type') }}</div>
+                            </div>
+                            <div class="font-bold text-gray-900 text-lg">
                                 @php
                                     $displayRoomName = 'Room';
                                     if ($roomData && isset($roomData['Name'])) {
@@ -73,73 +91,271 @@
                                 @endphp
                                 {{ $displayRoomName }}
                             </div>
-                            @if($roomData && isset($roomData['Inclusion']))
-                            <div class="text-sm text-gray-600 mt-1">
-                                <i class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ $roomData['Inclusion'] }}
-                            @elseif(request('inclusion'))
-                            <div class="text-sm text-gray-600 mt-1">
-                                <i class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ request('inclusion') }}
-                            @endif
+                            @if(($roomData && isset($roomData['Inclusion'])) || request('inclusion'))
+                            <div class="text-sm text-gray-600 mt-2 flex items-center">
+                                <i class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }} text-orange-600"></i>
+                                {{ $roomData['Inclusion'] ?? request('inclusion') }}
                             </div>
+                            @endif
                         </div>
-                        <div>
-                            <div class="text-sm text-gray-500 mb-2">{{ __('Check In Date') }}</div>
-                            <div class="font-bold text-gray-900">{{ $checkIn ?? request('check_in', '--') }}</div>
+                        <div class="bg-blue-50 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-calendar-check text-blue-600"></i>
+                                <div class="text-xs text-gray-500 uppercase tracking-wide">{{ __('Check In') }}</div>
+                            </div>
+                            <div class="font-bold text-gray-900 text-lg">{{ $checkIn ?? request('check_in', '--') }}</div>
                         </div>
-                        <div>
-                            <div class="text-sm text-gray-500 mb-2">{{ __('Check Out Date') }}</div>
-                            <div class="font-bold text-gray-900">{{ $checkOut ?? request('check_out', '--') }}</div>
+                        <div class="bg-blue-50 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-calendar-times text-blue-600"></i>
+                                <div class="text-xs text-gray-500 uppercase tracking-wide">{{ __('Check Out') }}</div>
+                            </div>
+                            <div class="font-bold text-gray-900 text-lg">{{ $checkOut ?? request('check_out', '--') }}</div>
                         </div>
-                        <div>
-                            <div class="text-sm text-gray-500 mb-2">{{ __('Number of Nights') }}</div>
-                            <div class="font-bold text-gray-900">{{ $nights ?? 2 }} {{ __('nights') }}</div>
+                        <div class="bg-green-50 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-moon text-green-600"></i>
+                                <div class="text-xs text-gray-500 uppercase tracking-wide">{{ __('Nights') }}</div>
+                            </div>
+                            <div class="font-bold text-gray-900 text-lg">{{ $nights ?? 2 }} {{ __('nights') }}</div>
                         </div>
-                        <div>
-                            <div class="text-sm text-gray-500 mb-2">{{ __('Number of Guests') }}</div>
-                            <div class="font-bold text-gray-900">{{ $guests ?? request('guests', '2') }} {{ __('Guests') }}</div>
+                        <div class="bg-purple-50 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-users text-purple-600"></i>
+                                <div class="text-xs text-gray-500 uppercase tracking-wide">{{ __('Guests') }}</div>
+                            </div>
+                            <div class="font-bold text-gray-900 text-lg">{{ $guests ?? request('guests', '2') }} {{ __('Guests') }}</div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Guest Information -->
-                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ __('Guest Information') }}</h2>
+                <!-- Guest Information Step -->
+                <div id="guestInfoStep" class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-orange-600">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-user-circle text-orange-600 text-2xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">{{ __('Guest Information') }}</h2>
+                            <p class="text-sm text-gray-500">{{ __('Please fill in your details to complete the booking') }}</p>
+                        </div>
+                    </div>
                     @auth
-                    <div class="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="useAccountInfo" class="w-5 h-5 text-orange-600 rounded">
-                            <span class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }} font-semibold text-gray-900">
-                                {{ __('Use my account information') }}
-                            </span>
+                    <div class="mb-6 p-5 bg-gradient-to-r from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl hover:shadow-md transition-shadow">
+                        <label class="flex items-start cursor-pointer group">
+                            <input type="checkbox" id="useAccountInfo" class="w-6 h-6 text-orange-600 rounded mt-1 cursor-pointer">
+                            <div class="{{ app()->getLocale() === 'ar' ? 'mr-4' : 'ml-4' }} flex-1">
+                                <div class="font-bold text-gray-900 mb-1 group-hover:text-orange-600 transition-colors">
+                                    <i class="fas fa-check-circle {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                                    {{ __('Use my account information') }}
+                                </div>
+                                <div class="text-sm text-gray-600 space-y-1">
+                                    <div><i class="fas fa-user {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> <strong>{{ __('Name') }}:</strong> {{ auth()->user()->name }}</div>
+                                    <div><i class="fas fa-envelope {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> <strong>{{ __('Email') }}:</strong> {{ auth()->user()->email }}</div>
+                                    @if(auth()->user()->phone)
+                                    <div><i class="fas fa-phone {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> <strong>{{ __('Phone') }}:</strong> {{ auth()->user()->phone }}</div>
+                                    @endif
+                                </div>
+                            </div>
                         </label>
-                        <p class="text-sm text-gray-600 mt-2 {{ app()->getLocale() === 'ar' ? 'mr-8' : 'ml-8' }}">
-                            {{ __('Name') }}: {{ auth()->user()->name }} | {{ __('Email') }}: {{ auth()->user()->email }}@if(auth()->user()->phone) | {{ __('Phone') }}: {{ auth()->user()->phone }}@endif
-                        </p>
                     </div>
                     @endauth
-                    <form id="reservationForm">
-                        <div id="guestInfoSection" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-gray-700 font-semibold mb-2">{{ __('Full Name') }} <span class="text-red-500">*</span></label>
-                                <input type="text" id="guestName" name="name" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
+                    <form id="reservationForm" onsubmit="return false;">
+                        <div id="guestInfoSection" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="group">
+                                    <label class="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+                                        <i class="fas fa-user text-orange-600"></i>
+                                        <span>{{ __('Full Name') }} <span class="text-red-500">*</span></span>
+                                    </label>
+                                    <input type="text" id="guestName" name="name" required 
+                                           class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 transition-all hover:border-orange-300">
+                                </div>
+                                <div class="group">
+                                    <label class="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+                                        <i class="fas fa-envelope text-orange-600"></i>
+                                        <span>{{ __('Email') }} <span class="text-red-500">*</span></span>
+                                    </label>
+                                    <input type="email" id="guestEmail" name="email" required 
+                                           class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 transition-all hover:border-orange-300">
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-gray-700 font-semibold mb-2">{{ __('Email') }} <span class="text-red-500">*</span></label>
-                                <input type="email" id="guestEmail" name="email" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
+                            <div class="group">
+                                <label class="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+                                    <i class="fas fa-phone text-orange-600"></i>
+                                    <span>{{ __('Mobile Number') }} <span class="text-red-500">*</span></span>
+                                </label>
+                                <input type="tel" id="guestPhone" name="phone" required 
+                                       placeholder="{{ app()->getLocale() === 'ar' ? '05xxxxxxxx' : '+966 5x xxx xxxx' }}" 
+                                       class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 transition-all hover:border-orange-300">
                             </div>
-                            <div>
-                                <label class="block text-gray-700 font-semibold mb-2">{{ __('Mobile Number') }} <span class="text-red-500">*</span></label>
-                                <input type="tel" id="guestPhone" name="phone" required placeholder="{{ app()->getLocale() === 'ar' ? '05xxxxxxxx' : '+966 5x xxx xxxx' }}" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-gray-700 font-semibold mb-2">{{ __('Special Notes (Optional)') }}</label>
-                                <textarea rows="3" id="guestNotes" name="notes" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900" 
+                            <div class="group">
+                                <label class="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+                                    <i class="fas fa-sticky-note text-orange-600"></i>
+                                    <span>{{ __('Special Notes (Optional)') }}</span>
+                                </label>
+                                <textarea rows="4" id="guestNotes" name="notes" 
+                                          class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 transition-all hover:border-orange-300 resize-none" 
                                           placeholder="{{ __('Any special requests or notes...') }}"></textarea>
                             </div>
                         </div>
                     </form>
+                    
+                    <!-- Submit Form to Review Page -->
+                    <form id="reviewForm" method="POST" action="{{ route('reservation.review', ['locale' => app()->getLocale()]) }}" style="display: none;">
+                        @csrf
+                        <input type="hidden" name="hotel_id" value="{{ request('hotel_id') }}">
+                        <input type="hidden" name="booking_code" value="{{ request('booking_code') }}">
+                        <input type="hidden" name="check_in" value="{{ request('check_in') }}">
+                        <input type="hidden" name="check_out" value="{{ request('check_out') }}">
+                        <input type="hidden" name="guests" value="{{ request('guests', 1) }}">
+                        <input type="hidden" name="total_fare" value="{{ isset($totalFare) ? $totalFare : request('total_fare', 0) }}">
+                        <input type="hidden" name="currency" value="{{ isset($currency) ? $currency : request('currency', 'USD') }}">
+                        <input type="hidden" name="room_name" value="{{ request('room_name') }}">
+                        <input type="hidden" name="inclusion" value="{{ request('inclusion') }}">
+                        <input type="hidden" id="reviewFormName" name="name" value="">
+                        <input type="hidden" id="reviewFormEmail" name="email" value="">
+                        <input type="hidden" id="reviewFormPhone" name="phone" value="">
+                        <input type="hidden" id="reviewFormNotes" name="notes" value="">
+                        <input type="hidden" id="reviewFormTerms" name="terms" value="0">
+                    </form>
+                </div>
+                
+                <!-- Review Step -->
+                <div id="reviewStep" class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-blue-600 hidden">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-clipboard-check text-blue-600 text-2xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">{{ __('Review Your Booking') }}</h2>
+                            <p class="text-sm text-gray-500">{{ __('Please review your booking details before proceeding to payment') }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Guest Information Review -->
+                    <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <i class="fas fa-user text-orange-600"></i>
+                            {{ __('Guest Information') }}
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">{{ __('Full Name') }}</div>
+                                <div class="font-semibold text-gray-900" id="reviewName">-</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">{{ __('Email') }}</div>
+                                <div class="font-semibold text-gray-900" id="reviewEmail">-</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">{{ __('Mobile Number') }}</div>
+                                <div class="font-semibold text-gray-900" id="reviewPhone">-</div>
+                            </div>
+                            <div id="reviewNotesContainer" class="hidden">
+                                <div class="text-sm text-gray-500 mb-1">{{ __('Special Notes') }}</div>
+                                <div class="font-semibold text-gray-900" id="reviewNotes">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Booking Summary Review -->
+                    <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <i class="fas fa-calendar-check text-orange-600"></i>
+                            {{ __('Booking Details') }}
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">{{ __('Hotel') }}</div>
+                                <div class="font-semibold text-gray-900">
+                                    @if($hotel && isset($hotel['HotelName']))
+                                        {{ $hotel['HotelName'] }}
+                                    @else
+                                        {{ __('International Luxury Hotel') }} {{ $hotelId }}
+                                    @endif
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">{{ __('Room Type') }}</div>
+                                <div class="font-semibold text-gray-900">
+                                    @php
+                                        $displayRoomName = 'Room';
+                                        if ($roomData && isset($roomData['Name'])) {
+                                            if (is_array($roomData['Name']) && count($roomData['Name']) > 0) {
+                                                $displayRoomName = $roomData['Name'][0];
+                                            } elseif (is_string($roomData['Name'])) {
+                                                $displayRoomName = $roomData['Name'];
+                                            }
+                                        } elseif (request('room_name')) {
+                                            $displayRoomName = request('room_name');
+                                        }
+                                    @endphp
+                                    {{ $displayRoomName }}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">{{ __('Check In') }}</div>
+                                <div class="font-semibold text-gray-900">{{ $checkIn ?? request('check_in', '--') }}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">{{ __('Check Out') }}</div>
+                                <div class="font-semibold text-gray-900">{{ $checkOut ?? request('check_out', '--') }}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">{{ __('Nights') }}</div>
+                                <div class="font-semibold text-gray-900">{{ $nights ?? 2 }} {{ __('nights') }}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">{{ __('Guests') }}</div>
+                                <div class="font-semibold text-gray-900">{{ $guests ?? request('guests', '2') }} {{ __('Guests') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Price Review -->
+                    @php
+                        $totalFare = 0;
+                        $currency = 'USD';
+                        if ($roomData && isset($roomData['TotalFare']) && $roomData['TotalFare'] > 0) {
+                            $totalFare = (float) $roomData['TotalFare'];
+                            $currency = $roomData['Currency'] ?? 'USD';
+                        } elseif (request('total_fare')) {
+                            $totalFare = (float) request('total_fare');
+                            $currency = request('currency', 'USD');
+                        }
+                    @endphp
+                    <div class="bg-gradient-to-r from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-6 mb-6">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-gray-900">{{ __('Total Amount') }}</span>
+                            <span class="text-3xl font-extrabold text-orange-600">
+                                @if($totalFare > 0)
+                                    {{ number_format($totalFare, 2) }} {{ $currency }}
+                                @else
+                                    {{ __('N/A') }}
+                                @endif
+                            </span>
+                        </div>
+                        <div class="text-xs text-gray-600 mt-2 flex items-center gap-1">
+                            <i class="fas fa-check-circle text-green-600"></i>
+                            {{ __('including all taxes and fees') }}
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex gap-4">
+                        <button type="button" id="backToGuestInfoBtn" 
+                                class="flex-1 bg-gray-200 text-gray-700 py-4 rounded-xl font-bold text-lg hover:bg-gray-300 transition-all duration-300 flex items-center justify-center gap-3">
+                            <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}"></i>
+                            <span>{{ __('Back') }}</span>
+                        </button>
+                        <button type="button" id="proceedToPaymentBtn" 
+                                class="flex-1 bg-gradient-to-r from-orange-600 via-orange-600 to-orange-700 text-white py-4 rounded-xl font-bold text-lg hover:from-orange-700 hover:via-orange-700 hover:to-orange-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group">
+                            <i class="fas fa-lock group-hover:scale-110 transition-transform"></i>
+                            <span>{{ __('Proceed to Payment') }}</span>
+                            <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} group-hover:translate-x-{{ app()->getLocale() === 'ar' ? '1' : '-1' }} transition-transform"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Payment Method - Hidden -->
@@ -200,24 +416,31 @@
                 </div>
                 
                 <!-- Terms & Conditions -->
-                <div class="bg-white rounded-2xl shadow-lg p-6">
-                    <label class="flex items-start cursor-pointer">
-                        <input type="checkbox" required class="w-5 h-5 text-orange-600 mt-1 rounded">
-                        <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }} text-sm text-gray-700">
-                            {{ __('I agree to') }} <a href="#" class="text-orange-600 hover:underline font-semibold">{{ __('Terms and Conditions') }}</a> 
-                            {{ __('and') }} <a href="#" class="text-orange-600 hover:underline font-semibold">{{ __('Privacy Policy') }}</a>
+                <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                    <label class="flex items-start cursor-pointer group">
+                        <input type="checkbox" id="termsCheckbox" required class="w-6 h-6 text-orange-600 mt-0.5 rounded cursor-pointer">
+                        <div class="{{ app()->getLocale() === 'ar' ? 'mr-4' : 'ml-4' }} text-sm text-gray-700">
+                            {{ __('I agree to') }} 
+                            <a href="#" class="text-orange-600 hover:text-orange-700 underline font-semibold transition-colors">{{ __('Terms and Conditions') }}</a> 
+                            {{ __('and') }} 
+                            <a href="#" class="text-orange-600 hover:text-orange-700 underline font-semibold transition-colors">{{ __('Privacy Policy') }}</a>
                         </div>
                     </label>
                 </div>
             </div>
             
             <!-- Booking Summary Sidebar -->
-            <div class="lg:col-span-2">
-                <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
-                    <h3 class="text-xl font-bold text-gray-900 mb-6">{{ __('Booking Summary') }}</h3>
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-xl p-6 sticky top-24 border-t-4 border-orange-600">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-receipt text-orange-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">{{ __('Booking Summary') }}</h3>
+                    </div>
                     
                     <!-- Room Details -->
-                    <div class="mb-6 pb-6 border-b border-gray-200">
+                    <div class="mb-6 pb-6 border-b-2 border-gray-100">
                         @php
                             $hotel = $hotelDetails['HotelDetails'][0] ?? null;
                             $roomImage = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80';
@@ -236,20 +459,29 @@
                                 }
                             }
                         @endphp
-                        <div class="flex gap-4 mb-4">
-                            <img src="{{ $roomImage }}" 
-                                 alt="{{ $roomName }}" class="w-20 h-20 object-cover rounded-xl">
+                        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4">
+                            <div class="flex gap-4">
+                                <img src="{{ $roomImage }}" 
+                                     alt="{{ $roomName }}" class="w-24 h-24 object-cover rounded-xl shadow-md">
                             <div class="flex-1">
-                                <div class="font-bold text-gray-900 mb-1">{{ $roomName }}</div>
-                                <div class="text-sm text-gray-600">
-                                    {{ $guests ?? request('guests', '2') }} {{ __('Guests') }} • {{ $nights ?? 2 }} {{ __('nights') }}
+                                    <div class="font-bold text-gray-900 mb-2 text-lg">{{ $roomName }}</div>
+                                    <div class="flex flex-wrap gap-2 mb-2">
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-lg font-semibold">
+                                            <i class="fas fa-users {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                            {{ $guests ?? request('guests', '2') }} {{ __('Guests') }}
+                                        </span>
+                                        <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-lg font-semibold">
+                                            <i class="fas fa-moon {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                            {{ $nights ?? 2 }} {{ __('nights') }}
+                                        </span>
+                                    </div>
+                                    @if(($roomData && isset($roomData['Inclusion'])) || request('inclusion'))
+                                    <div class="text-xs text-gray-600 mt-2 flex items-center">
+                                        <i class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }} text-orange-600"></i>
+                                        <span>{{ $roomData['Inclusion'] ?? request('inclusion') }}</span>
+                                    </div>
+                                    @endif
                                 </div>
-                                @if($roomData && isset($roomData['Inclusion']))
-                                <div class="text-xs text-gray-500 mt-1">
-                                    <i class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ $roomData['Inclusion'] }}
-                                </div>
-                                @endif
                             </div>
                         </div>
                     </div>
@@ -288,32 +520,42 @@
                     <div class="space-y-3 mb-6">
                         @if($totalFare > 0)
                         @if($nightsCount > 1 && $pricePerNight > 0)
-                        <div class="flex justify-between text-gray-700">
-                            <span>{{ __('Night Price') }}</span>
-                            <span>{{ number_format($pricePerNight, 2) }} {{ $currency }}</span>
+                        <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
+                            <span class="text-gray-700 flex items-center gap-2">
+                                <i class="fas fa-calendar-day text-orange-600"></i>
+                                {{ __('Night Price') }}
+                            </span>
+                            <span class="font-semibold text-gray-900">{{ number_format($pricePerNight, 2) }} {{ $currency }}</span>
                         </div>
-                        <div class="flex justify-between text-gray-700">
-                            <span>{{ __('Number of Nights') }}</span>
-                            <span>× {{ $nightsCount }}</span>
+                        <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
+                            <span class="text-gray-700 flex items-center gap-2">
+                                <i class="fas fa-moon text-orange-600"></i>
+                                {{ __('Number of Nights') }}
+                            </span>
+                            <span class="font-semibold text-gray-900">× {{ $nightsCount }}</span>
                         </div>
                         @endif
                         @if($roomData && isset($roomData['TotalTax']) && $roomData['TotalTax'] > 0)
-                        <div class="flex justify-between text-gray-700">
-                            <span>{{ __('Tax') }}</span>
-                            <span>{{ number_format($roomData['TotalTax'], 2) }} {{ $currency }}</span>
+                        <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
+                            <span class="text-gray-700 flex items-center gap-2">
+                                <i class="fas fa-receipt text-orange-600"></i>
+                                {{ __('Tax') }}
+                            </span>
+                            <span class="font-semibold text-gray-900">{{ number_format($roomData['TotalTax'], 2) }} {{ $currency }}</span>
                         </div>
                         @endif
                         @else
-                        <div class="text-sm text-gray-500 text-center py-4">
-                            {{ __('Price information not available') }}
+                        <div class="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
+                            <i class="fas fa-info-circle mb-2"></i>
+                            <div>{{ __('Price information not available') }}</div>
                         </div>
                         @endif
                     </div>
                     
-                    <div class="border-t border-gray-200 pt-4 mb-6">
-                        <div class="flex justify-between text-xl font-bold text-gray-900 mb-2">
-                            <span>{{ __('Total') }}</span>
-                            <span class="text-orange-600">
+                    <div class="bg-gradient-to-r from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-4 mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-lg font-bold text-gray-900">{{ __('Total') }}</span>
+                            <span class="text-2xl font-extrabold text-orange-600">
                                 @if($totalFare > 0)
                                     {{ number_format($totalFare, 2) }} {{ $currency }}
                                 @else
@@ -322,25 +564,35 @@
                             </span>
                         </div>
                         @if($totalFare > 0)
-                        <div class="text-xs text-gray-500">{{ __('including all taxes and fees') }}</div>
+                        <div class="text-xs text-gray-600 flex items-center gap-1">
+                            <i class="fas fa-check-circle text-green-600"></i>
+                            {{ __('including all taxes and fees') }}
+                        </div>
                         @endif
                     </div>
                     
                     <!-- Security Badge -->
-                    <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6">
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4 mb-4">
                         <div class="flex items-center mb-2">
-                            <i class="fas fa-shield-check text-orange-600 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
-                            <span class="font-semibold text-orange-900">{{ __('Secure and guaranteed booking') }}</span>
+                            <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}">
+                                <i class="fas fa-shield-check text-white text-lg"></i>
+                            </div>
+                            <span class="font-bold text-green-900">{{ __('Secure and guaranteed booking') }}</span>
                         </div>
-                        <div class="text-xs text-orange-700">{{ __('All your data is protected with SSL encryption') }}</div>
+                        <div class="text-xs text-green-700 {{ app()->getLocale() === 'ar' ? 'mr-12' : 'ml-12' }}">
+                            <i class="fas fa-lock {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                            {{ __('All your data is protected with SSL encryption') }}
+                        </div>
                     </div>
                     
                     <!-- Cancel Policy -->
-                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
                         <div class="flex items-start">
-                            <i class="fas fa-info-circle text-blue-600 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }} mt-1"></i>
+                            <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }} flex-shrink-0">
+                                <i class="fas fa-info-circle text-white"></i>
+                            </div>
                             <div>
-                                <div class="font-semibold text-blue-900 mb-1">{{ __('Cancellation Policy') }}</div>
+                                <div class="font-bold text-blue-900 mb-1">{{ __('Cancellation Policy') }}</div>
                                 <div class="text-xs text-blue-700">{{ __('You can cancel for free up to 24 hours before check-in date') }}</div>
                             </div>
                         </div>
@@ -348,28 +600,44 @@
                     
                     <!-- Submit Button -->
                     @if(isset($paymentData))
-                    <form id="paymentForm" method="POST" action="{{ config('services.sbc.checkout_url') }}">
+                    <form id="paymentForm" method="POST" action="{{ config('services.aps.payment_url') }}">
                         @foreach ($paymentData as $k => $v)
                             <input type="hidden" name="{{ $k }}" value="{{ $v }}">
                         @endforeach
                         <button type="submit" form="paymentForm" 
-                                class="w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white py-4 rounded-xl font-bold text-lg hover:from-orange-700 hover:to-orange-700 transition shadow-lg flex items-center justify-center">
-                            <i class="fas fa-lock {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
-                            {{ __('Confirm Booking and Payment') }}
+                                class="w-full bg-gradient-to-r from-orange-600 via-orange-600 to-orange-700 text-white py-5 rounded-xl font-bold text-lg hover:from-orange-700 hover:via-orange-700 hover:to-orange-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group">
+                            <i class="fas fa-lock group-hover:scale-110 transition-transform"></i>
+                            <span>{{ __('Confirm Booking and Payment') }}</span>
+                            <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} group-hover:translate-x-{{ app()->getLocale() === 'ar' ? '1' : '-1' }} transition-transform"></i>
                         </button>
                     </form>
                     @else
-                    <button type="submit" form="reservationForm" 
-                            class="w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white py-4 rounded-xl font-bold text-lg hover:from-orange-700 hover:to-orange-700 transition shadow-lg flex items-center justify-center">
-                        <i class="fas fa-lock {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
-                        {{ __('Confirm Booking and Payment') }}
+                    <button type="button" id="confirmBookingBtn" 
+                            class="w-full bg-gradient-to-r from-orange-600 via-orange-600 to-orange-700 text-white py-5 rounded-xl font-bold text-lg hover:from-orange-700 hover:via-orange-700 hover:to-orange-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group">
+                        <i class="fas fa-lock group-hover:scale-110 transition-transform"></i>
+                        <span>{{ __('Confirm Booking and Payment') }}</span>
+                        <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} group-hover:translate-x-{{ app()->getLocale() === 'ar' ? '1' : '-1' }} transition-transform"></i>
                     </button>
                     @endif
                     
-                    <div class="text-center mt-4">
-                        <div class="flex items-center justify-center gap-2 text-sm text-gray-600">
-                            <i class="fas fa-lock"></i>
-                            <span>{{ __('100% Secure Payment') }}</span>
+                    <div class="text-center mt-6 pt-6 border-t border-gray-200">
+                        <div class="flex items-center justify-center gap-2 text-sm text-gray-600 mb-3">
+                            <i class="fas fa-shield-alt text-green-600 text-lg"></i>
+                            <span class="font-semibold">{{ __('100% Secure Payment') }}</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-4 mt-3 flex-wrap">
+                            <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-lg shadow-sm">
+                                <i class="fab fa-cc-visa text-blue-600 text-2xl"></i>
+                                <span class="text-xs text-gray-600 font-semibold">Visa</span>
+                            </div>
+                            <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-lg shadow-sm">
+                                <i class="fab fa-cc-mastercard text-red-600 text-2xl"></i>
+                                <span class="text-xs text-gray-600 font-semibold">Mastercard</span>
+                            </div>
+                            <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-lg shadow-sm">
+                                <i class="fas fa-credit-card text-green-600 text-2xl"></i>
+                                <span class="text-xs text-gray-600 font-semibold">Mada</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -435,12 +703,198 @@
         e.target.value = value;
     });
     
-    // Form submission - Update payment form with email before submit
+    // Function to update review section with guest info
+    function updateReviewSection() {
+        const name = document.getElementById('guestName')?.value || '{{ auth()->check() ? auth()->user()->name : "" }}';
+        const email = document.getElementById('guestEmail')?.value || '{{ auth()->check() ? auth()->user()->email : "" }}';
+        const phone = document.getElementById('guestPhone')?.value || '{{ auth()->user()->phone ?? "" }}';
+        const notes = document.getElementById('guestNotes')?.value || '';
+        
+        const reviewName = document.getElementById('reviewName');
+        const reviewEmail = document.getElementById('reviewEmail');
+        const reviewPhone = document.getElementById('reviewPhone');
+        const reviewNotes = document.getElementById('reviewNotes');
+        const reviewNotesContainer = document.getElementById('reviewNotesContainer');
+        
+        if (reviewName) reviewName.textContent = name;
+        if (reviewEmail) reviewEmail.textContent = email;
+        if (reviewPhone) reviewPhone.textContent = phone;
+        
+        if (notes && reviewNotes && reviewNotesContainer) {
+            reviewNotes.textContent = notes;
+            reviewNotesContainer.classList.remove('hidden');
+        } else if (reviewNotesContainer) {
+            reviewNotesContainer.classList.add('hidden');
+        }
+    }
+    
+    // Back to Guest Info button
+    const backToGuestInfoBtn = document.getElementById('backToGuestInfoBtn');
+    if (backToGuestInfoBtn) {
+        backToGuestInfoBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const guestInfoStep = document.getElementById('guestInfoStep');
+            const reviewStep = document.getElementById('reviewStep');
+            if (guestInfoStep) guestInfoStep.classList.remove('hidden');
+            if (reviewStep) reviewStep.classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+    
+    // Proceed to Payment button
+    const proceedToPaymentBtn = document.getElementById('proceedToPaymentBtn');
+    if (proceedToPaymentBtn) {
+        proceedToPaymentBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Disable button to prevent double submission
+            this.disabled = true;
+            const originalHTML = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin {{ app()->getLocale() === "ar" ? "ml-2" : "mr-2" }}"></i>{{ __("Processing...") }}';
+            
+            // Get form data
+            const name = document.getElementById('guestName')?.value || '{{ auth()->check() ? auth()->user()->name : "" }}';
+            const email = document.getElementById('guestEmail')?.value || '{{ auth()->check() ? auth()->user()->email : "" }}';
+            const phone = document.getElementById('guestPhone')?.value || '{{ auth()->user()->phone ?? "" }}';
+            
+            // Get payment data from current page data
+            const totalFare = {{ isset($totalFare) ? $totalFare : (request('total_fare', 0)) }};
+            const currency = '{{ isset($currency) ? $currency : request('currency', 'USD') }}';
+            const hotelId = '{{ request('hotel_id') }}';
+            
+            // Generate payment data via AJAX
+            fetch('{{ route("reservation.submit") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    hotel_id: hotelId,
+                    booking_code: '{{ request("booking_code") }}',
+                    check_in: '{{ request("check_in") }}',
+                    check_out: '{{ request("check_out") }}',
+                    guests: '{{ request("guests") }}',
+                    total_fare: totalFare,
+                    currency: currency,
+                    email: email,
+                    name: name,
+                    phone: phone
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.paymentData) {
+                    // Create and submit payment form
+                    const paymentForm = document.createElement('form');
+                    paymentForm.method = 'POST';
+                    paymentForm.action = '{{ config("services.sbc.checkout_url") }}';
+                    
+                    // Add payment data fields
+                    Object.keys(data.paymentData).forEach(key => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = data.paymentData[key];
+                        paymentForm.appendChild(input);
+                    });
+                    
+                    // Update customer_email
+                    const emailField = paymentForm.querySelector('input[name="customer_email"]');
+                    if (emailField && email) {
+                        emailField.value = email;
+                    }
+                    
+                    document.body.appendChild(paymentForm);
+                    paymentForm.submit();
+                } else {
+                    alert('{{ __('Failed to process payment. Please try again.') }}');
+                    this.disabled = false;
+                    this.innerHTML = originalHTML;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('{{ __('An error occurred. Please try again.') }}');
+                this.disabled = false;
+                this.innerHTML = originalHTML;
+            });
+        });
+    }
+    
+    // Form validation and submission
     const paymentForm = document.getElementById('paymentForm');
     const reservationForm = document.getElementById('reservationForm');
+    const termsCheckbox = document.getElementById('termsCheckbox');
+    const submitButton = document.querySelector('button[type="submit"]');
     
+    function validateForm() {
+        const name = document.getElementById('guestName')?.value.trim();
+        const email = document.getElementById('guestEmail')?.value.trim();
+        const phone = document.getElementById('guestPhone')?.value.trim();
+        const termsAccepted = termsCheckbox?.checked;
+        
+        // Check if guest info section is hidden (using account info)
+        const guestInfoSection = document.getElementById('guestInfoSection');
+        const isUsingAccountInfo = guestInfoSection?.classList.contains('hidden');
+        
+        if (isUsingAccountInfo) {
+            // If using account info, we still need to check terms
+            if (!termsAccepted) {
+                alert('{{ __('Please accept the Terms and Conditions to continue') }}');
+                return false;
+            }
+            return true;
+        }
+        
+        // Validate required fields
+        if (!name) {
+            alert('{{ __('Please enter your full name') }}');
+            document.getElementById('guestName')?.focus();
+            return false;
+        }
+        
+        if (!email) {
+            alert('{{ __('Please enter your email address') }}');
+            document.getElementById('guestEmail')?.focus();
+            return false;
+        }
+        
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('{{ __('Please enter a valid email address') }}');
+            document.getElementById('guestEmail')?.focus();
+            return false;
+        }
+        
+        if (!phone) {
+            alert('{{ __('Please enter your mobile number') }}');
+            document.getElementById('guestPhone')?.focus();
+            return false;
+        }
+        
+        if (!termsAccepted) {
+            alert('{{ __('Please accept the Terms and Conditions to continue') }}');
+            termsCheckbox?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Handle payment form if it exists (when paymentData is already generated)
     if (paymentForm) {
         paymentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate form before submission
+            if (!validateForm()) {
+                return false;
+            }
+            
             // Get email from form or use authenticated user email
             const emailInput = document.getElementById('guestEmail');
             const email = emailInput ? emailInput.value : '{{ auth()->check() ? auth()->user()->email : "" }}';
@@ -451,14 +905,119 @@
                 emailField.value = email;
             }
             
-            // Form will submit to PayFort
+            // Disable button to prevent double submission
+            const btn = paymentForm.querySelector('button[type="submit"]');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin {{ app()->getLocale() === "ar" ? "ml-2" : "mr-2" }}"></i>{{ __("Processing...") }}';
+            }
+            
+            // Submit form to PayFort
+            this.submit();
         });
     }
     
-    // Fallback form submission (if no payment form)
-    reservationForm?.addEventListener('submit', function(e) {
+    // Handle confirm booking button (when no payment form exists) - goes to Review first
+    const confirmBookingBtn = document.getElementById('confirmBookingBtn');
+    if (confirmBookingBtn) {
+        confirmBookingBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Validate form before proceeding - check all required fields
+            let name = document.getElementById('guestName')?.value.trim() || '';
+            let email = document.getElementById('guestEmail')?.value.trim() || '';
+            let phone = document.getElementById('guestPhone')?.value.trim() || '';
+            const termsCheckbox = document.getElementById('termsCheckbox');
+            const termsAccepted = termsCheckbox?.checked;
+            
+            // Check if guest info section is hidden (using account info)
+            const guestInfoSection = document.getElementById('guestInfoSection');
+            const isUsingAccountInfo = guestInfoSection?.classList.contains('hidden');
+            
+            // If using account info, get user data
+            if (isUsingAccountInfo) {
+                name = '{{ auth()->check() ? auth()->user()->name : "" }}';
+                email = '{{ auth()->check() ? auth()->user()->email : "" }}';
+                phone = '{{ auth()->check() ? (auth()->user()->phone ?? "") : "" }}';
+            }
+            
+            // Validate required fields
+            if (!isUsingAccountInfo) {
+                if (!name) {
+                    alert('{{ __('Please enter your full name') }}');
+                    document.getElementById('guestName')?.focus();
+                    return false;
+                }
+                
+                if (!email) {
+                    alert('{{ __('Please enter your email address') }}');
+                    document.getElementById('guestEmail')?.focus();
+                    return false;
+                }
+                
+                // Basic email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    alert('{{ __('Please enter a valid email address') }}');
+                    document.getElementById('guestEmail')?.focus();
+                    return false;
+                }
+                
+                if (!phone) {
+                    alert('{{ __('Please enter your mobile number') }}');
+                    document.getElementById('guestPhone')?.focus();
+                    return false;
+                }
+            }
+            
+            // Check terms and conditions
+            if (!termsAccepted) {
+                alert('{{ __('Please accept the Terms and Conditions to continue') }}');
+                termsCheckbox?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+            
+            // Get final form values (use trimmed values or fallback to user data)
+            const finalName = name || '{{ auth()->check() ? auth()->user()->name : "" }}';
+            const finalEmail = email || '{{ auth()->check() ? auth()->user()->email : "" }}';
+            const finalPhone = phone || '{{ auth()->check() ? (auth()->user()->phone ?? "") : "" }}';
+            const notes = document.getElementById('guestNotes')?.value || '';
+            
+            // Fill hidden form
+            const reviewForm = document.getElementById('reviewForm');
+            if (reviewForm) {
+                document.getElementById('reviewFormName').value = finalName;
+                document.getElementById('reviewFormEmail').value = finalEmail;
+                document.getElementById('reviewFormPhone').value = finalPhone;
+                document.getElementById('reviewFormNotes').value = notes;
+                document.getElementById('reviewFormTerms').value = '1';
+                
+                // Submit form to review page
+                reviewForm.submit();
+            }
+        });
+    }
+    
+    // Also validate on button click (for payment form button)
+    document.querySelectorAll('button[form="paymentForm"]').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            // Always prevent default form submission
         e.preventDefault();
-        alert('{{ __('Reservation request sent successfully! We will contact you soon to confirm the reservation.') }}');
+            e.stopPropagation();
+            
+            // Validate form
+            if (!validateForm()) {
+                return false;
+            }
+            
+            // Trigger payment form submission
+            if (paymentForm) {
+                paymentForm.dispatchEvent(new Event('submit'));
+            }
+            
+            return false;
+        });
     });
 </script>
 @endpush

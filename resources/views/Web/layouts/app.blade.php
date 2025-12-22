@@ -387,7 +387,7 @@
             };
 
             try {
-                let response = await fetch("/login", {
+                let response = await fetch("{{ route('site.login', ['locale' => app()->getLocale()]) }}", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -401,7 +401,15 @@
                 if (result.status === "success") {
                     // document.getElementById('user-icon').classList.remove('hidden');
                     closeAuthModal();
-                    window.location.reload();
+                    
+                    // Check if there's a pending reservation
+                    const pendingReservation = sessionStorage.getItem('pendingReservation');
+                    if (pendingReservation) {
+                        // Reload to trigger the reservation form fill
+                        window.location.reload();
+                    } else {
+                        window.location.reload();
+                    }
                 } else {
                     showToast(result.message, "error");
                 }
