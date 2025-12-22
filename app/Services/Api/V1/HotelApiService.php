@@ -58,6 +58,7 @@ class HotelApiService
             ],
             'ResponseTime' => $data['ResponseTime'] ?? 18,
             'IsDetailedResponse' => $data['IsDetailedResponse'] ?? true,
+            'Language' => $data['Language'] ?? (app()->getLocale() === 'ar' ? 'ar' : 'en'),
             'Filters' => $data['Filters'] ?? [
                 'Refundable' => true,
                 'NoOfRooms' => 0,
@@ -82,23 +83,25 @@ class HotelApiService
         return $response;
     }
 
-    public function getHotels($cityCode, int $page = 1)
+    public function getHotels($cityCode, int $page = 1, string $language = 'en')
     {
         $payload = [
             'CityCode' => $cityCode,
             'IsDetailedResponse' => 'false',
             'PageNo' => $page,
+            'Language' => $language,
         ];
 
         return $this->sendRequest('TBOHotelCodeList', $payload);
     }
 
-    public function getCityHotels($cityCode, int $page = 1)
+    public function getCityHotels($cityCode, int $page = 1, string $language = 'en')
     {
         $payload = [
             'CityCode' => $cityCode,
             'IsDetailedResponse' => 'true',
             'PageNo' => $page,
+            'Language' => $language,
         ];
 
         return $this->sendRequest('TBOHotelCodeList', $payload);
@@ -107,7 +110,7 @@ class HotelApiService
     /**
      * Get all hotels from a city by fetching all pages
      */
-    public function getAllCityHotels(string $cityCode, bool $detailed = true): array
+    public function getAllCityHotels(string $cityCode, bool $detailed = true, string $language = 'en'): array
     {
         $allHotels = [];
         $page = 1;
@@ -115,7 +118,7 @@ class HotelApiService
 
         do {
             try {
-                $response = $this->getCityHotels($cityCode, $page);
+                $response = $this->getCityHotels($cityCode, $page, $language);
 
                 // Check if request was successful
                 if (isset($response['Status']) && $response['Status']['Code'] !== 200) {
@@ -177,7 +180,7 @@ class HotelApiService
      * Get hotels from multiple cities using TBOHotelCodeList
      * This replaces the random city approach with a comprehensive approach
      */
-    public function getHotelsFromMultipleCities(array $cityCodes, bool $detailed = true, ?int $maxHotelsPerCity = null): array
+    public function getHotelsFromMultipleCities(array $cityCodes, bool $detailed = true, ?int $maxHotelsPerCity = null, string $language = 'en'): array
     {
         $allHotels = [];
         $totalPagesFetched = 0;
@@ -191,8 +194,8 @@ class HotelApiService
 
                 do {
                     $response = $detailed
-                        ? $this->getCityHotels($cityCode, $page)
-                        : $this->getHotels($cityCode, $page);
+                        ? $this->getCityHotels($cityCode, $page, $language)
+                        : $this->getHotels($cityCode, $page, $language);
 
                     // Check if request was successful
                     if (isset($response['Status']) && $response['Status']['Code'] !== 200) {
@@ -259,24 +262,28 @@ class HotelApiService
         ];
     }
 
-    public function getCountries()
+    public function getCountries(string $language = 'en')
     {
         $url = rtrim($this->baseUrl, '/').'/CountryList';
 
-        return Http::timeout(10) // 10 seconds timeout (reduced from 30s)
-            ->retry(1, 200) // Retry 1 time with 200ms delay (reduced from 2 retries)
+        // TBO might accept language as a query parameter for GET requests
+        return Http::timeout(10)
+            ->retry(1, 200)
             ->withBasicAuth($this->username, $this->password)
             ->withHeaders([
                 'Content-Type' => 'application/json',
             ])
-            ->get($url)
+            ->get($url, [
+                'Language' => $language
+            ])
             ->json();
     }
 
-    public function getCitiesByCountry(string $countryCode)
+    public function getCitiesByCountry(string $countryCode, string $language = 'en')
     {
         $payload = [
             'CountryCode' => $countryCode,
+            'Language' => $language,
         ];
 
         return $this->sendRequest('CityList', $payload);
