@@ -10,7 +10,9 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
-        "mcamara/laravel-localization": "^2.3"
+        "mcamara/laravel-localization": "^2.3",
+        "pragmarx/countries": "^1.0",
+        "stichoza/google-translate-php": "^5.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

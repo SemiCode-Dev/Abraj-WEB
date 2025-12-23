@@ -13,7 +13,7 @@ class ProfileService
         return [
             'status' => 'success',
             'message' => 'Profile retrieved successfully',
-            'user' => $user,
+            'data' => $user,
         ];
     }
 
@@ -41,7 +41,7 @@ class ProfileService
         return [
             'status' => 'success',
             'message' => 'Profile updated successfully',
-            'user' => $user,
+            'data' => $user,
         ];
     }
 }

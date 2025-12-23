@@ -2,10 +2,10 @@
 
 namespace App\Services\Api\V1;
 
-use App\Models\User;
 use App\Models\Otp;
-use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class AuthService
 {
@@ -13,17 +13,18 @@ class AuthService
     {
         $user = User::where('email', $data['email'])->first();
 
-        if (!$user || !Hash::check($data['password'], $user->password)) {
+        if (! $user || ! Hash::check($data['password'], $user->password)) {
             return [
                 'status' => 'error',
                 'message' => 'Invalid credentials',
             ];
         }
         auth()->login($user);
+
         return [
             'status' => 'success',
             'message' => 'Login successful',
-            'user' => $user,
+            'data' => $user,
         ];
     }
 
@@ -36,10 +37,11 @@ class AuthService
             'password' => Hash::make($data['password']),
         ]);
         auth()->login($user);
+
         return [
             'status' => 'success',
             'message' => 'Register successful',
-            'user' => $user,
+            'data' => $user,
         ];
     }
 
@@ -59,7 +61,7 @@ class AuthService
         // Check if user exists (email or phone)
         $user = User::where('email', $identifier)->orWhere('phone', $identifier)->first();
 
-        if (!$user) {
+        if (! $user) {
             return [
                 'status' => 'error',
                 'message' => 'Invalid email or phone number',
@@ -76,7 +78,7 @@ class AuthService
         );
 
         // TODO: Integrate SMS/Email provider to actually send the OTP
-        
+
         return [
             'status' => 'success',
             'message' => 'OTP sent successfully',
@@ -88,8 +90,8 @@ class AuthService
         // Find user first
         $user = User::where('email', $identifier)->orWhere('phone', $identifier)->first();
 
-        if (!$user) {
-             return [
+        if (! $user) {
+            return [
                 'status' => 'error',
                 'message' => 'Invalid email or phone number',
             ];
@@ -97,7 +99,7 @@ class AuthService
 
         $otpRecord = Otp::where('user_id', $user->id)->first();
 
-        if (!$otpRecord) {
+        if (! $otpRecord) {
             return [
                 'status' => 'error',
                 'message' => 'Invalid OTP',
@@ -105,7 +107,7 @@ class AuthService
         }
 
         if ($otpRecord->attempts >= 6) {
-             return [
+            return [
                 'status' => 'error',
                 'message' => 'Too many attempts. Please request a new OTP.',
             ];
@@ -113,6 +115,7 @@ class AuthService
 
         if ($otpRecord->token != $token) {
             $otpRecord->increment('attempts');
+
             return [
                 'status' => 'error',
                 'message' => 'Invalid OTP',
@@ -129,7 +132,6 @@ class AuthService
         // Mark OTP as verified
         $otpRecord->update(['verified' => true]);
 
-
         return [
             'status' => 'success',
             'message' => 'OTP verified successfully',
@@ -139,8 +141,8 @@ class AuthService
     public function resetPassword($email, $token, $newPassword)
     {
         $user = User::where('email', $email)->first();
-        if (!$user) {
-             return [
+        if (! $user) {
+            return [
                 'status' => 'error',
                 'message' => 'User not found',
             ];
@@ -149,16 +151,16 @@ class AuthService
         $otpRecord = Otp::where('user_id', $user->id)->first();
 
         // Check verification status
-        if (!$otpRecord || !$otpRecord->verified) {
-             return [
+        if (! $otpRecord || ! $otpRecord->verified) {
+            return [
                 'status' => 'error',
                 'message' => 'OTP has not been verified',
             ];
         }
-        
+
         // Check token match just in case, though verified flag implies it was correct.
         if ($otpRecord->token != $token) {
-             return [
+            return [
                 'status' => 'error',
                 'message' => 'Invalid OTP token',
             ];
@@ -173,13 +175,9 @@ class AuthService
         // Revoke all tokens (logout)
         $user->tokens()->delete();
 
-
-
         return [
             'status' => 'success',
             'message' => 'Password reset successfully',
         ];
     }
-
-
 }

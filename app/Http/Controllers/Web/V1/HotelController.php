@@ -193,6 +193,12 @@ class HotelController extends Controller
                 $hotels = json_decode(json_encode($hotels), true);
             }
 
+            // Apply robust Hotel Name Translation if Arabic
+            if ($language === 'ar') {
+                $translator = new \App\Services\HotelTranslationService();
+                $hotels = $translator->translateHotels($hotels);
+            }
+
             $formattedHotels = collect($hotels)->map(function ($hotel) {
                 return [
                     'HotelCode' => $hotel['HotelCode'] ?? '',
@@ -315,17 +321,18 @@ class HotelController extends Controller
             $offset = ($page - 1) * $citiesPerPage;
             $currentCityCodes = array_slice($allCityCodes, $offset, $citiesPerPage);
 
-            // Use cache key based on CURRENT page cities
-            // This prevents fetching 66 cities at once
-            $cacheKey = 'hotels_page_'.$page.'_'.md5(implode(',', $currentCityCodes));
+            // Use cache key based on CURRENT page cities and LANGUAGE
+            // This prevents fetching 66 cities at once and prevents language mixups
+            $language = app()->getLocale();
+            $cacheKey = 'hotels_page_'.$page.'_'.$language.'_'.md5(implode(',', $currentCityCodes));
 
             // Cache for 24 hours
-            $hotels = \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function () use ($currentCityCodes) {
+            $hotels = \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function () use ($currentCityCodes, $language) {
                 try {
                     // Fetch from API only for the 4 cities of this page
-                    $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
+                    $apiLang = $language === 'ar' ? 'ar' : 'en';
                     // We fetch 5 hotels per city, so ~20 hotels total
-                    $response = $this->hotelApi->getHotelsFromMultipleCities($currentCityCodes, true, 5, $language);
+                    $response = $this->hotelApi->getHotelsFromMultipleCities($currentCityCodes, true, 5, $apiLang);
 
                     $hotels = $response['Hotels'] ?? [];
 
@@ -339,6 +346,12 @@ class HotelController extends Controller
                     return [];
                 }
             });
+
+            // Apply robust Hotel Name Translation if Arabic
+            if ($language === 'ar') {
+                $translator = new \App\Services\HotelTranslationService();
+                $hotels = $translator->translateHotels($hotels);
+            }
 
             // Count is approximate (Total Cities * Avg Hotels/City) or just hide total
             // For UI consistency, we can show total cities or "many"
@@ -1133,117 +1146,53 @@ class HotelController extends Controller
     }
 
     /**
-     * Helper method to translate cities to Arabic manually
+     * Helper method to translate cities to Arabic using CityTranslationService
      */
     private function translateCities(array $cities): array
     {
-        $arabicMap = [
-            'DXB' => 'دبي',
-            'AUH' => 'أبو ظبي',
-            'RUH' => 'الرياض',
-            'JED' => 'جدة',
-            'DMM' => 'الدمام',
-            'MED' => 'المدينة المنورة',
-            'MAK' => 'مكة المكرمة',
-            'CAI' => 'القاهرة',
-            'IST' => 'اسطنبول',
-            'LON' => 'لندن',
-            'PAR' => 'باريس',
-            'AMM' => 'عمان',
-            'KWI' => 'الكويت',
-            'DOH' => 'الدوحة',
-            'MCT' => 'مسقط',
-            'BAH' => 'المنامة',
-            'BEI' => 'بيروت',
-            'CAS' => 'الدار البيضاء',
-            'RAK' => 'مراكش',
-            'TUN' => 'تونس',
-            'ALG' => 'الجزائر',
-            'KRT' => 'الخرطوم',
-            'SAN' => 'صنعاء',
-            'DAM' => 'دمشق',
-            'BAG' => 'بغداد',
-            'Makkah' => 'مكة المكرمة',
-            'MAK' => 'مكة المكرمة',
-            'Al Madinah' => 'المدينة المنورة',
-            'Madinah' => 'المدينة المنورة',
-            'MED' => 'المدينة المنورة',
-            'Al Khobar' => 'الخبر',
-            'Khobar' => 'الخبر',
-            'DMM' => 'الدمام',
-            'Dhahran' => 'الظهران',
-            'Abha' => 'أبها',
-            'Taif' => 'الطائف',
-            'Tabuk' => 'تبوك',
-            'Buraidah' => 'بريدة',
-            'Hail' => 'حائل',
-            'Najran' => 'نجران',
-            'Jizan' => 'جيزان',
-            'Al Bahah' => 'الباحة',
-            'Sakaka' => 'سكاكا',
-            'Arar' => 'عرعر',
-            'Afif' => 'عفيف',
-            'Al Bukayriyah' => 'البكيرية',
-            'Al Majma\'ah' => 'المجمعة',
-            'Al Lith' => 'الليث',
-            'Al Lith Makkah' => 'الليث',
-            'Al Qunfudhah' => 'القنفذة',
-            'Al Qunfudhah Makkah' => 'القنفذة',
-            'Al Wajh' => 'الوجه',
-            'Al Lith, Makkah' => 'الليث',
-            'Al Qunfudhah, Makkah' => 'القنفذة',
-            'Al Madinah Province' => 'منطقة المدينة المنورة',
-            'Yanbu' => 'ينبع',
-            'Yanbu Al Bahr' => 'ينبع البحر',
-        ];
+        // Extract names to translate
+        $names = [];
+        foreach ($cities as $city) {
+            $name = $city['CityName'] ?? $city['Name'] ?? '';
+            if (!empty($name)) {
+                $names[] = trim($name);
+            }
+        }
+
+        // Use the service to batch translate
+        // This handles: Check Local DB -> Google Translate if missing -> Save Local DB
+        $translationService = new \App\Services\CityTranslationService();
+        $translatedNames = $translationService->translateBatch($names, 5); // Limit 5 API calls per request
 
         foreach ($cities as &$city) {
-            $code = $city['CityCode'] ?? $city['Code'] ?? '';
             $name = $city['CityName'] ?? $city['Name'] ?? '';
+            if (empty($name)) continue;
 
-            // Debug logging
-            Log::info("Translating City: Code=[$code], Name=[$name]");
+            $name = trim($name);
 
-            // Explicit overrides for problematic matches
+            // Manual Overrides for specific tricky cases
             if (stripos($name, 'Al Lith') !== false) {
                 $city['CityName'] = 'الليث';
                 $city['Name'] = 'الليث';
-
                 continue;
             }
             if (stripos($name, 'Al Qunfudhah') !== false) {
                 $city['CityName'] = 'القنفذة';
                 $city['Name'] = 'القنفذة';
-
-                continue;
-            }
-            if (stripos($name, 'Al Madinah Province') !== false) {
-                $city['CityName'] = 'منطقة المدينة المنورة';
-                $city['Name'] = 'منطقة المدينة المنورة';
-
                 continue;
             }
 
-            if (isset($arabicMap[$code])) {
-                $city['CityName'] = $arabicMap[$code];
-                $city['Name'] = $arabicMap[$code];
-            } elseif (isset($arabicMap[$name])) {
-                $city['CityName'] = $arabicMap[$name];
-                $city['Name'] = $arabicMap[$name];
-            } else {
-                // Try tougher matching: Case-insensitive and trimmed
-                foreach ($arabicMap as $key => $value) {
-                    if (strcasecmp(trim($name), trim($key)) === 0) {
-                        $city['CityName'] = $value;
-                        $city['Name'] = $value;
-                        break;
-                    }
-                }
+            // Apply Translation from Service
+            if (isset($translatedNames[$name])) {
+                $city['CityName'] = $translatedNames[$name];
+                $city['Name'] = $translatedNames[$name];
             }
         }
 
         return $cities;
     }
+
+
 
     public function bookingSuccess($reference)
     {
