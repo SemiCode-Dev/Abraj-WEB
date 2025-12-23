@@ -1821,82 +1821,13 @@
                 if (btnText) btnText.classList.add("hidden");
                 if (btnLoader) btnLoader.classList.remove("hidden");
 
-                // Validate hotel code
-                if (!hotelCode || hotelCode.trim() === '') {
-                    showToast("{{ __('Please select a hotel') }}", "error");
-                    searchBtn.disabled = false;
-                    if (btnText) btnText.classList.remove("hidden");
-                    if (btnLoader) btnLoader.classList.add("hidden");
-                    return;
-                }
+                // Prepare Redirect URL to Hotel Details Page
+                const baseUrl = "{{ route('hotel.details', ['id' => ':hotelCode']) }}";
+                const redirectUrl = baseUrl.replace(':hotelCode', hotelCode) +
+                    `?check_in=${checkIn}&check_out=${checkOut}&guests=${adults}`;
 
-                // Prepare search data
-                const searchData = {
-                    CheckIn: checkIn,
-                    CheckOut: checkOut,
-                    HotelCodes: hotelCode.toString().trim(), // Ensure it's a string and not empty
-                    GuestNationality: 'AE',
-                    PaxRooms: [{
-                        Adults: parseInt(adults) || 1,
-                        Children: 0,
-                        ChildrenAges: []
-                    }],
-                    ResponseTime: 18,
-                    IsDetailedResponse: true,
-                    Filters: {
-                        Refundable: true,
-                        NoOfRooms: 0,
-                        MealType: 'All'
-                    }
-                };
-
-                // Call search API
-                fetch("{{ route('hotel.search') }}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                ?.getAttribute('content') || '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify(searchData)
-                    })
-                    .then(res => {
-                        if (!res.ok) {
-                            throw new Error('Failed to search hotels');
-                        }
-                        return res.json();
-                    })
-                    .then(data => {
-                        // Handle API error response
-                        if (data.Status && data.Status.Code !== 200) {
-                            const errorMsg = data.Status.Description || 'Failed to search hotels';
-                            throw new Error(errorMsg);
-                        }
-
-                        // Handle error response
-                        if (data.error) {
-                            throw new Error(data.error);
-                        }
-
-                        // Store search results in sessionStorage and redirect to hotels page
-                        sessionStorage.setItem('hotelSearchResults', JSON.stringify(data));
-                        sessionStorage.setItem('searchParams', JSON.stringify(searchData));
-
-                        // Redirect to hotels page with search results
-                        const url = "{{ route('hotels.search') }}";
-                        window.location.href = url;
-                    })
-                    .catch(err => {
-                        console.error("Error searching hotels:", err);
-                        const errorMessage = err.message ||
-                            "{{ __('Failed to search hotels. Please try again.') }}";
-                        showToast(errorMessage, "error");
-
-                        // Re-enable button
-                        searchBtn.disabled = false;
-                        if (btnText) btnText.classList.remove("hidden");
-                        if (btnLoader) btnLoader.classList.add("hidden");
-                    });
+                // Redirect
+                window.location.href = redirectUrl;
             });
 
         });

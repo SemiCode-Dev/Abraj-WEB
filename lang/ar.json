@@ -467,6 +467,17 @@
     "The image must be a file of type: jpeg, png, jpg, gif.": "يجب أن تكون الصورة من نوع: jpeg, png, jpg, gif.",
     "The image may not be greater than 2MB.": "يجب ألا تتجاوز الصورة 2 ميجابايت.",
     "Profile Image": "صورة الملف الشخصي",
-    "Maximum file size: 2MB. Allowed types: jpeg, png, jpg, gif": "الحد الأقصى لحجم الملف: 2 ميجابايت. الأنواع المسموحة: jpeg, png, jpg, gif"
+    "Maximum file size: 2MB. Allowed types: jpeg, png, jpg, gif": "الحد الأقصى لحجم الملف: 2 ميجابايت. الأنواع المسموحة: jpeg, png, jpg, gif",
+    "Confirm Your Reservation": "تأكيد الحجز",
+    "Please review all booking details carefully before proceeding to payment": "يرجى مراجعة تفاصيل الحجز بعناية قبل إتمام الدفع",
+    "Back": "رجوع",
+    "Payment Summary": "ملخص الدفع",
+    "Total Amount": "المبلغ الإجمالي",
+    "Pay Now": "ادفع الآن",
+    "Hotel & Room Details": "تفاصيل الفندق والغرفة",
+    "Hotel Name": "اسم الفندق",
+    "Booking Dates": "تواريخ الحجز",
+    "Nights": "عدد الليالي",
+    "Important": "مهم",
+    "By clicking \"Pay Now\", you confirm that all information is correct and agree to proceed with the payment.": "بالضغط على \"ادفع الآن\"، أنت تؤكد صحة البيانات وتوافق على إتمام عملية الدفع."
 }
-

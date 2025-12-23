@@ -23,17 +23,16 @@ class HomeController extends Controller
 
     public function index()
     {
-        // CACHE DISABLED FOR TESTING - Check actual load time
+        set_time_limit(120); // Give more time for initial cache build
         // Cache payment data (doesn't change often)
-        // $data = Cache::remember('aps_payment_data', 1800, function () {
-        //     return $this->paymentService->apsPayment();
-        // });
-        $data = $this->paymentService->apsPayment();
+        $data = Cache::remember('aps_payment_data', 1800, function () {
+            return $this->paymentService->apsPayment();
+        });
 
-        // Get limited city codes for homepage (first 15 cities only for faster loading)
+        // Get limited city codes for homepage (first 6 cities for faster loading)
         $cityCodes = City::whereNotNull('code')
             ->where('code', '!=', '')
-            ->limit(15)
+            ->limit(6)
             ->pluck('code')
             ->toArray();
 
@@ -42,38 +41,35 @@ class HomeController extends Controller
             $cityCodes = [];
         }
 
-        // Get hotels from multiple cities using TBOHotelCodeList
-        // CACHE DISABLED FOR TESTING - Check actual load time
         // Cache for 2 hours to improve performance (longer cache for homepage)
-        // $cacheKey = 'featured_hotels_homepage_'.md5(implode(',', $cityCodes));
-        // $response = Cache::remember($cacheKey, 7200, function () use ($cityCodes) {
-        try {
-            if (empty($cityCodes)) {
-                $response = [
+        $cacheKey = 'featured_hotels_homepage_'.md5(implode(',', $cityCodes));
+        $response = Cache::remember($cacheKey, 7200, function () use ($cityCodes) {
+            try {
+                if (empty($cityCodes)) {
+                    return [
+                        'Status' => [
+                            'Code' => 200,
+                            'Description' => 'Success',
+                        ],
+                        'Hotels' => [],
+                    ];
+                } else {
+                    // Get very limited hotels from each city (only 3 per city for homepage speed)
+                    $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
+                    return $this->hotelApi->getHotelsFromMultipleCities($cityCodes, true, 3, $language);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch featured hotels: '.$e->getMessage());
+
+                return [
                     'Status' => [
-                        'Code' => 200,
-                        'Description' => 'Success',
+                        'Code' => 500,
+                        'Description' => 'Error',
                     ],
                     'Hotels' => [],
                 ];
-            } else {
-                // Get very limited hotels from each city (only 3 per city for homepage speed)
-                // This reduces API calls significantly
-                $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
-                $response = $this->hotelApi->getHotelsFromMultipleCities($cityCodes, true, 3, $language);
             }
-        } catch (\Exception $e) {
-            Log::error('Failed to fetch featured hotels: '.$e->getMessage());
-
-            $response = [
-                'Status' => [
-                    'Code' => 500,
-                    'Description' => 'Error',
-                ],
-                'Hotels' => [],
-            ];
-        }
-        // });
+        });
 
         $hotels = $response['Hotels'] ?? [];
 
@@ -88,50 +84,41 @@ class HomeController extends Controller
 
         $hotels2 = array_slice($hotels, 4, 3);
 
-        // Get cities for display (limit to first 10 for performance)
-        // CACHE DISABLED FOR TESTING - Check actual load time
         // Use cache for cities query
-        // $cities = Cache::remember('homepage_cities', 3600, function () {
-        //     return City::whereNotNull('code')
-        //         ->where('code', '!=', '')
-        //         ->limit(10)
-        //         ->get();
-        // });
-        $cities = City::whereNotNull('code')
-            ->where('code', '!=', '')
-            ->limit(10)
-            ->get();
+        $cities = Cache::remember('homepage_cities', 3600, function () {
+            return City::whereNotNull('code')
+                ->where('code', '!=', '')
+                ->limit(10)
+                ->get();
+        });
 
-        // Fetch countries from TBO API
-        // CACHE DISABLED FOR TESTING - Check actual load time
         // Fetch countries from TBO API with caching (longer cache - 24 hours)
-        // $countries = Cache::remember('tbo_countries', 86400, function () {
-        try {
-            // Fetch countries in the current locale language
-            // Manual translation below will serve as fallback if API doesn't return proper Arabic
-            $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
-            $response = $this->hotelApi->getCountries($language);
+        $countries = Cache::remember('tbo_countries_'.app()->getLocale(), 86400, function () {
+            try {
+                // Fetch countries in the current locale language
+                $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
+                $response = $this->hotelApi->getCountries($language);
 
-            // Handle different possible response structures
-            if (isset($response['CountryList']) && is_array($response['CountryList'])) {
-                $countries = $response['CountryList'];
-            } elseif (is_array($response) && isset($response[0])) {
-                // If response is directly an array
-                $countries = $response;
-            } else {
-                $countries = [];
+                // Handle different possible response structures
+                if (isset($response['CountryList']) && is_array($response['CountryList'])) {
+                    $countryData = $response['CountryList'];
+                } elseif (is_array($response) && isset($response[0])) {
+                    $countryData = $response;
+                } else {
+                    $countryData = [];
+                }
+
+                // Manual Arabic Translation Interceptor
+                if (app()->getLocale() === 'ar' && ! empty($countryData)) {
+                    $countryData = $this->translateCountries($countryData);
+                }
+                
+                return $countryData;
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch countries from TBO API: '.$e->getMessage());
+                return [];
             }
-
-            // Manual Arabic Translation Interceptor
-            if (app()->getLocale() === 'ar' && ! empty($countries)) {
-                $countries = $this->translateCountries($countries);
-            }
-        } catch (\Exception $e) {
-            Log::error('Failed to fetch countries from TBO API: '.$e->getMessage());
-
-            $countries = [];
-        }
-        // });
+        });
 
         return view('Web.home', [
             'cities' => $cities,

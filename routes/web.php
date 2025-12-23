@@ -67,6 +67,10 @@ Route::group([
     Route::post('/reservation/review', [HotelController::class, 'review'])->name('reservation.review');
     Route::post('/reservation', [HotelController::class, 'reservation'])->name('reservation.submit');
 
+    // Hotel Booking Flow
+    Route::post('/hotel/booking', [\App\Http\Controllers\Web\V1\HotelBookingController::class, 'store'])->name('hotel.booking.store');
+    Route::get('/booking/success/{reference}', [HotelController::class, 'bookingSuccess'])->name('booking.success');
+
     // Contact Us
     Route::get('/contact', function () {
         return view('Web.contact');

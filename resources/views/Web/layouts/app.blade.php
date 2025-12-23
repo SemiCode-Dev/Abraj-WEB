@@ -12,14 +12,14 @@
     @if (session()->has('success'))
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                showToast('{{ session('success') }}' , 'success');
+                showToast('{{ session('success') }}', 'success');
             });
         </script>
     @endif
     @if (session()->has('error'))
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                showToast('{{ session('error') }}' , 'error');
+                showToast('{{ session('error') }}', 'error');
             });
         </script>
     @endif
@@ -401,7 +401,7 @@
                 if (result.status === "success") {
                     // document.getElementById('user-icon').classList.remove('hidden');
                     closeAuthModal();
-                    
+
                     // Check if there's a pending reservation
                     const pendingReservation = sessionStorage.getItem('pendingReservation');
                     if (pendingReservation) {
@@ -532,6 +532,7 @@
     <div id="toast-container"
         class="fixed top-5 {{ app()->getLocale() === 'ar' ? 'left-5' : 'right-5' }} z-[9999] space-y-3"></div>
 
+    @stack('scripts')
 </body>
 
 </html>

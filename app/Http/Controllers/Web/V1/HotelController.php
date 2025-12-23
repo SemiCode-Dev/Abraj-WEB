@@ -7,6 +7,7 @@ use App\Http\Requests\Web\V1\ReservationReviewRequest;
 use App\Models\City;
 use App\Services\Api\V1\HotelApiService;
 use App\Services\Api\V1\PaymentService;
+use App\Services\Api\V1\BookingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -14,14 +15,11 @@ use Illuminate\Support\Facades\Log;
 
 class HotelController extends Controller
 {
-    protected HotelApiService $hotelApi;
-
-    protected PaymentService $paymentService;
-
-    public function __construct(HotelApiService $hotelApi, PaymentService $paymentService)
+    public function __construct(HotelApiService $hotelApi, PaymentService $paymentService, BookingService $bookingService)
     {
         $this->hotelApi = $hotelApi;
         $this->paymentService = $paymentService;
+        $this->bookingService = $bookingService;
     }
 
     public function search(Request $request)
@@ -88,10 +86,77 @@ class HotelController extends Controller
             $data['Language'] = $language;
             $cacheKey = 'hotel_search_'.md5(json_encode($data));
 
-            // Cache search results for 1 hour (3600 seconds)
-            $response = Cache::remember($cacheKey, 3600, function () use ($data) {
+            // Cache search results for 5 minutes (300 seconds) - reduced from 1 hour
+            // Shorter cache ensures fresher availability data after bookings
+            $response = Cache::remember($cacheKey, 300, function () use ($data) {
                 return $this->hotelApi->searchHotel($data);
             });
+
+            // Filter rooms based on LOCAL bookings (Safety Layer)
+            // 1. Filter CONFIRMED: Normal bookings
+            // 2. Filter PENDING: Payment in progress
+            if (isset($response['HotelResult']) && is_array($response['HotelResult'])) {
+                foreach ($response['HotelResult'] as $hotelIndex => $hotel) {
+                    if (isset($hotel['Rooms']) && is_array($hotel['Rooms'])) {
+                        $hotelCode = $hotel['HotelCode'] ?? '';
+                        
+                        // Count bookings that should reduce availability (CONFIRMED + PENDING)
+                        $reservedRoomCounts = \App\Models\HotelBooking::where('hotel_code', $hotelCode)
+                            ->whereIn('booking_status', [
+                                \App\Constants\BookingStatus::CONFIRMED,
+                                \App\Constants\BookingStatus::PENDING
+                            ])
+                            ->where(function ($query) use ($checkIn, $checkOut) {
+                                $query->where('check_in', '<', $checkOut)
+                                      ->where('check_out', '>', $checkIn);
+                            })
+                            ->selectRaw('room_name, COUNT(*) as reserved_count')
+                            ->groupBy('room_name')
+                            ->pluck('reserved_count', 'room_name')
+                            ->toArray();
+                        
+                        // Only filter if there are reserved rooms
+                        if (!empty($reservedRoomCounts)) {
+                            // Group rooms by name to count how many TBO returned
+                            $roomsByName = [];
+                            foreach ($hotel['Rooms'] as $room) {
+                                $roomName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
+                                if (!isset($roomsByName[$roomName])) {
+                                    $roomsByName[$roomName] = [];
+                                }
+                                $roomsByName[$roomName][] = $room;
+                            }
+                            
+                            // For each room type, remove the number that are Reserved
+                            $filteredRooms = [];
+                            foreach ($roomsByName as $roomName => $rooms) {
+                                $tboAvailableCount = count($rooms);
+                                $reservedCount = $reservedRoomCounts[$roomName] ?? 0;
+                                $actuallyAvailableCount = max(0, $tboAvailableCount - $reservedCount);
+                                
+                                // Add only the actually available rooms
+                                for ($i = 0; $i < $actuallyAvailableCount; $i++) {
+                                    if (isset($rooms[$i])) {
+                                        $filteredRooms[] = $rooms[$i];
+                                    }
+                                }
+                                
+                                if ($reservedCount > 0) {
+                                    Log::info("Room availability adjusted (Confirmed+Pending)", [
+                                        'hotel' => $hotelCode,
+                                        'room_type' => $roomName,
+                                        'tbo_count' => $tboAvailableCount,
+                                        'reserved_count' => $reservedCount,
+                                        'showing_count' => $actuallyAvailableCount
+                                    ]);
+                                }
+                            }
+                            
+                            $response['HotelResult'][$hotelIndex]['Rooms'] = $filteredRooms;
+                        }
+                    }
+                }
+            }
 
             // Log response for debugging
             Log::info('Hotel search response', [
@@ -100,6 +165,8 @@ class HotelController extends Controller
                 'cached' => Cache::has($cacheKey),
             ]);
 
+            // TBO API manages room inventory, but we add a local safety layer
+            // to handle Stale Cache, Slow Updates, and Pending Payments
             return response()->json($response);
         } catch (\Exception $e) {
             Log::error('Failed to search hotels: '.$e->getMessage());
@@ -212,36 +279,53 @@ class HotelController extends Controller
     public function getAllHotels()
     {
         try {
+            // Increase execution time for this request to 120s as a safety net
+            set_time_limit(120);
+
             // Get current page from request
             $page = (int) request('page', 1);
-            $perPage = 12; // Hotels per page
+            $citiesPerPage = 4; // Fetch hotels from 4 cities per page (4 * 5 = ~20 hotels)
 
-            // Get city codes from database
-            $cityCodes = City::whereNotNull('code')
+            // Get all city codes from database (Fast local query)
+            $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
+                ->orderBy('name', 'asc') // Consistent ordering for pagination
                 ->pluck('code')
                 ->toArray();
 
-            if (empty($cityCodes)) {
+            if (empty($allCityCodes)) {
                 return view('Web.hotels', [
                     'hotels' => [],
                     'currentPage' => 1,
                     'totalPages' => 1,
                     'totalHotels' => 0,
-                    'perPage' => $perPage,
+                    'perPage' => 12,
                 ]);
             }
 
-            // Use cache key based on city codes count (changes when cities are added/removed)
-            $cacheKey = 'all_hotels_'.md5(implode(',', $cityCodes));
+            // Calculate pagination based on CITIES
+            $totalCities = count($allCityCodes);
+            $totalPages = (int) ceil($totalCities / $citiesPerPage);
+            
+            // Ensure page is valid
+            if ($page < 1) $page = 1;
+            if ($page > $totalPages && $totalPages > 0) $page = $totalPages;
 
-            // Cache for 24 hours - hotels don't change frequently
-            $allHotels = \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function () use ($cityCodes) {
+            // Get cities for current page
+            $offset = ($page - 1) * $citiesPerPage;
+            $currentCityCodes = array_slice($allCityCodes, $offset, $citiesPerPage);
+
+            // Use cache key based on CURRENT page cities
+            // This prevents fetching 66 cities at once
+            $cacheKey = 'hotels_page_'.$page.'_'.md5(implode(',', $currentCityCodes));
+
+            // Cache for 24 hours
+            $hotels = \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function () use ($currentCityCodes) {
                 try {
-                    // Get hotels from all cities using TBOHotelCodeList
-                    // Limit to 5 hotels per city for faster loading (can be increased if needed)
+                    // Fetch from API only for the 4 cities of this page
                     $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
-                    $response = $this->hotelApi->getHotelsFromMultipleCities($cityCodes, true, 5, $language);
+                    // We fetch 5 hotels per city, so ~20 hotels total
+                    $response = $this->hotelApi->getHotelsFromMultipleCities($currentCityCodes, true, 5, $language);
 
                     $hotels = $response['Hotels'] ?? [];
 
@@ -251,26 +335,21 @@ class HotelController extends Controller
 
                     return $hotels;
                 } catch (\Exception $e) {
-                    Log::error('Failed to fetch all hotels from API: '.$e->getMessage());
-
+                    Log::error('Failed to fetch page hotels from API: '.$e->getMessage());
                     return [];
                 }
             });
 
-            // Calculate pagination
-            $totalHotels = count($allHotels);
-            $totalPages = (int) ceil($totalHotels / $perPage);
-            $offset = ($page - 1) * $perPage;
-
-            // Get hotels for current page
-            $hotels = array_slice($allHotels, $offset, $perPage);
+            // Count is approximate (Total Cities * Avg Hotels/City) or just hide total
+            // For UI consistency, we can show total cities or "many"
+            $estimatedTotalHotels = $totalCities * 5; 
 
             return view('Web.hotels', [
-                'hotels' => $hotels,
+                'hotels' => $hotels, // Already sliced by API logic effectively
                 'currentPage' => $page,
                 'totalPages' => $totalPages,
-                'totalHotels' => $totalHotels,
-                'perPage' => $perPage,
+                'totalHotels' => $estimatedTotalHotels,
+                'perPage' => count($hotels), // Dynamic per page
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to fetch all hotels: '.$e->getMessage());
@@ -388,6 +467,66 @@ class HotelController extends Controller
                         } elseif (! empty($searchResponse['Hotels']) && is_array($searchResponse['Hotels'])) {
                             // Fallback for different response structures
                             $availableRooms = $searchResponse['Hotels'][0]['Rooms'] ?? [];
+                        }
+
+                        // Filter rooms based on LOCAL bookings (Safety Layer)
+                        // 1. Filter CONFIRMED: Normal bookings
+                        // 2. Filter PENDING: Payment in progress
+                        if (!empty($availableRooms)) {
+                            // Count bookings that should reduce availability (CONFIRMED + PENDING)
+                            $reservedRoomCounts = \App\Models\HotelBooking::where('hotel_code', $id)
+                                ->whereIn('booking_status', [
+                                    \App\Constants\BookingStatus::CONFIRMED,
+                                    \App\Constants\BookingStatus::PENDING
+                                ])
+                                ->where(function ($query) use ($checkIn, $checkOut) {
+                                    $query->where('check_in', '<', $checkOut)
+                                          ->where('check_out', '>', $checkIn);
+                                })
+                                ->selectRaw('room_name, COUNT(*) as reserved_count')
+                                ->groupBy('room_name')
+                                ->pluck('reserved_count', 'room_name')
+                                ->toArray();
+                            
+                            // Only filter if there are reserved books
+                            if (!empty($reservedRoomCounts)) {
+                                // Group rooms by name
+                                $roomsByName = [];
+                                foreach ($availableRooms as $room) {
+                                    $roomName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
+                                    if (!isset($roomsByName[$roomName])) {
+                                        $roomsByName[$roomName] = [];
+                                    }
+                                    $roomsByName[$roomName][] = $room;
+                                }
+                                
+                                // For each room type, reduce by the number Reserved
+                                $filteredRooms = [];
+                                foreach ($roomsByName as $roomName => $rooms) {
+                                    $tboAvailableCount = count($rooms);
+                                    $reservedCount = $reservedRoomCounts[$roomName] ?? 0;
+                                    $actuallyAvailableCount = max(0, $tboAvailableCount - $reservedCount);
+                                    
+                                    // Add only the actually available rooms
+                                    for ($i = 0; $i < $actuallyAvailableCount; $i++) {
+                                        if (isset($rooms[$i])) {
+                                            $filteredRooms[] = $rooms[$i];
+                                        }
+                                    }
+                                    
+                                    if ($reservedCount > 0) {
+                                        Log::info("Hotel details - Room availability adjusted (Confirmed+Pending)", [
+                                            'hotel' => $id,
+                                            'room_type' => $roomName,
+                                            'tbo_count' => $tboAvailableCount,
+                                            'reserved_count' => $reservedCount,
+                                            'showing_count' => $actuallyAvailableCount
+                                        ]);
+                                    }
+                                }
+                                
+                                $availableRooms = $filteredRooms;
+                            }
                         }
                     } else {
                         Log::warning("Availability check failed for Hotel ID {$id}: ".($searchResponse['Status']['Description'] ?? 'Unknown error'));
@@ -515,6 +654,7 @@ class HotelController extends Controller
             // Get payment data for PayFort
             $totalFare = 0;
             $currency = 'USD';
+            $customerEmail = auth()->check() ? auth()->user()->email : '';
 
             if ($roomData && isset($roomData['TotalFare']) && $roomData['TotalFare'] > 0) {
                 $totalFare = (float) $roomData['TotalFare'];
@@ -524,23 +664,18 @@ class HotelController extends Controller
                 $currency = $request->input('currency', 'USD');
             }
 
-            // Get customer email (from form or authenticated user)
-            $customerEmail = auth()->check() ? auth()->user()->email : $request->input('email', 'guest@example.com');
-
-            // Generate payment data (use original currency and amount)
-            $paymentData = $this->paymentService->apsPaymentForReservation([
-                'amount' => $totalFare,
-                'currency' => $currency,
-                'customer_email' => $customerEmail,
-                'merchant_reference' => 'hotel_'.$hotelId.'_'.uniqid(),
-            ]);
+            // Do not generate payment data immediately. 
+            // We want the user to go through the review process (either AJAX or separate page)
+            // where the actual Booking record is created.
+            $paymentData = null;
 
             // If request is AJAX and wants JSON response (for payment data)
+            // DEPRECATED: Booking creation now happens in review() method
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
-                    'success' => true,
-                    'paymentData' => $paymentData,
-                ]);
+                    'success' => false,
+                    'message' => 'Please use the review step to initiate booking.',
+                ], 400);
             }
 
             return view('Web.reservation', [
@@ -624,18 +759,67 @@ class HotelController extends Controller
 
                     $searchResponse = $this->hotelApi->searchHotel($searchData);
 
-                    // Find the room with matching booking_code
+                    // Find the room with matching booking_code or fallback to matching by name
                     if (isset($searchResponse['HotelResult']) && is_array($searchResponse['HotelResult'])) {
+                        $foundRoom = null;
+                        $requestedRoomName = $request->input('room_name');
+
                         foreach ($searchResponse['HotelResult'] as $hotel) {
                             if (isset($hotel['Rooms']) && is_array($hotel['Rooms'])) {
                                 foreach ($hotel['Rooms'] as $room) {
+                                    // Primary match: BookingCode
                                     if (isset($room['BookingCode']) && $room['BookingCode'] === $bookingCode) {
-                                        $roomData = $room;
-                                        $roomData['Currency'] = $hotel['Currency'] ?? 'USD';
+                                        $foundRoom = $room;
                                         break 2;
+                                    }
+                                    
+                                    // Secondary match: Room Name (if session refreshed and code changed)
+                                    $currentRoomName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
+                                    if ($requestedRoomName && $currentRoomName === $requestedRoomName) {
+                                        $foundRoom = $room;
                                     }
                                 }
                             }
+                        }
+
+                        if ($foundRoom) {
+                            $roomData = $foundRoom;
+                            $roomData['Currency'] = $searchResponse['HotelResult'][0]['Currency'] ?? 'USD';
+                            
+                            // Final safety check: ensure no local confirmed booking exists for this room/dates
+                            $roomName = is_array($roomData['Name']) ? ($roomData['Name'][0] ?? '') : ($roomData['Name'] ?? '');
+                            $isLocallyBooked = \App\Models\HotelBooking::where('hotel_code', $hotelId)
+                                ->where('booking_status', \App\Constants\BookingStatus::CONFIRMED)
+                                ->where('room_name', $roomName)
+                                ->where(function ($query) use ($checkIn, $checkOut) {
+                                    $query->where('check_in', '<', $checkOut)
+                                          ->where('check_out', '>', $checkIn);
+                                })
+                                ->exists();
+                            
+                            if ($isLocallyBooked) {
+                                throw new \Exception(__('This room is no longer available for the selected dates.'));
+                            }
+
+                            // Update bookingCode to the potentially fresh one
+                            $bookingCode = $roomData['BookingCode'];
+                        }
+                    }
+
+                    // Perform PreBook to "lock" the price and verify availability
+                    if ($roomData && isset($roomData['BookingCode'])) {
+                        $preBookResponse = $this->hotelApi->preBook($roomData['BookingCode']);
+                        if (isset($preBookResponse['Status']['Code']) && $preBookResponse['Status']['Code'] == 200) {
+                            // Update roomData and bookingCode from PreBook response if refreshed
+                            if (isset($preBookResponse['BookingCode'])) {
+                                $bookingCode = $preBookResponse['BookingCode'];
+                                $roomData['BookingCode'] = $bookingCode;
+                            }
+                            Log::info('PreBook successful in review step', ['booking_code' => $bookingCode]);
+                        } else {
+                            $errorMsg = $preBookResponse['Status']['Description'] ?? 'Room no longer available';
+                            Log::warning('PreBook failed in review step: ' . $errorMsg);
+                            throw new \Exception(__('The selected room is no longer available: ') . $errorMsg);
                         }
                     }
                 } catch (\Exception $e) {
@@ -672,12 +856,32 @@ class HotelController extends Controller
                 $currency = $request->input('currency', 'USD');
             }
 
-            // Generate payment data
+            // Prepare data for booking creation
+            $bookingData = [
+                'hotel_code' => $hotelId,
+                'hotel_name' => $hotelDetails['HotelDetails'][0]['HotelName'] ?? $hotelDetails['Name'] ?? 'Unknown Hotel',
+                'room_code' => $bookingCode,
+                'room_name' => is_array($roomData['Name']) ? ($roomData['Name'][0] ?? 'Room') : ($roomData['Name'] ?? 'Room'),
+                'check_in' => $checkIn,
+                'check_out' => $checkOut,
+                'total_price' => $totalFare,
+                'currency' => $currency,
+                'guest_name' => $guestName,
+                'guest_email' => $guestEmail,
+                'guest_phone' => $guestPhone,
+                'booking_status' => \App\Constants\BookingStatus::PENDING,
+                'payment_status' => \App\Constants\PaymentStatus::PENDING,
+            ];
+
+            // Create booking record
+            $booking = $this->bookingService->initiateBooking($bookingData);
+
+            // Generate payment data using the REAL booking reference
             $paymentData = $this->paymentService->apsPaymentForReservation([
                 'amount' => $totalFare,
                 'currency' => $currency,
                 'customer_email' => $guestEmail,
-                'merchant_reference' => 'hotel_'.$hotelId.'_'.uniqid(),
+                'merchant_reference' => $booking->booking_reference,
             ]);
 
             return view('Web.reservation-review', [
@@ -699,10 +903,11 @@ class HotelController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Review page error: '.$e->getMessage());
+            Log::error($e->getTraceAsString());
 
             return redirect()->route('reservation', ['locale' => app()->getLocale()])
                 ->withInput()
-                ->with('error', __('Failed to load review page'));
+                ->with('error', __('Failed to load review page') . ': ' . $e->getMessage());
         }
     }
 
@@ -1038,5 +1243,12 @@ class HotelController extends Controller
         }
 
         return $cities;
+    }
+
+    public function bookingSuccess($reference)
+    {
+        $booking = \App\Models\HotelBooking::where('booking_reference', $reference)->firstOrFail();
+
+        return view('Web.booking-success', compact('booking'));
     }
 }

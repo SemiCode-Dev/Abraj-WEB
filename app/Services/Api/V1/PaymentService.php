@@ -41,23 +41,60 @@ class PaymentService
 
     public function apsCallback($data)
     {
+        \Log::info('APS Callback Received', ['data' => $data]);
+
         $receivedSignature = $data['signature'] ?? null;
         unset($data['signature']);
 
         $generatedSignature = $this->apsSignature($data, $this->APS_SHA_RESPONSE);
 
         if ($receivedSignature !== $generatedSignature) {
+            \Log::error('APS Callback Signature Mismatch', [
+                'received' => $receivedSignature,
+                'generated' => $generatedSignature,
+            ]);
+
             return 'Invalid signature — payment not trusted';
         }
 
-        if ($data['status'] == '14') {
+        $merchantReference = $data['merchant_reference'] ?? '';
+        $status = $data['status'] ?? '';
 
-            session()->flash('success', 'Payment Successful: Order '.$data['merchant_reference']);
+        // Handle Hotel Bookings
+        if (str_starts_with(strtoupper($merchantReference), 'BK-')) {
+            $booking = \App\Models\HotelBooking::where('booking_reference', $merchantReference)->first();
+
+            if (! $booking) {
+                \Log::error('Booking not found for Reference: '.$merchantReference);
+
+                return redirect()->route('home')->with('error', __('Booking not found.'));
+            }
+
+            if ($status == '14') { // Success
+                $bookingService = app(\App\Services\Api\V1\BookingService::class);
+                $success = $bookingService->completeBooking($booking, $data);
+
+                if ($success) {
+                    return redirect()->route('home')->with('success', __('Payment successful! Your booking has been confirmed.'));
+                } else {
+                    return redirect()->route('home')->with('error', __('Payment successful, but room booking failed. Our team will contact you for a refund.'));
+                }
+            } else { // Failure
+                $bookingService = app(\App\Services\Api\V1\BookingService::class);
+                $bookingService->cancelBooking($booking, $data['response_message'] ?? 'Payment failed');
+
+                return redirect()->route('home')->with('error', __('Payment failed: ').($data['response_message'] ?? 'Unknown error'));
+            }
+        }
+
+        // Default behavior for other types of payments
+        if ($status == '14') {
+            session()->flash('success', 'Payment Successful: Order '.$merchantReference);
 
             return redirect()->route('home');
         }
 
-        session()->flash('error', 'Payment Failed: '.$data['response_message']);
+        session()->flash('error', 'Payment Failed: '.($data['response_message'] ?? ''));
 
         return redirect()->route('home');
     }
@@ -68,6 +105,9 @@ class PaymentService
         $str = $phrase;
 
         foreach ($data as $key => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            } // Important for APS
             $str .= "$key=$value";
         }
 
@@ -78,16 +118,14 @@ class PaymentService
 
     public function apsPaymentForReservation(array $params = [])
     {
-        $amount = $params['amount'] ?? 200;
-        $currency = $params['currency'] ?? 'USD';
-        $customerEmail = $params['customer_email'] ?? 'test@example.com';
-        $merchantReference = $params['merchant_reference'] ?? uniqid('order_');
+        $amount = $params['amount'] ?? 0;
+        $currency = strtoupper($params['currency'] ?? 'USD');
+        $customerEmail = $params['customer_email'] ?? '';
+        $merchantReference = $params['merchant_reference'] ?? '';
 
-        // Convert amount based on currency
-        // SAR uses fils (1 SAR = 1000 fils), USD uses cents (1 USD = 100 cents)
-        $amountInSmallestUnit = $currency === 'SAR'
-            ? (int) ($amount * 1000) // Convert to fils
-            : (int) ($amount * 100); // Convert to cents
+        // APS requires amount in smallest unit.
+        // SAR and USD both use 2 decimal places for APS processing.
+        $amountInSmallestUnit = (int) round($amount * 100);
 
         $data = [
             'command' => 'PURCHASE',

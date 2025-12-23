@@ -15,5 +15,6 @@ class VerifyCsrfToken extends Middleware
         'aps/callback',
         'en/aps/callback',
         'ar/aps/callback',
+        '*/hotel/booking',
     ];
 }

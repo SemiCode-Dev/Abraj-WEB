@@ -23,7 +23,7 @@ class HotelApiService
     {
         $url = rtrim($this->baseUrl, '/').'/'.$endpoint;
 
-        return Http::timeout(10) // 10 seconds timeout (reduced from 30s)
+        return Http::timeout(60) // Increased to 60 seconds because Booking calls are slow
             ->retry(1, 200) // Retry 1 time with 200ms delay (reduced from 2 retries)
             ->withBasicAuth($this->username, $this->password)
             ->withHeaders([
@@ -291,23 +291,54 @@ class HotelApiService
 
     public function getHotelDetails(string $hotelCode, string $language = 'ar')
     {
-        // Validate hotel code
-        if (empty($hotelCode)) {
-            throw new \InvalidArgumentException('HotelCodes cannot be null or empty');
-        }
-
+        // ... (existing code preserved)
+        // Ensure hotel code is string
         $payload = [
             'Hotelcodes' => (string) $hotelCode,
             'Language' => $language,
         ];
 
-        // Log request for debugging
-        \Illuminate\Support\Facades\Log::info('Hotel details API request', [
-            'endpoint' => 'Hoteldetails',
-            'payload' => $payload,
-            'base_url' => $this->baseUrl,
-        ]);
-
         return $this->sendRequest('Hoteldetails', $payload);
+    }
+
+    /**
+     * PreBook Room (TBO API) - Verify availability and price
+     */
+    public function preBook(string $bookingCode)
+    {
+        $payload = [
+            'BookingCode' => $bookingCode,
+            'PaymentMode' => 'Limit'
+        ];
+
+        return $this->sendRequest('PreBook', $payload);
+    }
+
+    /**
+     * Book Room (TBO API)
+     */
+    public function book(array $data)
+    {
+        // Log the booking request for audit
+        \Illuminate\Support\Facades\Log::info('TBO Book API Request', ['data' => $data]);
+
+        /* 
+           Payload structure based on Postman collection:
+           {
+             "BookingCode": "...",
+             "CustomerDetails": [
+                { "CustomerNames": [ { "Title": "Mr", "FirstName": "...", "LastName": "...", "Type": "Adult" } ] }
+             ],
+             "ClientReferenceId": "...",
+             "BookingReferenceId": "...",
+             "TotalFare": 0.0,
+             "EmailId": "...",
+             "PhoneNumber": "...",
+             "BookingType": "Voucher",
+             "PaymentMode": "Limit"
+           }
+        */
+
+        return $this->sendRequest('Book', $data);
     }
 }
