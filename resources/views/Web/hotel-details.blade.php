@@ -960,11 +960,16 @@
                     }]
                 };
 
-                // Handle API error response
                 if (data.Status && data.Status.Code !== 200) {
-                    // Fallback to mock data if API fails to find rooms (e.g. Code 201)
-                    console.warn("API returned no rooms (Code " + data.Status.Code + "), falling back to mock data.");
-                    displayRooms(mockData, checkIn, checkOut, guests);
+                    console.warn("API returned error/no rooms (Code " + data.Status.Code + ")");
+                    // Show no rooms message instead of mock data
+                    if (availabilityMessage) {
+                        availabilityMessage.textContent = '{{ __('No rooms available for selected dates') }}';
+                        availabilityMessage.className = 'text-sm text-gray-600';
+                        availabilityMessage.classList.remove('hidden');
+                    }
+                    if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
+                    if (roomsList) roomsList.classList.add('hidden');
                     return;
                 }
 
@@ -994,37 +999,14 @@
             } catch (err) {
                 console.error("Error searching rooms:", err);
 
-                // Fallback to mock data on network error
-                const mockData = {
-                    "Hotels": [{
-                        "HotelCode": "{{ $hotelId }}",
-                        "HotelName": "International Luxury Hotel",
-                        "Rooms": [{
-                                "RoomName": "{{ __('Deluxe Room') }}",
-                                "RoomDescription": "{{ __('Room Description 1') }}",
-                                "Rate": 400,
-                                "Currency": "SAR",
-                                "ImageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            },
-                            {
-                                "RoomName": "{{ __('Superior Room') }}",
-                                "RoomDescription": "{{ __('Room Description 2') }}",
-                                "Rate": 500,
-                                "Currency": "SAR",
-                                "ImageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            },
-                            {
-                                "RoomName": "{{ __('Luxury Room') }}",
-                                "RoomDescription": "{{ __('Room Description 3') }}",
-                                "Rate": 600,
-                                "Currency": "SAR",
-                                "ImageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            }
-                        ]
-                    }]
-                };
-                displayRooms(mockData, checkIn, checkOut, guests);
-
+                // Show error message instead of mock data
+                if (availabilityMessage) {
+                    availabilityMessage.textContent = '{{ __('No rooms available for selected dates') }}';
+                    availabilityMessage.className = 'text-sm text-gray-600';
+                    availabilityMessage.classList.remove('hidden');
+                }
+                if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
+                if (roomsList) roomsList.classList.add('hidden');
             } finally {
                 if (checkAvailabilityBtn) {
                     checkAvailabilityBtn.disabled = false;

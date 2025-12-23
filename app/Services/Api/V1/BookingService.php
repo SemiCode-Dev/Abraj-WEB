@@ -26,6 +26,32 @@ class BookingService
     {
         Log::info('Initiating booking in database', $data);
 
+        // 1. Pre-check availability with TBO before creating booking/payment
+        // This ensures strictly that we don't take payment for unavailable rooms
+        Log::info("Pre-checking availability for room: {$data['room_code']}");
+        try {
+            $preBookResponse = $this->tboService->preBook($data['room_code']);
+            
+            if (empty($preBookResponse['Status']['Code']) || $preBookResponse['Status']['Code'] != 200) {
+                $msg = $preBookResponse['Status']['Description'] ?? 'Room is no longer available';
+                Log::error("TBO PreBook Check Failed: $msg");
+                throw new \Exception($msg);
+            }
+            
+            // TBO often updates the BookingCode/RoomCode during PreBook
+            if (!empty($preBookResponse['BookingCode'])) {
+                Log::info("Updating room_code from PreBook response: {$data['room_code']} -> {$preBookResponse['BookingCode']}");
+                $data['room_code'] = $preBookResponse['BookingCode'];
+            }
+
+            // Optional: Verify Price Integrity
+            // if (isset($preBookResponse['TotalFare'])) { ... }
+
+        } catch (\Exception $e) {
+            // Rethrow so Controller handles it
+            throw new \Exception("Room availability check failed: " . $e->getMessage());
+        }
+
         return DB::transaction(function () use ($data) {
             $bookingReference = 'BK-' . strtoupper(Str::random(10));
 
@@ -84,12 +110,30 @@ class BookingService
 
             $finalBookingCode = $booking->room_code;
             $tboBookingReferenceId = $booking->booking_reference; // Fallback
+            $finalTotalFare = (float)$booking->total_price; // Default: what we have in DB
 
             if (isset($preBookResponse['Status']['Code']) && $preBookResponse['Status']['Code'] == 200) {
                 // Use the refreshed code and reference from PreBook if available
                 $finalBookingCode = $preBookResponse['BookingCode'] ?? $booking->room_code;
                 $tboBookingReferenceId = $preBookResponse['BookingReferenceId'] ?? $booking->booking_reference;
-                Log::info("PreBook Success. Updating BookingReferenceId to: {$tboBookingReferenceId}");
+                
+                // CRITICAL: Update Price from PreBook response to ensure we match TBO requirements
+                // TBO rejects booking if TotalFare doesn't match the latest PreBook price
+                if (isset($preBookResponse['TotalFare'])) {
+                    $newFare = (float)$preBookResponse['TotalFare'];
+                    if (abs($newFare - $finalTotalFare) > 0.01) {
+                        Log::warning("Price changed during PreBook! Old: $finalTotalFare, New: $newFare. Updating payload.");
+                        $finalTotalFare = $newFare;
+                    }
+                } elseif (isset($preBookResponse['Price']['TotalDisplayFare'])) {
+                     $newFare = (float)$preBookResponse['Price']['TotalDisplayFare'];
+                     if (abs($newFare - $finalTotalFare) > 0.01) {
+                        Log::warning("Price changed during PreBook (Display)! Old: $finalTotalFare, New: $newFare. Updating payload.");
+                        $finalTotalFare = $newFare;
+                    }
+                }
+
+                Log::info("PreBook Success. BookingRef: {$tboBookingReferenceId}, FinalPrice: {$finalTotalFare}");
             } else {
                 $errorMsg = $preBookResponse['Status']['Description'] ?? 'PreBook failed';
                 Log::error("TBO PreBook Failed for {$booking->booking_reference}: {$errorMsg}");
@@ -125,7 +169,7 @@ class BookingService
                 ],
                 'ClientReferenceId' => $booking->booking_reference,
                 'BookingReferenceId' => $tboBookingReferenceId,
-                'TotalFare' => (float)$booking->total_price,
+                'TotalFare' => $finalTotalFare, // Use the potentially updated price
                 'EmailId' => $booking->guest_email,
                 'PhoneNumber' => str_replace(['+', ' '], '', $booking->guest_phone ?? '966500000000'),
                 'BookingType' => 'Voucher',

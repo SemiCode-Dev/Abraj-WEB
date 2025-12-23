@@ -142,7 +142,7 @@
                             <input type="text" id="citySelect" autocomplete="off"
                                 placeholder="{{ __('Select City') }}"
                                 class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg !text-gray-900 dark:!text-white"
-                                disabled>
+                                disabled readonly>
 
                             <input type="hidden" name="destination" id="destinationCode">
 

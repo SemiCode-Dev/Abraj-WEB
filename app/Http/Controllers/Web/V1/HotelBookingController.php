@@ -71,6 +71,16 @@ class HotelBookingController extends Controller
             Log::error('Hotel Booking Store Error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
+
+            // Check if it's a known availability error from BookingService
+            $message = $e->getMessage();
+            if (str_contains($message, 'availability check failed') || str_contains($message, 'Room is no longer available')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message,
+                ], 400); // Bad Request (Client needs to refresh)
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => __('Failed to initiate booking. Please try again.'),
