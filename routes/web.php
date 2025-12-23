@@ -165,13 +165,10 @@ Route::prefix(LaravelLocalization::setLocale().'/admin')->name('admin.')->middle
         Route::get('/visa-bookings', [VisaBookingController::class, 'index'])->name('visa-bookings.index');
         Route::patch('/visa-bookings/{visaBooking}/status', [VisaBookingController::class, 'updateStatus'])->name('visa-bookings.update-status');
 
-        Route::get('/bookings', function () {
-            return view('Admin.bookings');
-        })->name('bookings');
+        Route::get('/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index'])->name('bookings');
 
-        Route::get('/transactions', function () {
-            return view('Admin.transactions');
-        })->name('transactions');
+        Route::get('/transactions', [\App\Http\Controllers\Admin\TransactionController::class, 'index'])->name('transactions');
+        Route::get('/transactions/{booking}/report', [\App\Http\Controllers\Admin\TransactionController::class, 'downloadReport'])->name('transactions.report');
 
         Route::get('/reviews', function () {
             return view('Admin.reviews');
