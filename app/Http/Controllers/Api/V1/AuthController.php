@@ -19,22 +19,47 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
         $data = $this->authService->login($request->validated());
-        if (!isset($data['user'])) {
+
+        if ($data['status'] === 'error') {
             return response()->json($data, 401);
         }
-        $token = $data['user']->createToken('auth-token')->plainTextToken;
-        $data['token'] = $token;
+
+        $user = $data['data'];
+        $token = $user->createToken('auth-token')->plainTextToken;
+        
+        // Add token to the data object
+        // We cast to array if it's a model to append token, 
+        // or just add it to top level data if preferred. 
+        // Based on user request "send data in attribute data", keeping structure consistent.
+        // Let's add token to the Top Level response or inside Data?
+        // The previous code did $data['token'] = $token. 
+        // Let's put it inside 'data' to be cleaner? Or keep as sibling?
+        // Standard Laravel resource often has data key.
+        // Let's add it to the 'data' array so the client finds everything in 'data'.
+        
+        // Converting user model to array to add token
+        $userData = $user->toArray();
+        $userData['token'] = $token;
+        $data['data'] = $userData;
+
         return response()->json($data, 200);
     }
 
     public function register(RegisterRequest $request)
     {
         $data = $this->authService->register($request->validated());
-         if (!isset($data['user'])) {
-            return response()->json($data, 400);
+
+        if ($data['status'] === 'error') {
+             return response()->json($data, 400);
         }
-        $token = $data['user']->createToken('auth-token')->plainTextToken;
-        $data['token'] = $token;
+
+        $user = $data['data'];
+        $token = $user->createToken('auth-token')->plainTextToken;
+        
+        $userData = $user->toArray();
+        $userData['token'] = $token;
+        $data['data'] = $userData;
+
         return response()->json($data, 201);
     }
 

@@ -49,7 +49,7 @@ class HotelTranslationService
      * @param  int  $maxApiCalls  Max API calls to make this request
      * @return array Translated hotels array
      */
-    public function translateHotels(array $hotels, int $maxApiCalls = 5): array
+    public function translateHotels(array $hotels, int $maxApiCalls = 1): array
     {
         $apiCalls = 0;
 
@@ -90,7 +90,7 @@ class HotelTranslationService
                     $hotel['Name'] = $translated;
 
                     $apiCalls++;
-                    usleep(100000); // 100ms throttle
+                    // usleep(100000); // 100ms throttle - Removed for performance
                 } else {
                     // Failed to translate meaningfully, or same name
                     // Cache the English name to avoid retrying forever?

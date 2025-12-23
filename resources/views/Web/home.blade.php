@@ -1669,7 +1669,7 @@
                 results.forEach(city => {
                     const div = document.createElement("div");
                     div.className =
-                        "px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700";
+                        "px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100";
 
                     div.innerHTML = `
                 <div class="flex justify-between">
