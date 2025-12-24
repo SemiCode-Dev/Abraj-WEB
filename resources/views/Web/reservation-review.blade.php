@@ -3,6 +3,22 @@
 @section('title', __('Confirm Reservation') . ' - ' . __('Book Hotels - Best Offers and Services'))
 
 @section('content')
+    <style>
+        /* Forced colors to fix production build issues */
+        .force-input-text {
+            color: #111827 !important;
+            /* text-gray-900 */
+        }
+
+        .dark .force-input-text {
+            color: #ffffff !important;
+        }
+
+        .force-button-text {
+            color: #ffffff !important;
+        }
+    </style>
+
     <!-- Review Header -->
     <section class="bg-gradient-to-br from-orange-500 via-orange-600 to-blue-900 text-white py-16 relative overflow-hidden">
         <div class="absolute inset-0 bg-black/10"></div>
@@ -186,7 +202,7 @@
                                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                 @endforeach
                                 <button type="submit"
-                                    class="w-full bg-gradient-to-r from-orange-600 via-orange-600 to-orange-700 text-white py-5 rounded-xl font-bold text-xl hover:from-orange-700 hover:via-orange-700 hover:to-orange-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group">
+                                    class="w-full bg-gradient-to-r from-orange-600 via-orange-600 to-orange-700 py-5 rounded-xl font-bold text-xl hover:from-orange-700 hover:via-orange-700 hover:to-orange-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group force-button-text">
                                     <i class="fas fa-credit-card group-hover:scale-110 transition-transform text-2xl"></i>
                                     <span>{{ __('Pay Now') }}</span>
                                     <i

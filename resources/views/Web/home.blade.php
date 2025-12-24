@@ -3,6 +3,35 @@
 @section('title', __('Book Hotels - Best Offers and Services'))
 
 @section('content')
+    <style>
+        /* Forced colors to fix production build issues */
+        .force-input-text {
+            color: #111827 !important;
+            /* text-gray-900 */
+        }
+
+        .dark .force-input-text {
+            color: #ffffff !important;
+        }
+
+        .force-button-text {
+            color: #ffffff !important;
+        }
+
+        /* Ensure disabled/readonly inputs still show correct color */
+        input.force-input-text:disabled,
+        input.force-input-text[readonly] {
+            color: #111827 !important;
+            opacity: 1;
+            /* Fix for some browsers dimming text */
+        }
+
+        .dark input.force-input-text:disabled,
+        .dark input.force-input-text[readonly] {
+            color: #ffffff !important;
+        }
+    </style>
+
     <section id="home"
         class="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16 md:py-24 overflow-hidden min-h-[600px] md:min-h-[700px]">
 
@@ -141,7 +170,7 @@
                             </label>
                             <input type="text" id="citySelect" autocomplete="off"
                                 placeholder="{{ __('Select City') }}"
-                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg !text-gray-900 dark:!text-white"
+                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg force-input-text"
                                 disabled readonly>
 
                             <input type="hidden" name="destination" id="destinationCode">
@@ -225,7 +254,7 @@
                         <!-- Search Button -->
                         <div class="flex items-end">
                             <button type="submit" id="searchBtn"
-                                class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-105 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                                class="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-105 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed force-button-text">
                                 <i class="fas fa-search {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
                                 <span class="btn-text">{{ __('Search') }}</span>
                                 <svg class="btn-loader hidden animate-spin h-5 w-5 text-white {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}"
@@ -372,7 +401,7 @@
                             </div>
 
                             <a href="{{ route('hotel.details', ['locale' => app()->getLocale(), 'id' => $hotel['HotelCode'] ?? ($hotel['HotelId'] ?? 0)]) }}"
-                                class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-white text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition">
+                                class="block w-full bg-gradient-to-r from-orange-600 to-orange-600 text-center py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition force-button-text">
                                 {{ __('Book Now') }}
                             </a>
 
@@ -559,7 +588,7 @@
                                             <div class="text-xs text-gray-400">{{ __('per night') }}</div>
                                         </div>
                                         <a href="#"
-                                            class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-6 py-2 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
+                                            class="bg-gradient-to-r from-orange-600 to-orange-600 px-6 py-2 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg force-button-text">
                                             احجز الآن
                                         </a>
                                     </div>

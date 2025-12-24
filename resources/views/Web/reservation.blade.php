@@ -3,6 +3,22 @@
 @section('title', __('Confirm Reservation') . ' - ' . __('Book Hotels - Best Offers and Services'))
 
 @section('content')
+    <style>
+        /* Forced colors to fix production build issues */
+        .force-input-text {
+            color: #111827 !important;
+            /* text-gray-900 */
+        }
+
+        .dark .force-input-text {
+            color: #ffffff !important;
+        }
+
+        .force-button-text {
+            color: #ffffff !important;
+        }
+    </style>
+
     <!-- Reservation Header -->
     <section class="bg-gradient-to-br from-orange-500 via-orange-600 to-blue-900 text-white py-16 relative overflow-hidden">
         <div class="absolute inset-0 bg-black/10"></div>
@@ -191,7 +207,7 @@
                                             <span>{{ __('Full Name') }} <span class="text-red-500">*</span></span>
                                         </label>
                                         <input type="text" id="guestName" name="name" required
-                                            class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 transition-all hover:border-orange-300">
+                                            class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
                                     </div>
                                     <div class="group">
                                         <label class="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
@@ -199,7 +215,7 @@
                                             <span>{{ __('Email') }} <span class="text-red-500">*</span></span>
                                         </label>
                                         <input type="email" id="guestEmail" name="email" required
-                                            class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 transition-all hover:border-orange-300">
+                                            class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
                                     </div>
                                 </div>
                                 <div class="group">
@@ -209,7 +225,7 @@
                                     </label>
                                     <input type="tel" id="guestPhone" name="phone" required
                                         placeholder="{{ app()->getLocale() === 'ar' ? '05xxxxxxxx' : '+966 5x xxx xxxx' }}"
-                                        class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 transition-all hover:border-orange-300">
+                                        class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
                                 </div>
                                 <div class="group">
                                     <label class="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
@@ -217,7 +233,7 @@
                                         <span>{{ __('Special Notes (Optional)') }}</span>
                                     </label>
                                     <textarea rows="4" id="guestNotes" name="notes"
-                                        class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 transition-all hover:border-orange-300 resize-none"
+                                        class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 resize-none force-input-text"
                                         placeholder="{{ __('Any special requests or notes...') }}"></textarea>
                                 </div>
                             </div>
@@ -382,7 +398,7 @@
                                 <span>{{ __('Back') }}</span>
                             </button>
                             <button type="button" id="proceedToPaymentBtn"
-                                class="flex-1 bg-gradient-to-r from-orange-600 via-orange-600 to-orange-700 text-white py-4 rounded-xl font-bold text-lg hover:from-orange-700 hover:via-orange-700 hover:to-orange-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group">
+                                class="flex-1 bg-gradient-to-r from-orange-600 via-orange-600 to-orange-700 py-4 rounded-xl font-bold text-lg hover:from-orange-700 hover:via-orange-700 hover:to-orange-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group force-button-text">
                                 <i class="fas fa-lock group-hover:scale-110 transition-transform"></i>
                                 <span>{{ __('Proceed to Payment') }}</span>
                                 <i
@@ -578,7 +594,8 @@
                                             <i class="fas fa-calendar-day text-orange-600"></i>
                                             {{ __('Night Price') }}
                                         </span>
-                                        <span class="font-semibold text-gray-900">{{ number_format($pricePerNight, 2) }}
+                                        <span
+                                            class="font-semibold force-input-text">{{ number_format($pricePerNight, 2) }}
                                             {{ $currency }}</span>
                                     </div>
                                     <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
@@ -586,7 +603,7 @@
                                             <i class="fas fa-moon text-orange-600"></i>
                                             {{ __('Number of Nights') }}
                                         </span>
-                                        <span class="font-semibold text-gray-900">× {{ $nightsCount }}</span>
+                                        <span class="font-semibold force-input-text">× {{ $nightsCount }}</span>
                                     </div>
                                 @endif
                                 @if ($roomData && isset($roomData['TotalTax']) && $roomData['TotalTax'] > 0)
@@ -596,7 +613,7 @@
                                             {{ __('Tax') }}
                                         </span>
                                         <span
-                                            class="font-semibold text-gray-900">{{ number_format($roomData['TotalTax'], 2) }}
+                                            class="font-semibold force-input-text">{{ number_format($roomData['TotalTax'], 2) }}
                                             {{ $currency }}</span>
                                     </div>
                                 @endif
@@ -666,7 +683,7 @@
                                     <input type="hidden" name="{{ $k }}" value="{{ $v }}">
                                 @endforeach
                                 <button type="submit" form="paymentForm"
-                                    class="w-full bg-gradient-to-r from-orange-600 via-orange-600 to-orange-700 text-white py-5 rounded-xl font-bold text-lg hover:from-orange-700 hover:via-orange-700 hover:to-orange-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group">
+                                    class="w-full bg-gradient-to-r from-orange-600 via-orange-600 to-orange-700 py-5 rounded-xl font-bold text-lg hover:from-orange-700 hover:via-orange-700 hover:to-orange-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group force-button-text">
                                     <i class="fas fa-lock group-hover:scale-110 transition-transform"></i>
                                     <span>{{ __('Confirm Booking and Payment') }}</span>
                                     <i
@@ -675,7 +692,7 @@
                             </form>
                         @else
                             <button type="button" id="confirmBookingBtn"
-                                class="w-full bg-gradient-to-r from-orange-600 via-orange-600 to-orange-700 text-white py-5 rounded-xl font-bold text-lg hover:from-orange-700 hover:via-orange-700 hover:to-orange-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group">
+                                class="w-full bg-gradient-to-r from-orange-600 via-orange-600 to-orange-700 py-5 rounded-xl font-bold text-lg hover:from-orange-700 hover:via-orange-700 hover:to-orange-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group force-button-text">
                                 <i class="fas fa-lock group-hover:scale-110 transition-transform"></i>
                                 <span>{{ __('Confirm Booking and Payment') }}</span>
                                 <i
