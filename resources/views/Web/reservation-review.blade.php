@@ -7,15 +7,35 @@
         /* Forced colors to fix production build issues */
         .force-input-text {
             color: #111827 !important;
-            /* text-gray-900 */
         }
 
         .dark .force-input-text {
             color: #ffffff !important;
         }
 
-        .force-button-text {
+        .force-button {
+            background-color: #ea580c !important;
+            background-image: linear-gradient(to right, #ea580c, #c2410c) !important;
             color: #ffffff !important;
+            border: none !important;
+        }
+
+        .force-button:hover {
+            background-color: #c2410c !important;
+            background-image: linear-gradient(to right, #c2410c, #9a3412) !important;
+        }
+
+        input.force-input-text:disabled,
+        input.force-input-text[readonly] {
+            color: #111827 !important;
+            opacity: 1 !important;
+            -webkit-text-fill-color: #111827 !important;
+        }
+
+        .dark input.force-input-text:disabled,
+        .dark input.force-input-text[readonly] {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
     </style>
 
@@ -202,7 +222,7 @@
                                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                 @endforeach
                                 <button type="submit"
-                                    class="w-full bg-gradient-to-r from-orange-600 via-orange-600 to-orange-700 py-5 rounded-xl font-bold text-xl hover:from-orange-700 hover:via-orange-700 hover:to-orange-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group force-button-text">
+                                    class="w-full py-5 rounded-xl font-bold text-xl transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3 group force-button">
                                     <i class="fas fa-credit-card group-hover:scale-110 transition-transform text-2xl"></i>
                                     <span>{{ __('Pay Now') }}</span>
                                     <i
