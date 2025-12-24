@@ -16,6 +16,7 @@ class PackageContact extends Model
         'name',
         'email',
         'phone',
+        'phone_country_code',
         'message',
         'status',
     ];

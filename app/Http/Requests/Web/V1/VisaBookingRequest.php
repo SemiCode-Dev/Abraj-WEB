@@ -22,7 +22,7 @@ class VisaBookingRequest extends FormRequest
         if (! auth()->check()) {
             $rules['name'] = ['required', 'string', 'max:255'];
             $rules['phone_country_code'] = ['required', 'string', 'max:10'];
-            $rules['phone'] = ['required', 'string', 'max:20'];
+            $rules['phone'] = ['required', 'string', 'max:11'];
         } else {
             $rules['passport_number'] = ['required', 'string', 'max:50'];
         }

@@ -37,7 +37,8 @@ class HotelBookingController extends Controller
                 'currency' => 'required|string',
                 'guest_name' => 'required|string',
                 'guest_email' => 'required|email',
-                'guest_phone' => 'nullable|string',
+                'guest_phone' => 'nullable|string|max:11',
+                'phone_country_code' => 'nullable|string|max:10',
             ]);
 
             Log::info('Hotel Booking Validation passed');

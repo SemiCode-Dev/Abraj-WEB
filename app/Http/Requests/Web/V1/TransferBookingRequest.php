@@ -18,7 +18,7 @@ class TransferBookingRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'phone_country_code' => ['required', 'string', 'max:10'],
-            'phone' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'max:11'],
             'destination_country_id' => ['required', 'exists:countries,id'],
             'destination_city_id' => ['required', 'exists:cities,id'],
             'transfer_date' => ['required', 'date', 'after_or_equal:today'],

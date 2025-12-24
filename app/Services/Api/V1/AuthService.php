@@ -34,6 +34,7 @@ class AuthService
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone'],
+            'phone_country_code' => $data['phone_country_code'],
             'password' => Hash::make($data['password']),
         ]);
         auth()->login($user);

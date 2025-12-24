@@ -24,6 +24,7 @@ class HotelBooking extends Model
         'guest_name',
         'guest_email',
         'guest_phone',
+        'phone_country_code',
         'pax_details',
         'booking_status',
         'payment_status',

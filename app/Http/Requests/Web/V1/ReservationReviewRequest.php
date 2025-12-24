@@ -27,12 +27,14 @@ class ReservationReviewRequest extends FormRequest
         if (! auth()->check()) {
             $rules['name'] = ['required', 'string', 'max:255'];
             $rules['email'] = ['required', 'string', 'email', 'max:255'];
-            $rules['phone'] = ['required', 'string', 'max:20'];
+            $rules['phone'] = ['required', 'string', 'max:11'];
+            $rules['phone_country_code'] = ['required', 'string', 'max:10'];
         } else {
             // For authenticated users, these fields are optional
             $rules['name'] = ['nullable', 'string', 'max:255'];
             $rules['email'] = ['nullable', 'string', 'email', 'max:255'];
-            $rules['phone'] = ['nullable', 'string', 'max:20'];
+            $rules['phone'] = ['nullable', 'string', 'max:11'];
+            $rules['phone_country_code'] = ['nullable', 'string', 'max:10'];
         }
 
         $rules['notes'] = ['nullable', 'string', 'max:1000'];
@@ -57,6 +59,7 @@ class ReservationReviewRequest extends FormRequest
             'email.required' => __('Email is required.'),
             'email.email' => __('Please enter a valid email address.'),
             'phone.required' => __('Phone number is required.'),
+            'phone_country_code.required' => __('Country code is required.'),
             'terms.required' => __('You must accept the Terms and Conditions.'),
             'terms.accepted' => __('You must accept the Terms and Conditions.'),
         ];

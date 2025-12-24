@@ -180,12 +180,12 @@
                                         <input type="email" name="email" required
                                             class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
                                     </div>
-                                    <div>
+                                    <div class="intl-tel-input-container">
                                         <label
                                             class="block text-gray-700 font-semibold mb-2">{{ __('Phone') }}</label>
-                                        <input type="tel" name="phone" required
-                                            placeholder="{{ app()->getLocale() === 'ar' ? '05xxxxxxxx' : '+966 5x xxx xxxx' }}"
+                                        <input type="tel" id="reg_phone" name="phone" required maxlength="11"
                                             class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
+                                        <input type="hidden" name="phone_country_code" id="reg_phone_country_code">
                                     </div>
                                     <div>
                                         <label
@@ -345,6 +345,37 @@
             document.getElementById('authModal').classList.remove('flex');
         }
 
+        // Initialize intl-tel-input for registration
+        document.addEventListener('DOMContentLoaded', function() {
+            const regPhoneInput = document.querySelector("#reg_phone");
+            if (regPhoneInput) {
+                const iti = window.intlTelInput(regPhoneInput, {
+                    initialCountry: "sa",
+                    separateDialCode: true,
+                    countrySearch: false,
+                    geoIpLookup: function(callback) {
+                        fetch("https://ipapi.co/json")
+                            .then(res => res.json())
+                            .then(data => callback(data.country_code))
+                            .catch(() => callback("sa"));
+                    },
+                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+                });
+
+                regPhoneInput.addEventListener("countrychange", function() {
+                    const countryData = iti.getSelectedCountryData();
+                    document.querySelector("#reg_phone_country_code").value = countryData.iso2
+                        .toUpperCase();
+                });
+
+                // Set initial value
+                const initialCountryData = iti.getSelectedCountryData();
+                document.querySelector("#reg_phone_country_code").value = initialCountryData.iso2.toUpperCase();
+
+                // Ensure it's updated on input as well (though countrychange should be enough for the code)
+            }
+        });
+
         function switchTab(tab) {
             const loginTab = document.getElementById('loginTab');
             const registerTab = document.getElementById('registerTab');
@@ -441,6 +472,7 @@
                 name: form.name.value,
                 email: form.email.value,
                 phone: form.phone.value,
+                phone_country_code: form.phone_country_code.value,
                 password: form.password.value,
             };
 

@@ -63,18 +63,19 @@
     </section>
 
     <!-- Reservation Form -->
-    <section class="py-12 bg-gradient-to-b from-gray-50 to-gray-100">
+    <section class="py-12 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Reservation Form -->
                 <div class="lg:col-span-2 space-y-6">
                     <!-- Booking Summary Card -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-orange-600">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-l-4 border-orange-600">
                         <div class="flex items-center gap-3 mb-6">
                             <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-hotel text-orange-600"></i>
                             </div>
-                            <h2 class="text-2xl font-bold text-gray-900">{{ __('Booking Summary') }}</h2>
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ __('Booking Summary') }}
+                            </h2>
                         </div>
                         @php
                             $hotel = $hotelDetails['HotelDetails'][0] ?? null;
@@ -88,19 +89,20 @@
                             }
                         @endphp
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-gray-50 rounded-xl p-4">
+                            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
                                 <div class="flex items-center gap-2 mb-2">
                                     <i class="fas fa-hotel text-orange-600"></i>
-                                    <div class="text-xs text-gray-500 uppercase tracking-wide">{{ __('Hotel') }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                        {{ __('Hotel') }}</div>
                                 </div>
-                                <div class="font-bold text-gray-900 text-lg">
+                                <div class="font-bold text-gray-900 dark:text-white text-lg">
                                     @if ($hotel && isset($hotel['HotelName']))
                                         {{ $hotel['HotelName'] }}
                                     @else
                                         {{ __('International Luxury Hotel') }} {{ $hotelId }}
                                     @endif
                                 </div>
-                                <div class="text-sm text-gray-600 mt-2 flex items-center">
+                                <div class="text-sm text-gray-600 dark:text-gray-300 mt-2 flex items-center">
                                     <i
                                         class="fas fa-map-marker-alt {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }} text-orange-600"></i>
                                     @if ($hotel && isset($hotel['Address']))
@@ -112,12 +114,13 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="bg-gray-50 rounded-xl p-4">
+                            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
                                 <div class="flex items-center gap-2 mb-2">
                                     <i class="fas fa-bed text-orange-600"></i>
-                                    <div class="text-xs text-gray-500 uppercase tracking-wide">{{ __('Room Type') }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                        {{ __('Room Type') }}</div>
                                 </div>
-                                <div class="font-bold text-gray-900 text-lg">
+                                <div class="font-bold text-gray-900 dark:text-white text-lg">
                                     @php
                                         $displayRoomName = 'Room';
                                         if ($roomData && isset($roomData['Name'])) {
@@ -133,72 +136,83 @@
                                     {{ $displayRoomName }}
                                 </div>
                                 @if (($roomData && isset($roomData['Inclusion'])) || request('inclusion'))
-                                    <div class="text-sm text-gray-600 mt-2 flex items-center">
+                                    <div class="text-sm text-gray-600 dark:text-gray-300 mt-2 flex items-center">
                                         <i
                                             class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }} text-orange-600"></i>
                                         {{ $roomData['Inclusion'] ?? request('inclusion') }}
                                     </div>
                                 @endif
                             </div>
-                            <div class="bg-blue-50 rounded-xl p-4">
+                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
                                 <div class="flex items-center gap-2 mb-2">
                                     <i class="fas fa-calendar-check text-blue-600"></i>
-                                    <div class="text-xs text-gray-500 uppercase tracking-wide">{{ __('Check In') }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                        {{ __('Check In') }}</div>
                                 </div>
-                                <div class="font-bold text-gray-900 text-lg">{{ $checkIn ?? request('check_in', '--') }}
+                                <div class="font-bold text-gray-900 dark:text-white text-lg">
+                                    {{ $checkIn ?? request('check_in', '--') }}
                                 </div>
                             </div>
-                            <div class="bg-blue-50 rounded-xl p-4">
+                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
                                 <div class="flex items-center gap-2 mb-2">
                                     <i class="fas fa-calendar-times text-blue-600"></i>
-                                    <div class="text-xs text-gray-500 uppercase tracking-wide">{{ __('Check Out') }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                        {{ __('Check Out') }}</div>
                                 </div>
-                                <div class="font-bold text-gray-900 text-lg">{{ $checkOut ?? request('check_out', '--') }}
+                                <div class="font-bold text-gray-900 dark:text-white text-lg">
+                                    {{ $checkOut ?? request('check_out', '--') }}
                                 </div>
                             </div>
-                            <div class="bg-green-50 rounded-xl p-4">
+                            <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
                                 <div class="flex items-center gap-2 mb-2">
                                     <i class="fas fa-moon text-green-600"></i>
-                                    <div class="text-xs text-gray-500 uppercase tracking-wide">{{ __('Nights') }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                        {{ __('Nights') }}</div>
                                 </div>
-                                <div class="font-bold text-gray-900 text-lg">{{ $nights ?? 2 }} {{ __('nights') }}</div>
+                                <div class="font-bold text-gray-900 dark:text-white text-lg">{{ $nights ?? 2 }}
+                                    {{ __('nights') }}</div>
                             </div>
-                            <div class="bg-purple-50 rounded-xl p-4">
+                            <div class="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4">
                                 <div class="flex items-center gap-2 mb-2">
                                     <i class="fas fa-users text-purple-600"></i>
-                                    <div class="text-xs text-gray-500 uppercase tracking-wide">{{ __('Guests') }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                        {{ __('Guests') }}</div>
                                 </div>
-                                <div class="font-bold text-gray-900 text-lg">{{ $guests ?? request('guests', '2') }}
+                                <div class="font-bold text-gray-900 dark:text-white text-lg">
+                                    {{ $guests ?? request('guests', '2') }}
                                     {{ __('Guests') }}</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Guest Information Step -->
-                    <div id="guestInfoStep" class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-orange-600">
+                    <div id="guestInfoStep"
+                        class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border-t-4 border-orange-600">
                         <div class="flex items-center gap-3 mb-6">
                             <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
                                 <i class="fas fa-user-circle text-orange-600 text-2xl"></i>
                             </div>
                             <div>
-                                <h2 class="text-2xl font-bold text-gray-900">{{ __('Guest Information') }}</h2>
-                                <p class="text-sm text-gray-500">
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('Guest Information') }}
+                                </h2>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
                                     {{ __('Please fill in your details to complete the booking') }}</p>
                             </div>
                         </div>
                         @auth
                             <div
-                                class="mb-6 p-5 bg-gradient-to-r from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl hover:shadow-md transition-shadow">
+                                class="mb-6 p-5 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-2 border-orange-200 dark:border-orange-800 rounded-xl hover:shadow-md transition-shadow">
                                 <label class="flex items-start cursor-pointer group">
                                     <input type="checkbox" id="useAccountInfo"
                                         class="w-6 h-6 text-orange-600 rounded mt-1 cursor-pointer">
                                     <div class="{{ app()->getLocale() === 'ar' ? 'mr-4' : 'ml-4' }} flex-1">
-                                        <div class="font-bold text-gray-900 mb-1 group-hover:text-orange-600 transition-colors">
+                                        <div
+                                            class="font-bold text-gray-900 dark:text-white mb-1 group-hover:text-orange-600 transition-colors">
                                             <i
                                                 class="fas fa-check-circle {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
                                             {{ __('Use my account information') }}
                                         </div>
-                                        <div class="text-sm text-gray-600 space-y-1">
+                                        <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                                             <div><i
                                                     class="fas fa-user {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                                 <strong>{{ __('Name') }}:</strong> {{ auth()->user()->name }}
@@ -222,38 +236,45 @@
                             <div id="guestInfoSection" class="space-y-6">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div class="group">
-                                        <label class="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+                                        <label
+                                            class="block text-gray-700 dark:text-gray-300 font-semibold mb-2 flex items-center gap-2">
                                             <i class="fas fa-user text-orange-600"></i>
                                             <span>{{ __('Full Name') }} <span class="text-red-500">*</span></span>
                                         </label>
                                         <input type="text" id="guestName" name="name" required
-                                            class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
+                                            class="w-full px-4 py-3.5 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
                                     </div>
                                     <div class="group">
-                                        <label class="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+                                        <label
+                                            class="block text-gray-700 dark:text-gray-300 font-semibold mb-2 flex items-center gap-2">
                                             <i class="fas fa-envelope text-orange-600"></i>
                                             <span>{{ __('Email') }} <span class="text-red-500">*</span></span>
                                         </label>
                                         <input type="email" id="guestEmail" name="email" required
-                                            class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
+                                            class="w-full px-4 py-3.5 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
                                     </div>
                                 </div>
-                                <div class="group">
-                                    <label class="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+                                <div class="group intl-tel-input-container">
+                                    <label
+                                        class="block text-gray-700 dark:text-gray-300 font-semibold mb-2 flex items-center gap-2">
                                         <i class="fas fa-phone text-orange-600"></i>
                                         <span>{{ __('Mobile Number') }} <span class="text-red-500">*</span></span>
                                     </label>
-                                    <input type="tel" id="guestPhone" name="phone" required
-                                        placeholder="{{ app()->getLocale() === 'ar' ? '05xxxxxxxx' : '+966 5x xxx xxxx' }}"
-                                        class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
+                                    <input type="tel" id="guestPhone" name="phone"
+                                        value="{{ old('phone', auth()->check() ? auth()->user()->phone : '') }}" required
+                                        maxlength="11"
+                                        class="w-full px-4 py-3.5 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
+                                    <input type="hidden" name="phone_country_code" id="guestPhoneCountryCode"
+                                        value="{{ old('phone_country_code', auth()->check() ? auth()->user()->phone_country_code : '') }}">
                                 </div>
                                 <div class="group">
-                                    <label class="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+                                    <label
+                                        class="block text-gray-700 dark:text-gray-300 font-semibold mb-2 flex items-center gap-2">
                                         <i class="fas fa-sticky-note text-orange-600"></i>
                                         <span>{{ __('Special Notes (Optional)') }}</span>
                                     </label>
                                     <textarea rows="4" id="guestNotes" name="notes"
-                                        class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 resize-none force-input-text"
+                                        class="w-full px-4 py-3.5 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 resize-none force-input-text"
                                         placeholder="{{ __('Any special requests or notes...') }}"></textarea>
                                 </div>
                             </div>
@@ -278,42 +299,47 @@
                             <input type="hidden" id="reviewFormName" name="name" value="">
                             <input type="hidden" id="reviewFormEmail" name="email" value="">
                             <input type="hidden" id="reviewFormPhone" name="phone" value="">
+                            <input type="hidden" id="reviewFormPhoneCountryCode" name="phone_country_code"
+                                value="">
                             <input type="hidden" id="reviewFormNotes" name="notes" value="">
                             <input type="hidden" id="reviewFormTerms" name="terms" value="0">
                         </form>
                     </div>
 
                     <!-- Review Step -->
-                    <div id="reviewStep" class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-blue-600 hidden">
+                    <div id="reviewStep"
+                        class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border-t-4 border-blue-600 hidden">
                         <div class="flex items-center gap-3 mb-6">
                             <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                                 <i class="fas fa-clipboard-check text-blue-600 text-2xl"></i>
                             </div>
                             <div>
-                                <h2 class="text-2xl font-bold text-gray-900">{{ __('Review Your Booking') }}</h2>
-                                <p class="text-sm text-gray-500">
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                                    {{ __('Review Your Booking') }}</h2>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
                                     {{ __('Please review your booking details before proceeding to payment') }}</p>
                             </div>
                         </div>
 
                         <!-- Guest Information Review -->
-                        <div class="bg-gray-50 rounded-xl p-6 mb-6">
-                            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-6 mb-6">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                                 <i class="fas fa-user text-orange-600"></i>
                                 {{ __('Guest Information') }}
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <div class="text-sm text-gray-500 mb-1">{{ __('Full Name') }}</div>
-                                    <div class="font-semibold text-gray-900" id="reviewName">-</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{ __('Full Name') }}</div>
+                                    <div class="font-semibold text-gray-900 dark:text-white" id="reviewName">-</div>
                                 </div>
                                 <div>
-                                    <div class="text-sm text-gray-500 mb-1">{{ __('Email') }}</div>
-                                    <div class="font-semibold text-gray-900" id="reviewEmail">-</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{ __('Email') }}</div>
+                                    <div class="font-semibold text-gray-900 dark:text-white" id="reviewEmail">-</div>
                                 </div>
                                 <div>
-                                    <div class="text-sm text-gray-500 mb-1">{{ __('Mobile Number') }}</div>
-                                    <div class="font-semibold text-gray-900" id="reviewPhone">-</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{ __('Mobile Number') }}
+                                    </div>
+                                    <div class="font-semibold text-gray-900 dark:text-white" id="reviewPhone">-</div>
                                 </div>
                                 <div id="reviewNotesContainer" class="hidden">
                                     <div class="text-sm text-gray-500 mb-1">{{ __('Special Notes') }}</div>
@@ -323,8 +349,8 @@
                         </div>
 
                         <!-- Booking Summary Review -->
-                        <div class="bg-gray-50 rounded-xl p-6 mb-6">
-                            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-6 mb-6">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                                 <i class="fas fa-calendar-check text-orange-600"></i>
                                 {{ __('Booking Details') }}
                             </h3>
@@ -393,9 +419,10 @@
                             }
                         @endphp
                         <div
-                            class="bg-gradient-to-r from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-6 mb-6">
+                            class="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/40 dark:to-orange-800/40 border-2 border-orange-200 dark:border-orange-800 rounded-xl p-6 mb-6">
                             <div class="flex justify-between items-center">
-                                <span class="text-xl font-bold text-gray-900">{{ __('Total Amount') }}</span>
+                                <span
+                                    class="text-xl font-bold text-gray-900 dark:text-white">{{ __('Total Amount') }}</span>
                                 <span class="text-3xl font-extrabold text-orange-600">
                                     @if ($totalFare > 0)
                                         {{ number_format($totalFare, 2) }} {{ $currency }}
@@ -404,7 +431,7 @@
                                     @endif
                                 </span>
                             </div>
-                            <div class="text-xs text-gray-600 mt-2 flex items-center gap-1">
+                            <div class="text-xs text-gray-600 dark:text-gray-400 mt-2 flex items-center gap-1">
                                 <i class="fas fa-check-circle text-green-600"></i>
                                 {{ __('including all taxes and fees') }}
                             </div>
@@ -428,8 +455,8 @@
                     </div>
 
                     <!-- Payment Method - Hidden -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6 mb-6 hidden">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ __('Payment Method') }}</h2>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6 hidden">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">{{ __('Payment Method') }}</h2>
                         <div class="space-y-4">
                             <label
                                 class="flex items-center p-4 border-2 border-orange-500 rounded-xl cursor-pointer bg-orange-50">
@@ -491,11 +518,13 @@
                     </div>
 
                     <!-- Terms & Conditions -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-2 border-gray-100 dark:border-gray-700">
                         <label class="flex items-start cursor-pointer group">
                             <input type="checkbox" id="termsCheckbox" required
                                 class="w-6 h-6 text-orange-600 mt-0.5 rounded cursor-pointer">
-                            <div class="{{ app()->getLocale() === 'ar' ? 'mr-4' : 'ml-4' }} text-sm text-gray-700">
+                            <div
+                                class="{{ app()->getLocale() === 'ar' ? 'mr-4' : 'ml-4' }} text-sm text-gray-700 dark:text-gray-300">
                                 {{ __('I agree to') }}
                                 <a href="#"
                                     class="text-orange-600 hover:text-orange-700 underline font-semibold transition-colors">{{ __('Terms and Conditions') }}</a>
@@ -509,12 +538,13 @@
 
                 <!-- Booking Summary Sidebar -->
                 <div class="lg:col-span-1">
-                    <div class="bg-white rounded-2xl shadow-xl p-6 sticky top-24 border-t-4 border-orange-600">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 sticky top-24 border-t-4 border-orange-600">
                         <div class="flex items-center gap-3 mb-6">
                             <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-receipt text-orange-600"></i>
                             </div>
-                            <h3 class="text-xl font-bold text-gray-900">{{ __('Booking Summary') }}</h3>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ __('Booking Summary') }}</h3>
                         </div>
 
                         <!-- Room Details -->
@@ -543,12 +573,14 @@
                                     }
                                 }
                             @endphp
-                            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4">
+                            <div
+                                class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-900 rounded-xl p-4">
                                 <div class="flex gap-4">
                                     <img src="{{ $roomImage }}" alt="{{ $roomName }}"
                                         class="w-24 h-24 object-cover rounded-xl shadow-md">
                                     <div class="flex-1">
-                                        <div class="font-bold text-gray-900 mb-2 text-lg">{{ $roomName }}</div>
+                                        <div class="font-bold text-gray-900 dark:text-white mb-2 text-lg">
+                                            {{ $roomName }}</div>
                                         <div class="flex flex-wrap gap-2 mb-2">
                                             <span
                                                 class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-lg font-semibold">
@@ -609,8 +641,9 @@
                         <div class="space-y-3 mb-6">
                             @if ($totalFare > 0)
                                 @if ($nightsCount > 1 && $pricePerNight > 0)
-                                    <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
-                                        <span class="text-gray-700 flex items-center gap-2">
+                                    <div
+                                        class="flex justify-between items-center py-2 px-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                        <span class="text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                             <i class="fas fa-calendar-day text-orange-600"></i>
                                             {{ __('Night Price') }}
                                         </span>
@@ -618,8 +651,9 @@
                                             class="font-semibold force-input-text">{{ number_format($pricePerNight, 2) }}
                                             {{ $currency }}</span>
                                     </div>
-                                    <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
-                                        <span class="text-gray-700 flex items-center gap-2">
+                                    <div
+                                        class="flex justify-between items-center py-2 px-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                        <span class="text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                             <i class="fas fa-moon text-orange-600"></i>
                                             {{ __('Number of Nights') }}
                                         </span>
@@ -627,8 +661,9 @@
                                     </div>
                                 @endif
                                 @if ($roomData && isset($roomData['TotalTax']) && $roomData['TotalTax'] > 0)
-                                    <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
-                                        <span class="text-gray-700 flex items-center gap-2">
+                                    <div
+                                        class="flex justify-between items-center py-2 px-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                        <span class="text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                             <i class="fas fa-receipt text-orange-600"></i>
                                             {{ __('Tax') }}
                                         </span>
@@ -646,9 +681,9 @@
                         </div>
 
                         <div
-                            class="bg-gradient-to-r from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-4 mb-6">
+                            class="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/40 dark:to-orange-800/40 border-2 border-orange-200 dark:border-orange-800 rounded-xl p-4 mb-6">
                             <div class="flex justify-between items-center mb-2">
-                                <span class="text-lg font-bold text-gray-900">{{ __('Total') }}</span>
+                                <span class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Total') }}</span>
                                 <span class="text-2xl font-extrabold text-orange-600">
                                     @if ($totalFare > 0)
                                         {{ number_format($totalFare, 2) }} {{ $currency }}
@@ -658,7 +693,7 @@
                                 </span>
                             </div>
                             @if ($totalFare > 0)
-                                <div class="text-xs text-gray-600 flex items-center gap-1">
+                                <div class="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
                                     <i class="fas fa-check-circle text-green-600"></i>
                                     {{ __('including all taxes and fees') }}
                                 </div>
@@ -667,30 +702,34 @@
 
                         <!-- Security Badge -->
                         <div
-                            class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4 mb-4">
+                            class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200 dark:border-green-800 rounded-xl p-4 mb-4">
                             <div class="flex items-center mb-2">
                                 <div
                                     class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}">
                                     <i class="fas fa-shield-check text-white text-lg"></i>
                                 </div>
-                                <span class="font-bold text-green-900">{{ __('Secure and guaranteed booking') }}</span>
+                                <span
+                                    class="font-bold text-green-900 dark:text-green-400">{{ __('Secure and guaranteed booking') }}</span>
                             </div>
-                            <div class="text-xs text-green-700 {{ app()->getLocale() === 'ar' ? 'mr-12' : 'ml-12' }}">
+                            <div
+                                class="text-xs text-green-700 dark:text-green-500 {{ app()->getLocale() === 'ar' ? 'mr-12' : 'ml-12' }}">
                                 <i class="fas fa-lock {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                 {{ __('All your data is protected with SSL encryption') }}
                             </div>
                         </div>
 
                         <!-- Cancel Policy -->
-                        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
+                        <div
+                            class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-6">
                             <div class="flex items-start">
                                 <div
                                     class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }} flex-shrink-0">
                                     <i class="fas fa-info-circle text-white"></i>
                                 </div>
                                 <div>
-                                    <div class="font-bold text-blue-900 mb-1">{{ __('Cancellation Policy') }}</div>
-                                    <div class="text-xs text-blue-700">
+                                    <div class="font-bold text-blue-900 dark:text-blue-400 mb-1">
+                                        {{ __('Cancellation Policy') }}</div>
+                                    <div class="text-xs text-blue-700 dark:text-blue-500">
                                         {{ __('You can cancel for free up to 24 hours before check-in date') }}</div>
                                 </div>
                             </div>
@@ -749,6 +788,34 @@
 
 @push('scripts')
     <script>
+        let guestIti;
+        document.addEventListener('DOMContentLoaded', function() {
+            const guestPhoneInput = document.querySelector("#guestPhone");
+            if (guestPhoneInput) {
+                guestIti = window.intlTelInput(guestPhoneInput, {
+                    initialCountry: "{{ auth()->check() && auth()->user()->phone_country_code ? strtolower(auth()->user()->phone_country_code) : 'sa' }}",
+                    separateDialCode: true,
+                    countrySearch: false,
+                    geoIpLookup: function(callback) {
+                        fetch("https://ipapi.co/json")
+                            .then(res => res.json())
+                            .then(data => callback(data.country_code))
+                            .catch(() => callback("sa"));
+                    },
+                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+                });
+
+                guestPhoneInput.addEventListener("countrychange", function() {
+                    const countryData = guestIti.getSelectedCountryData();
+                    document.querySelector("#guestPhoneCountryCode").value = countryData.iso2.toUpperCase();
+                });
+
+                // Set initial value
+                const countryData = guestIti.getSelectedCountryData();
+                document.querySelector("#guestPhoneCountryCode").value = countryData.iso2.toUpperCase();
+            }
+        });
+
         @auth
         // Use account information checkbox
         const useAccountInfo = document.getElementById('useAccountInfo');
@@ -810,17 +877,20 @@
             const email = document.getElementById('guestEmail')?.value ||
                 '{{ auth()->check() ? auth()->user()->email : '' }}';
             const phone = document.getElementById('guestPhone')?.value || '{{ auth()->user()->phone ?? '' }}';
+            const countryCode = document.getElementById('guestPhoneCountryCode')?.value ||
+                '{{ auth()->user()->phone_country_code ?? '966' }}';
             const notes = document.getElementById('guestNotes')?.value || '';
 
             const reviewName = document.getElementById('reviewName');
             const reviewEmail = document.getElementById('reviewEmail');
             const reviewPhone = document.getElementById('reviewPhone');
+            const reviewPhoneCountryCode = document.getElementById('reviewPhoneCountryCode');
             const reviewNotes = document.getElementById('reviewNotes');
             const reviewNotesContainer = document.getElementById('reviewNotesContainer');
 
             if (reviewName) reviewName.textContent = name;
             if (reviewEmail) reviewEmail.textContent = email;
-            if (reviewPhone) reviewPhone.textContent = phone;
+            if (reviewPhone) reviewPhone.textContent = (countryCode ? '+' + countryCode + ' ' : '') + phone;
 
             if (notes && reviewNotes && reviewNotesContainer) {
                 reviewNotes.textContent = notes;
@@ -868,6 +938,8 @@
                 const email = document.getElementById('guestEmail')?.value ||
                     '{{ auth()->check() ? auth()->user()->email : '' }}';
                 const phone = document.getElementById('guestPhone')?.value || '{{ auth()->user()->phone ?? '' }}';
+                const countryCode = document.getElementById('guestPhoneCountryCode')?.value ||
+                    '{{ auth()->user()->phone_country_code ?? '966' }}';
                 const notes = document.getElementById('guestNotes')?.value || '';
 
                 const reviewForm = document.getElementById('reviewForm');
@@ -875,6 +947,7 @@
                     document.getElementById('reviewFormName').value = name;
                     document.getElementById('reviewFormEmail').value = email;
                     document.getElementById('reviewFormPhone').value = phone;
+                    document.getElementById('reviewFormPhoneCountryCode').value = countryCode;
                     document.getElementById('reviewFormNotes').value = notes;
                     document.getElementById('reviewFormTerms').value = '1';
                     reviewForm.submit();
@@ -1003,6 +1076,10 @@
                     name = '{{ auth()->check() ? auth()->user()->name : '' }}';
                     email = '{{ auth()->check() ? auth()->user()->email : '' }}';
                     phone = '{{ auth()->check() ? auth()->user()->phone ?? '' : '' }}';
+                    phoneCountryCode =
+                        '{{ auth()->check() ? auth()->user()->phone_country_code ?? '966' : '966' }}';
+                } else {
+                    phoneCountryCode = document.getElementById('guestPhoneCountryCode')?.value || '966';
                 }
 
                 // Validate required fields
@@ -1048,6 +1125,7 @@
                 const finalName = name || '{{ auth()->check() ? auth()->user()->name : '' }}';
                 const finalEmail = email || '{{ auth()->check() ? auth()->user()->email : '' }}';
                 const finalPhone = phone || '{{ auth()->check() ? auth()->user()->phone ?? '' : '' }}';
+                const finalPhoneCountryCode = phoneCountryCode || '966';
                 const notes = document.getElementById('guestNotes')?.value || '';
 
                 // Fill hidden form
@@ -1056,6 +1134,7 @@
                     document.getElementById('reviewFormName').value = finalName;
                     document.getElementById('reviewFormEmail').value = finalEmail;
                     document.getElementById('reviewFormPhone').value = finalPhone;
+                    document.getElementById('reviewFormPhoneCountryCode').value = finalPhoneCountryCode;
                     document.getElementById('reviewFormNotes').value = notes;
                     document.getElementById('reviewFormTerms').value = '1';
 

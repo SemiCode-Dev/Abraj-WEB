@@ -15,6 +15,9 @@ class HotelApiService
     public function __construct()
     {
         $this->baseUrl = config('services.tbo.base_url');
+        if (str_starts_with($this->baseUrl, 'http:')) {
+            $this->baseUrl = str_replace('http:', 'https:', $this->baseUrl);
+        }
         $this->username = config('services.tbo.username');
         $this->password = config('services.tbo.password');
     }
@@ -23,14 +26,24 @@ class HotelApiService
     {
         $url = rtrim($this->baseUrl, '/').'/'.$endpoint;
 
-        return Http::timeout(60) // Increased to 60 seconds because Booking calls are slow
-            ->retry(1, 200) // Retry 1 time with 200ms delay (reduced from 2 retries)
+        if (config('app.debug')) {
+            \Log::debug("TBO API Request to $endpoint", ['url' => $url, 'payload' => $payload]);
+        }
+
+        $response = Http::timeout(60) 
+            ->retry(1, 200) 
             ->withBasicAuth($this->username, $this->password)
             ->withHeaders([
                 'Content-Type' => 'application/json',
             ])
             ->post($url, $payload)
             ->json();
+
+        if (config('app.debug')) {
+            \Log::debug("TBO API Response from $endpoint", ['response' => $response]);
+        }
+
+        return $response;
     }
 
     public function searchHotel(array $data)
@@ -180,7 +193,7 @@ class HotelApiService
      * Get hotels from multiple cities using TBOHotelCodeList
      * This replaces the random city approach with a comprehensive approach
      */
-    public function getHotelsFromMultipleCities(array $cityCodes, bool $detailed = true, ?int $maxHotelsPerCity = null, string $language = 'en'): array
+    public function getHotelsFromMultipleCities(array $cityCodes, bool $detailed = true, ?int $maxHotelsPerCity = null, string $language = 'en', int $maxPages = 1): array
     {
         $allHotels = [];
         $totalPagesFetched = 0;
@@ -189,8 +202,8 @@ class HotelApiService
             try {
                 $cityHotels = [];
                 $page = 1;
-                // Reduced max pages for faster loading (especially for homepage)
-                $maxPages = $maxHotelsPerCity !== null ? 3 : 10; // Limit per city to avoid too many requests
+                // Use passed maxPages for control
+                $maxPagesToFetch = $maxPages; 
 
                 do {
                     $response = $detailed
@@ -234,7 +247,7 @@ class HotelApiService
                     $page++;
 
                     // Safety check
-                    if ($page > $maxPages) {
+                    if ($page > $maxPagesToFetch) {
                         break;
                     }
 

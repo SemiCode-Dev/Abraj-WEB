@@ -725,6 +725,7 @@ class HotelController extends Controller
             $guestName = $request->input('name');
             $guestEmail = $request->input('email');
             $guestPhone = $request->input('phone');
+            $guestPhoneCountryCode = $request->input('phone_country_code');
             $guestNotes = $request->input('notes', '');
 
             // If user is authenticated, use their data if form data is not provided
@@ -733,6 +734,7 @@ class HotelController extends Controller
                 $guestName = $guestName ?: $user->name;
                 $guestEmail = $guestEmail ?: $user->email;
                 $guestPhone = $guestPhone ?: ($user->phone ?? '');
+                $guestPhoneCountryCode = $guestPhoneCountryCode ?: ($user->phone_country_code ?? '');
             }
 
             // Get hotel details
@@ -882,6 +884,7 @@ class HotelController extends Controller
                 'guest_name' => $guestName,
                 'guest_email' => $guestEmail,
                 'guest_phone' => $guestPhone,
+                'phone_country_code' => $guestPhoneCountryCode,
                 'booking_status' => \App\Constants\BookingStatus::PENDING,
                 'payment_status' => \App\Constants\PaymentStatus::PENDING,
             ];
@@ -912,6 +915,7 @@ class HotelController extends Controller
                 'guestName' => $guestName,
                 'guestEmail' => $guestEmail,
                 'guestPhone' => $guestPhone,
+                'phone_country_code' => $guestPhoneCountryCode,
                 'guestNotes' => $guestNotes,
             ]);
         } catch (\Exception $e) {

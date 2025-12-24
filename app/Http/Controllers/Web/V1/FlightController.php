@@ -28,7 +28,7 @@ class FlightController extends Controller
                 'user_id' => $user?->id,
                 'name' => $user ? $user->name : $request->name,
                 'email' => $user ? $user->email : $request->email,
-                'phone_country_code' => $user ? '966' : $request->phone_country_code,
+                'phone_country_code' => $user ? ($user->phone_country_code ?? '966') : $request->phone_country_code,
                 'phone' => $user ? ($user->phone ?? '') : $request->phone,
                 'origin_country_id' => $request->origin_country_id,
                 'origin_city_id' => $request->origin_city_id,

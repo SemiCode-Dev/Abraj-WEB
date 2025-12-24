@@ -30,6 +30,7 @@ class ProfileController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
+                'phone_country_code' => $request->phone_country_code,
             ];
 
             // Update password if provided

@@ -20,9 +20,10 @@ class RegisterRequest extends ApiRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:20',
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'phone' => 'required|string|unique:users,phone',
+            'phone' => 'required|string|max:11|unique:users,phone',
+            'phone_country_code' => 'required|string',
             'password' => 'required|string|min:6',
         ];
     }

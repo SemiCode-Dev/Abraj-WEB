@@ -29,12 +29,26 @@ class HomeController extends Controller
             return $this->paymentService->apsPayment();
         });
 
-        // Get limited city codes for homepage (first 6 cities for faster loading)
-        $cityCodes = City::whereNotNull('code')
+        // Major cities focus (Riyadh, Makkah, Madinah, Jeddah, Dammam)
+        $majorCityNames = ['Riyadh', 'Makkah/Mecca', 'Madinah', 'Jeddah', 'Dammam', 'Al Khobar'];
+        
+        $cityCodes = City::whereIn('name', $majorCityNames)
+            ->whereNotNull('code')
             ->where('code', '!=', '')
-            ->limit(6)
+            ->limit(4)
             ->pluck('code')
             ->toArray();
+
+        // If not enough major cities, get any cities with codes
+        if (count($cityCodes) < 4) {
+            $otherCodes = City::whereNotIn('name', $majorCityNames)
+                ->whereNotNull('code')
+                ->where('code', '!=', '')
+                ->limit(6 - count($cityCodes))
+                ->pluck('code')
+                ->toArray();
+            $cityCodes = array_merge($cityCodes, $otherCodes);
+        }
 
         // If no cities in database, use empty array (will return empty hotels)
         if (empty($cityCodes)) {
@@ -56,7 +70,7 @@ class HomeController extends Controller
                 } else {
                     // Get very limited hotels from each city (only 3 per city for homepage speed)
                     $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
-                    return $this->hotelApi->getHotelsFromMultipleCities($cityCodes, true, 3, $language);
+                    return $this->hotelApi->getHotelsFromMultipleCities($cityCodes, true, 3, $language, 1);
                 }
             } catch (\Exception $e) {
                 Log::error('Failed to fetch featured hotels: '.$e->getMessage());

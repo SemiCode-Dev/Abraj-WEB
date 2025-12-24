@@ -27,7 +27,7 @@ class VisaController extends Controller
             VisaBooking::create([
                 'user_id' => $user?->id,
                 'name' => $user ? $user->name : $request->name,
-                'phone_country_code' => $user ? '966' : $request->phone_country_code,
+                'phone_country_code' => $user ? ($user->phone_country_code ?? '966') : $request->phone_country_code,
                 'phone' => $user ? ($user->phone ?? '') : $request->phone,
                 'visa_type' => $request->visa_type,
                 'country_id' => $request->country_id,

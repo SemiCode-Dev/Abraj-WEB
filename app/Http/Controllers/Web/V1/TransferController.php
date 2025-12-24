@@ -28,7 +28,7 @@ class TransferController extends Controller
                 'user_id' => $user?->id,
                 'name' => $user ? $user->name : $request->name,
                 'email' => $user ? $user->email : $request->email,
-                'phone_country_code' => $user ? '966' : $request->phone_country_code,
+                'phone_country_code' => $user ? ($user->phone_country_code ?? '966') : $request->phone_country_code,
                 'phone' => $user ? ($user->phone ?? '') : $request->phone,
                 'destination_country_id' => $request->destination_country_id,
                 'destination_city_id' => $request->destination_city_id,

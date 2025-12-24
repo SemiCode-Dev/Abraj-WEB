@@ -40,6 +40,7 @@ class PackageController extends Controller
                 'user_id' => $user?->id,
                 'name' => $user ? $user->name : $request->name,
                 'email' => $user ? $user->email : $request->email,
+                'phone_country_code' => $user ? ($user->phone_country_code ?? '966') : $request->phone_country_code,
                 'phone' => $user ? $user->phone : $request->phone,
                 'message' => $request->message ?? '',
                 'created_at' => now(),

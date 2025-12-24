@@ -72,6 +72,7 @@ class BookingService
                 'guest_name' => $data['guest_name'],
                 'guest_email' => $data['guest_email'],
                 'guest_phone' => $data['guest_phone'] ?? null,
+                'phone_country_code' => $data['phone_country_code'] ?? null,
                 'booking_status' => BookingStatus::PENDING,
                 'payment_status' => PaymentStatus::PENDING,
             ]);
@@ -171,7 +172,7 @@ class BookingService
                 'BookingReferenceId' => $tboBookingReferenceId,
                 'TotalFare' => $finalTotalFare, // Use the potentially updated price
                 'EmailId' => $booking->guest_email,
-                'PhoneNumber' => str_replace(['+', ' '], '', $booking->guest_phone ?? '966500000000'),
+                'PhoneNumber' => str_replace(['+', ' '], '', \App\Helpers\CountryHelper::getDialCode($booking->phone_country_code) . $booking->guest_phone),
                 'BookingType' => 'Voucher',
                 'PaymentMode' => 'Limit'
             ];

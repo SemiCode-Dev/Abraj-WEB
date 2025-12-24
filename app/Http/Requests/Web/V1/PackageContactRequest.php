@@ -17,12 +17,10 @@ class PackageContactRequest extends FormRequest
             'message' => ['nullable', 'string', 'max:1000'],
         ];
 
-        // If user is not logged in, require name, email, and phone
-        if (! auth()->check()) {
-            $rules['name'] = ['required', 'string', 'max:255'];
-            $rules['email'] = ['required', 'string', 'email', 'max:255'];
-            $rules['phone'] = ['required', 'string', 'max:20'];
-        }
+        $rules['name'] = ['required', 'string', 'max:255'];
+        $rules['email'] = ['required', 'string', 'email', 'max:255'];
+        $rules['phone_country_code'] = ['required', 'string', 'max:10'];
+        $rules['phone'] = ['required', 'string', 'max:11'];
 
         return $rules;
     }
@@ -34,6 +32,7 @@ class PackageContactRequest extends FormRequest
             'email.required' => __('Email is required.'),
             'email.email' => __('Email must be a valid email address.'),
             'phone.required' => __('Phone is required.'),
+            'phone_country_code.required' => __('Country code is required.'),
             'message.max' => __('Message must not exceed 1000 characters.'),
         ];
     }

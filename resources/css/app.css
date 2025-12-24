@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import 'intl-tel-input/build/css/intlTelInput.css';
+
 @layer base {
     body {
         font-family: 'Cairo', sans-serif;
@@ -34,15 +36,18 @@
 
 /* Dark-mode scrollbar */
 .dark ::-webkit-scrollbar-track {
-    background: #0f172a; /* gray-900 */
+    background: #0f172a;
+    /* gray-900 */
 }
 
 .dark ::-webkit-scrollbar-thumb {
-    background: #1f2937; /* gray-800 */
+    background: #1f2937;
+    /* gray-800 */
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-    background: #374151; /* gray-700 */
+    background: #374151;
+    /* gray-700 */
 }
 
 /* Smooth transitions */
@@ -63,6 +68,7 @@
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -78,12 +84,15 @@
     0% {
         transform: translate(0px, 0px) scale(1);
     }
+
     33% {
         transform: translate(30px, -50px) scale(1.1);
     }
+
     66% {
         transform: translate(-20px, 20px) scale(0.9);
     }
+
     100% {
         transform: translate(0px, 0px) scale(1);
     }
@@ -107,3 +116,155 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+
+/* intl-tel-input styles */
+.iti {
+    display: block !important;
+    width: 100% !important;
+}
+
+/* Flag container */
+.iti__selected-flag {
+    background-color: transparent !important;
+    border-radius: 0.75rem 0 0 0.75rem !important;
+}
+
+/* intl-tel-input RTL and Dark Mode Support */
+[dir="rtl"] .iti {
+    direction: ltr !important;
+}
+
+[dir="rtl"] .iti__country-list {
+    left: 0 !important;
+    right: auto !important;
+    text-align: right !important;
+}
+
+[dir="rtl"] .iti__flag-container {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+}
+
+[dir="rtl"] .iti__selected-flag {
+    flex-direction: row-reverse !important;
+}
+
+/* Dark Mode for intl-tel-input */
+.dark .iti__country-list {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark .iti__country:hover {
+    background-color: #374151 !important;
+}
+
+.dark .iti__country-name {
+    color: #f3f4f6 !important;
+}
+
+.dark .iti__dial-code {
+    color: #9ca3af !important;
+}
+
+.dark .iti__selected-flag {
+    background-color: #1f2937 !important;
+    border-right-color: #374151 !important;
+}
+
+.dark .iti__active {
+    background-color: #374151 !important;
+}
+
+.iti__country-list {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid #e5e7eb !important;
+    width: 280px !important;
+    max-width: 280px !important;
+    position: absolute !important;
+    z-index: 1000 !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Fix for the white 'container' area - making sure it doesn't stretch or have a background */
+.iti--allow-dropdown {
+    width: 100% !important;
+}
+
+.iti__dropdown-content {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.dark .iti__country-list {
+    background-color: #1f2937 !important;
+    color: #f9fafb !important;
+    border-color: #4b5563 !important;
+}
+
+.iti__country {
+    padding: 12px 16px !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.iti__country-name {
+    color: #111827 !important;
+}
+
+.dark .iti__country-name {
+    color: #f9fafb !important;
+}
+
+.iti__dial-code {
+    color: #6b7280 !important;
+}
+
+.dark .iti__dial-code {
+    color: #9ca3af !important;
+}
+
+.iti__country:hover {
+    background-color: #f3f4f6 !important;
+}
+
+.dark .iti__country:hover {
+    background-color: #374151 !important;
+}
+
+.iti__selected-dial-code {
+    color: #374151 !important;
+    margin-left: 4px !important;
+}
+
+.dark .iti__selected-dial-code {
+    color: #f3f4f6 !important;
+}
+
+/* Ensure register form inputs are black even in dark mode since it has a white background */
+.dark section.bg-white input {
+    color: #111827 !important;
+}
+
+/* Ensure input text is visible elsewhere */
+input[type="tel"] {
+    color: #111827 !important;
+}
+
+.dark input[type="tel"] {
+    color: #ffffff !important;
+}
+
+.dark section.bg-white input[type="tel"] {
+    color: #111827 !important;
+}
+
+.dark section.bg-white .iti__selected-dial-code {
+    color: #374151 !important;
+}
