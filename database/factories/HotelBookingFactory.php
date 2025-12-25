@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Models\HotelBooking;
-use App\Models\User;
 use App\Constants\BookingStatus;
 use App\Constants\PaymentStatus;
+use App\Models\HotelBooking;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -17,10 +17,10 @@ class HotelBookingFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'booking_reference' => 'BK-' . strtoupper(Str::random(10)),
+            'booking_reference' => 'BK-'.strtoupper(Str::random(10)),
             'hotel_code' => $this->faker->numerify('######'),
-            'hotel_name' => $this->faker->company . ' Hotel',
-            'room_code' => 'ROOM-' . $this->faker->numerify('####'),
+            'hotel_name' => $this->faker->company.' Hotel',
+            'room_code' => 'ROOM-'.$this->faker->numerify('####'),
             'room_name' => $this->faker->randomElement(['Deluxe Room', 'Standard Room', 'Suite', 'Executive Room']),
             'check_in' => now()->addDays(30),
             'check_out' => now()->addDays(32),
@@ -44,9 +44,9 @@ class HotelBookingFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'booking_status' => BookingStatus::CONFIRMED,
             'payment_status' => PaymentStatus::PAID,
-            'tbo_booking_id' => 'TBO-' . $this->faker->numerify('##########'),
-            'confirmation_number' => 'CONF-' . $this->faker->numerify('########'),
-            'payment_reference' => 'PAY-' . $this->faker->numerify('##########'),
+            'tbo_booking_id' => 'TBO-'.$this->faker->numerify('##########'),
+            'confirmation_number' => 'CONF-'.$this->faker->numerify('########'),
+            'payment_reference' => 'PAY-'.$this->faker->numerify('##########'),
         ]);
     }
 
@@ -79,7 +79,7 @@ class HotelBookingFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'payment_status' => PaymentStatus::PAID,
-            'payment_reference' => 'PAY-' . $this->faker->numerify('##########'),
+            'payment_reference' => 'PAY-'.$this->faker->numerify('##########'),
         ]);
     }
 }

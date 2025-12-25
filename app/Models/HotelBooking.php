@@ -14,6 +14,8 @@ class HotelBooking extends Model
         'booking_reference',
         'hotel_code',
         'hotel_name',
+        'hotel_name_ar',
+        'hotel_name_en',
         'room_code',
         'room_name',
         'check_in',

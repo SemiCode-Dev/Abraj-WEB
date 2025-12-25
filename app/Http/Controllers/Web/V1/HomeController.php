@@ -56,8 +56,9 @@ class HomeController extends Controller
         }
 
         // Cache for 2 hours to improve performance (longer cache for homepage)
-        $cacheKey = 'featured_hotels_homepage_'.md5(implode(',', $cityCodes));
-        $response = Cache::remember($cacheKey, 7200, function () use ($cityCodes) {
+        $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
+        $cacheKey = 'featured_hotels_homepage_'.$language.'_'.md5(implode(',', $cityCodes));
+        $response = Cache::remember($cacheKey, 7200, function () use ($cityCodes, $language) {
             try {
                 if (empty($cityCodes)) {
                     return [
@@ -70,7 +71,21 @@ class HomeController extends Controller
                 } else {
                     // Get very limited hotels from each city (only 3 per city for homepage speed)
                     $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
-                    return $this->hotelApi->getHotelsFromMultipleCities($cityCodes, true, 3, $language, 1);
+                    $response = $this->hotelApi->getHotelsFromMultipleCities($cityCodes, true, 3, $language, 1);
+
+                    // Apply robust Hotel Name Translation if Arabic
+                    if ($language === 'ar') {
+                        try {
+                            $translator = new \App\Services\HotelTranslationService();
+                            if (isset($response['Hotels']) && is_array($response['Hotels'])) {
+                                $response['Hotels'] = $translator->translateHotels($response['Hotels'], 20);
+                            }
+                        } catch (\Exception $e) {
+                           Log::warning('Homepage translation failed: ' . $e->getMessage());
+                        }
+                    }
+
+                    return $response;
                 }
             } catch (\Exception $e) {
                 Log::error('Failed to fetch featured hotels: '.$e->getMessage());

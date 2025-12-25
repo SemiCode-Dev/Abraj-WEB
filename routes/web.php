@@ -16,6 +16,7 @@ use App\Http\Controllers\Web\V1\HotelController;
 use App\Http\Controllers\Web\V1\PackageController;
 use App\Http\Controllers\Web\V1\PaymentController;
 use App\Http\Controllers\Web\V1\ProfileController;
+use App\Http\Controllers\Web\V1\RequestsController;
 use App\Http\Controllers\Web\V1\TransferController;
 use App\Http\Controllers\Web\V1\VisaController;
 use Illuminate\Support\Facades\Route;
@@ -106,9 +107,7 @@ Route::group([
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     });
 
-    Route::get('/requests', function () {
-        return view('Web.requests');
-    })->name('requests');
+    Route::get('/requests', [\App\Http\Controllers\Web\V1\RequestsController::class, 'index'])->name('requests');
 
     // Logout route (requires auth)
     Route::middleware('auth')->group(function () {

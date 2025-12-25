@@ -63,6 +63,8 @@ class BookingService
                 'booking_reference' => $bookingReference,
                 'hotel_code' => $data['hotel_code'],
                 'hotel_name' => $data['hotel_name'] ?? null,
+                'hotel_name_ar' => $data['hotel_name_ar'] ?? null,
+                'hotel_name_en' => $data['hotel_name_en'] ?? null,
                 'room_code' => $data['room_code'],
                 'room_name' => $data['room_name'] ?? null,
                 'check_in' => $data['check_in'],

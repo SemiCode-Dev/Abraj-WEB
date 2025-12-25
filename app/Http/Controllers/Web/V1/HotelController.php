@@ -748,6 +748,17 @@ class HotelController extends Controller
                 Log::error('Failed to fetch hotel details for review: '.$e->getMessage());
             }
 
+            // Fetch alternate language details for localized content
+            $altLanguage = $language === 'ar' ? 'en' : 'ar';
+            $hotelDetailsAlt = null;
+            try {
+                 $hotelDetailsAlt = \Illuminate\Support\Facades\Cache::remember("hotel_details_{$hotelId}_{$altLanguage}", 86400, function () use ($hotelId, $altLanguage) {
+                    return $this->hotelApi->getHotelDetails($hotelId, $altLanguage);
+                 });
+            } catch (\Exception $e) {
+                 Log::warning('Failed to fetch alternate hotel details: '.$e->getMessage());
+            }
+
             // Search for room details using booking_code
             if ($bookingCode && $checkIn && $checkOut) {
                 try {
@@ -871,10 +882,19 @@ class HotelController extends Controller
                 $currency = $request->input('currency', 'USD');
             }
 
+            // Determine localized names
+            $currentName = $hotelDetails['HotelDetails'][0]['HotelName'] ?? $hotelDetails['Name'] ?? 'Unknown Hotel';
+            $altName = $hotelDetailsAlt['HotelDetails'][0]['HotelName'] ?? $hotelDetailsAlt['Name'] ?? null;
+
+            $hotelNameAr = $language === 'ar' ? $currentName : $altName;
+            $hotelNameEn = $language === 'en' ? $currentName : $altName;
+
             // Prepare data for booking creation
             $bookingData = [
                 'hotel_code' => $hotelId,
-                'hotel_name' => $hotelDetails['HotelDetails'][0]['HotelName'] ?? $hotelDetails['Name'] ?? 'Unknown Hotel',
+                'hotel_name' => $currentName,
+                'hotel_name_ar' => $hotelNameAr,
+                'hotel_name_en' => $hotelNameEn,
                 'room_code' => $bookingCode,
                 'room_name' => is_array($roomData['Name']) ? ($roomData['Name'][0] ?? 'Room') : ($roomData['Name'] ?? 'Room'),
                 'check_in' => $checkIn,

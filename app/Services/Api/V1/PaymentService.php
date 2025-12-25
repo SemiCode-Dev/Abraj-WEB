@@ -70,6 +70,12 @@ class PaymentService
                 return redirect()->route('home')->with('error', __('Booking not found.'));
             }
 
+            // Re-login user if session was lost (e.g. due to SameSite cookie policy on POST callback)
+            // This ensures the user is logged in whether payment succeeded or failed
+            if (! auth()->check() && $booking->user_id) {
+                auth()->loginUsingId($booking->user_id);
+            }
+
             if ($status == '14') { // Success
                 $bookingService = app(\App\Services\Api\V1\BookingService::class);
                 $success = $bookingService->completeBooking($booking, $data);
