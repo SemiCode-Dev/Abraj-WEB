@@ -103,6 +103,25 @@
 
                     <div class="mb-6">
                         <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
+                            {{ __('Nationality') }} <span class="text-red-500">*</span>
+                        </label>
+                        <select name="nationality_id" required
+                            class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
+                            <option value="">{{ __('Select Nationality') }}</option>
+                            @foreach ($countries as $country)
+                                <option value="{{ $country->id }}"
+                                    {{ old('nationality_id') == $country->id ? 'selected' : '' }}>
+                                    {{ $country->locale_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('nationality_id')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
                             {{ __('Country') }} <span class="text-red-500">*</span>
                         </label>
                         <select name="country_id" required

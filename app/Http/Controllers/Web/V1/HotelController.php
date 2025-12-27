@@ -285,54 +285,43 @@ class HotelController extends Controller
     public function getAllHotels()
     {
         try {
-            // Increase execution time for this request to 120s as a safety net
-            set_time_limit(120);
-
-            // Get current page from request
-            $page = (int) request('page', 1);
-            $citiesPerPage = 4; // Fetch hotels from 4 cities per page (4 * 5 = ~20 hotels)
+            // Increase execution time for this request to 180s for larger dataset
+            set_time_limit(180);
 
             // Get all city codes from database (Fast local query)
             $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
-                ->orderBy('name', 'asc') // Consistent ordering for pagination
+                ->orderBy('name', 'asc') // Consistent ordering
                 ->pluck('code')
                 ->toArray();
 
             if (empty($allCityCodes)) {
                 return view('Web.hotels', [
                     'hotels' => [],
-                    'currentPage' => 1,
-                    'totalPages' => 1,
-                    'totalHotels' => 0,
-                    'perPage' => 12,
+                    'allHotelsJson' => '[]',
                 ]);
             }
 
-            // Calculate pagination based on CITIES
-            $totalCities = count($allCityCodes);
-            $totalPages = (int) ceil($totalCities / $citiesPerPage);
-            
-            // Ensure page is valid
-            if ($page < 1) $page = 1;
-            if ($page > $totalPages && $totalPages > 0) $page = $totalPages;
-
-            // Get cities for current page
-            $offset = ($page - 1) * $citiesPerPage;
-            $currentCityCodes = array_slice($allCityCodes, $offset, $citiesPerPage);
-
-            // Use cache key based on CURRENT page cities and LANGUAGE
-            // This prevents fetching 66 cities at once and prevents language mixups
+            // Use cache key based on ALL cities and LANGUAGE
             $language = app()->getLocale();
-            $cacheKey = 'hotels_page_'.$page.'_'.$language.'_'.md5(implode(',', $currentCityCodes));
+            $cacheKey = 'all_hotels_'.$language.'_v2_'.md5(implode(',', $allCityCodes));
 
             // Cache for 24 hours
-            $hotels = \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function () use ($currentCityCodes, $language) {
+            $hotels = \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function () use ($allCityCodes, $language) {
                 try {
-                    // Fetch from API only for the 4 cities of this page
+                    // Fetch from API for ALL cities
+                    // Increase to 10 hotels per city for more comprehensive results
                     $apiLang = $language === 'ar' ? 'ar' : 'en';
-                    // We fetch 5 hotels per city, so ~20 hotels total
-                    $response = $this->hotelApi->getHotelsFromMultipleCities($currentCityCodes, true, 5, $apiLang);
+                    
+                    // Fetch from ALL cities (no limit)
+                    // This will take longer but gives complete results
+                    $response = $this->hotelApi->getHotelsFromMultipleCities(
+                        $allCityCodes, 
+                        true, 
+                        10, // 10 hotels per city
+                        $apiLang,
+                        1 // 1 page per city for faster loading
+                    );
 
                     $hotels = $response['Hotels'] ?? [];
 
@@ -342,7 +331,7 @@ class HotelController extends Controller
 
                     return $hotels;
                 } catch (\Exception $e) {
-                    Log::error('Failed to fetch page hotels from API: '.$e->getMessage());
+                    Log::error('Failed to fetch all hotels from API: '.$e->getMessage());
                     return [];
                 }
             });
@@ -353,67 +342,21 @@ class HotelController extends Controller
                 $hotels = $translator->translateHotels($hotels);
             }
 
-            // Count is approximate (Total Cities * Avg Hotels/City) or just hide total
-            // For UI consistency, we can show total cities or "many"
-            $estimatedTotalHotels = $totalCities * 5; 
-
             return view('Web.hotels', [
-                'hotels' => $hotels, // Already sliced by API logic effectively
-                'currentPage' => $page,
-                'totalPages' => $totalPages,
-                'totalHotels' => $estimatedTotalHotels,
-                'perPage' => count($hotels), // Dynamic per page
+                'hotels' => $hotels, // All hotels loaded at once
+                'allHotelsJson' => json_encode($hotels), // For JavaScript access
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to fetch all hotels: '.$e->getMessage());
 
             return view('Web.hotels', [
                 'hotels' => [],
-                'currentPage' => 1,
-                'totalPages' => 1,
-                'totalHotels' => 0,
-                'perPage' => 12,
+                'allHotelsJson' => '[]',
             ]);
         }
     }
 
-    public function getCitiesByCountry($countryCode)
-    {
-        try {
-            $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
-            $response = $this->hotelApi->getCitiesByCountry($countryCode, $language);
 
-            // Handle different possible response structures
-            $cities = [];
-            if (isset($response['CityList']) && is_array($response['CityList'])) {
-                $cities = $response['CityList'];
-            } elseif (is_array($response) && isset($response[0])) {
-                $cities = $response;
-            }
-
-            // Manual translation and filtering
-            if (app()->getLocale() === 'ar') {
-                $cities = $this->translateCities($cities);
-            }
-
-            // Transform the response to match expected format
-            $formattedCities = collect($cities)->map(function ($city) {
-                return [
-                    'Name' => $city['CityName'] ?? $city['Name'] ?? '',
-                    'Name_ar' => $city['CityName'] ?? $city['Name'] ?? '',
-                    'Code' => $city['CityCode'] ?? $city['Code'] ?? '',
-                ];
-            })->filter(function ($city) {
-                return ! empty($city['Code']);
-            });
-
-            return response()->json($formattedCities->values());
-        } catch (\Exception $e) {
-            Log::error('Failed to fetch cities from TBO API: '.$e->getMessage());
-
-            return response()->json(['error' => 'Failed to fetch cities'], 500);
-        }
-    }
 
     public function show($id)
     {

@@ -17,6 +17,7 @@ class VisaBooking extends Model
         'phone',
         'visa_type',
         'country_id',
+        'nationality_id',
         'duration',
         'passport_number',
         'comment',
@@ -35,5 +36,10 @@ class VisaBooking extends Model
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
+    }
+
+    public function nationality(): BelongsTo
+    {
+        return $this->belongsTo(Country::class, 'nationality_id');
     }
 }

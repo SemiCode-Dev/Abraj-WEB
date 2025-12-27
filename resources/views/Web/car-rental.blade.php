@@ -16,8 +16,8 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
                 <!-- <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-                                    {{ __('Booking Form') }}
-                                </h2> -->
+                                            {{ __('Booking Form') }}
+                                        </h2> -->
 
                 @if (session('success'))
                     <div
@@ -182,6 +182,7 @@
     </section>
 
     @push('scripts')
+        <script src="{{ asset('js/dynamic-selector.js') }}"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const carPhoneInput = document.querySelector("#carPhone");
@@ -209,40 +210,19 @@
                     document.querySelector("#carPhoneCountryCode").value = initialCountryData.iso2.toUpperCase();
                 }
 
-                const destinationCountrySelect = document.getElementById('destination_country_id');
-                const destinationCitySelect = document.getElementById('destination_city_id');
+                // Initialize Dynamic City Selector
+                new DynamicSelector({
+                    countrySelector: '#destination_country_id',
+                    citySelector: '#destination_city_id',
+                    apiUrl: '/{{ app()->getLocale() }}/locations/countries/{id}/cities',
+                    placeholder: '{{ __('Select City') }}',
+                    loadingText: '{{ __('Loading...') }}',
+                    errorText: '{{ __('Error loading cities') }}',
+                    initialCityId: '{{ old('destination_city_id') }}'
+                });
+
                 const pickupDateInput = document.querySelector('input[name="pickup_date"]');
                 const returnDateInput = document.querySelector('input[name="return_date"]');
-
-                // Load cities for destination
-                destinationCountrySelect.addEventListener('change', function() {
-                    const countryId = this.value;
-                    destinationCitySelect.disabled = true;
-                    destinationCitySelect.innerHTML = '<option value="">{{ __('Loading...') }}</option>';
-
-                    if (countryId) {
-                        fetch(`/{{ app()->getLocale() }}/car-rental/cities/${countryId}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                destinationCitySelect.innerHTML =
-                                    '<option value="">{{ __('Select City') }}</option>';
-                                data.forEach(city => {
-                                    const option = document.createElement('option');
-                                    option.value = city.id;
-                                    option.textContent = city.name;
-                                    destinationCitySelect.appendChild(option);
-                                });
-                                destinationCitySelect.disabled = false;
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                destinationCitySelect.innerHTML =
-                                    '<option value="">{{ __('Error loading cities') }}</option>';
-                            });
-                    } else {
-                        destinationCitySelect.innerHTML = '<option value="">{{ __('Select City') }}</option>';
-                    }
-                });
 
                 // Set minimum return date based on pickup date
                 pickupDateInput.addEventListener('change', function() {
@@ -256,14 +236,6 @@
                         }
                     }
                 });
-
-                // Load cities on page load if country is already selected (for validation errors)
-                @if (old('destination_country_id'))
-                    destinationCountrySelect.dispatchEvent(new Event('change'));
-                    setTimeout(() => {
-                        destinationCitySelect.value = '{{ old('destination_city_id') }}';
-                    }, 500);
-                @endif
             });
         </script>
     @endpush

@@ -16,8 +16,8 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
                 <!-- <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-                                            {{ __('Booking Form') }}
-                                        </h2> -->
+                                                        {{ __('Booking Form') }}
+                                                    </h2> -->
 
                 @if (session('success'))
                     <div
@@ -221,6 +221,7 @@
     </section>
 
     @push('scripts')
+        <script src="{{ asset('js/dynamic-selector.js') }}"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const flightPhoneInput = document.querySelector("#flightPhone");
@@ -249,69 +250,27 @@
                     document.querySelector("#flightPhoneCountryCode").value = initialCountryData.iso2.toUpperCase();
                 }
 
-                const originCountrySelect = document.getElementById('origin_country_id');
-                const originCitySelect = document.getElementById('origin_city_id');
-                const destinationCountrySelect = document.getElementById('destination_country_id');
-                const destinationCitySelect = document.getElementById('destination_city_id');
-
-                // Load cities for origin
-                originCountrySelect.addEventListener('change', function() {
-                    const countryId = this.value;
-                    originCitySelect.disabled = true;
-                    originCitySelect.innerHTML = '<option value="">{{ __('Loading...') }}</option>';
-
-                    if (countryId) {
-                        fetch(`/{{ app()->getLocale() }}/flights/cities/${countryId}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                originCitySelect.innerHTML =
-                                    '<option value="">{{ __('Select City') }}</option>';
-                                data.forEach(city => {
-                                    const option = document.createElement('option');
-                                    option.value = city.id;
-                                    option.textContent = city.name;
-                                    originCitySelect.appendChild(option);
-                                });
-                                originCitySelect.disabled = false;
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                originCitySelect.innerHTML =
-                                    '<option value="">{{ __('Error loading cities') }}</option>';
-                            });
-                    } else {
-                        originCitySelect.innerHTML = '<option value="">{{ __('Select City') }}</option>';
-                    }
+                // Initialize Dynamic City Selector for Origin
+                new DynamicSelector({
+                    countrySelector: '#origin_country_id',
+                    citySelector: '#origin_city_id',
+                    // Use {id} as placeholder, ensuring it matches JS replacement
+                    apiUrl: '/{{ app()->getLocale() }}/locations/countries/{id}/cities',
+                    placeholder: '{{ __('Select City') }}',
+                    loadingText: '{{ __('Loading...') }}',
+                    errorText: '{{ __('Error loading cities') }}',
+                    initialCityId: '{{ old('origin_city_id') }}'
                 });
 
-                // Load cities for destination
-                destinationCountrySelect.addEventListener('change', function() {
-                    const countryId = this.value;
-                    destinationCitySelect.disabled = true;
-                    destinationCitySelect.innerHTML = '<option value="">{{ __('Loading...') }}</option>';
-
-                    if (countryId) {
-                        fetch(`/{{ app()->getLocale() }}/flights/cities/${countryId}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                destinationCitySelect.innerHTML =
-                                    '<option value="">{{ __('Select City') }}</option>';
-                                data.forEach(city => {
-                                    const option = document.createElement('option');
-                                    option.value = city.id;
-                                    option.textContent = city.name;
-                                    destinationCitySelect.appendChild(option);
-                                });
-                                destinationCitySelect.disabled = false;
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                destinationCitySelect.innerHTML =
-                                    '<option value="">{{ __('Error loading cities') }}</option>';
-                            });
-                    } else {
-                        destinationCitySelect.innerHTML = '<option value="">{{ __('Select City') }}</option>';
-                    }
+                // Initialize Dynamic City Selector for Destination
+                new DynamicSelector({
+                    countrySelector: '#destination_country_id',
+                    citySelector: '#destination_city_id',
+                    apiUrl: '/{{ app()->getLocale() }}/locations/countries/{id}/cities',
+                    placeholder: '{{ __('Select City') }}',
+                    loadingText: '{{ __('Loading...') }}',
+                    errorText: '{{ __('Error loading cities') }}',
+                    initialCityId: '{{ old('destination_city_id') }}'
                 });
 
                 // Set minimum return date based on departure date
@@ -329,21 +288,6 @@
                         }
                     }
                 });
-
-                // Load cities on page load if country is already selected (for validation errors)
-                @if (old('origin_country_id'))
-                    originCountrySelect.dispatchEvent(new Event('change'));
-                    setTimeout(() => {
-                        originCitySelect.value = '{{ old('origin_city_id') }}';
-                    }, 500);
-                @endif
-
-                @if (old('destination_country_id'))
-                    destinationCountrySelect.dispatchEvent(new Event('change'));
-                    setTimeout(() => {
-                        destinationCitySelect.value = '{{ old('destination_city_id') }}';
-                    }, 500);
-                @endif
             });
         </script>
     @endpush

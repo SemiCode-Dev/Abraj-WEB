@@ -63,3 +63,29 @@ Route::post('/visas/book', [VisaController::class, 'store']);
 
 
 
+// ============================================
+// DEVELOPMENT HELPER - Get OTP from Database
+// REMOVE THIS IN PRODUCTION!
+// ============================================
+Route::get('/dev/get-otp/{identifier}', function($identifier) {
+    $user = \App\Models\User::where('email', $identifier)
+        ->orWhere('phone', str_replace('+', '', preg_replace('/[^0-9+]/', '', $identifier)))
+        ->first();
+    
+    if (!$user) {
+        return response()->json(['error' => 'User not found'], 404);
+    }
+    
+    $otp = \App\Models\Otp::where('user_id', $user->id)->first();
+    
+    if (!$otp) {
+        return response()->json(['error' => 'No OTP found. Request one first.'], 404);
+    }
+    
+    return response()->json([
+        'otp' => $otp->token,
+        'expires_at' => $otp->expires_at,
+        'attempts' => $otp->attempts,
+        'verified' => $otp->verified ? 'yes' : 'no',
+    ]);
+});

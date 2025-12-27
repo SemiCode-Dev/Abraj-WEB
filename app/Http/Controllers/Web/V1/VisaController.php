@@ -12,7 +12,11 @@ class VisaController extends Controller
 {
     public function index()
     {
-        $countries = Country::orderBy('name')->get();
+        if (app()->getLocale() == 'ar') {
+            $countries = Country::orderBy('name_ar')->get();
+        } else {
+            $countries = Country::orderBy('name')->get();
+        }
 
         return view('Web.visa', [
             'countries' => $countries,
@@ -31,6 +35,7 @@ class VisaController extends Controller
                 'phone' => $user ? ($user->phone ?? '') : $request->phone,
                 'visa_type' => $request->visa_type,
                 'country_id' => $request->country_id,
+                'nationality_id' => $request->nationality_id,
                 'duration' => $request->duration,
                 'passport_number' => $request->passport_number ?? null,
                 'comment' => $request->comment,

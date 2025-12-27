@@ -54,7 +54,7 @@ Route::group([
     // Hotels
 
     Route::get('/get-hotels/{cityCode}', [HotelController::class, 'getHotels']);
-    Route::get('/get-cities/{countryCode}', [HotelController::class, 'getCitiesByCountry']);
+
     Route::get('/hotels/{cityCode}', [HotelController::class, 'getCityHotels'])->name('city.hotels');
     Route::get('/hotel', [HotelController::class, 'search'])->name('hotels.search');
     Route::post('/hotel/search', [HotelController::class, 'search'])->name('hotel.search');
@@ -85,21 +85,24 @@ Route::group([
     // Flights
     Route::get('/flights', [FlightController::class, 'index'])->name('flights');
     Route::post('/flights/book', [FlightController::class, 'book'])->name('flights.book');
-    Route::get('/flights/cities/{countryId}', [FlightController::class, 'getCitiesByCountry'])->name('flights.cities');
+
 
     // Transfer
     Route::get('/transfer', [TransferController::class, 'index'])->name('transfer');
     Route::post('/transfer/book', [TransferController::class, 'book'])->name('transfer.book');
-    Route::get('/transfer/cities/{countryId}', [TransferController::class, 'getCitiesByCountry'])->name('transfer.cities');
+
 
     // Car Rental
     Route::get('/car-rental', [CarRentalController::class, 'index'])->name('car-rental');
     Route::post('/car-rental/book', [CarRentalController::class, 'book'])->name('car-rental.book');
-    Route::get('/car-rental/cities/{countryId}', [CarRentalController::class, 'getCitiesByCountry'])->name('car-rental.cities');
+
 
     // Visa Service
     Route::get('/visa', [VisaController::class, 'index'])->name('visa');
     Route::post('/visa/book', [VisaController::class, 'book'])->name('visa.book');
+
+    // Shared Location Routes
+    Route::get('/locations/countries/{country}/cities', [\App\Http\Controllers\Web\V1\LocationController::class, 'getCities'])->name('locations.cities');
 
     // Profile Routes
     Route::middleware('auth')->group(function () {
@@ -181,4 +184,37 @@ Route::prefix(LaravelLocalization::setLocale().'/admin')->name('admin.')->middle
             return view('Admin.settings');
         })->name('settings');
     });
+});
+
+// Test Email Route (for debugging) - Remove in production
+Route::get('/test-email-debug', function () {
+    try {
+        $config = [
+            'mailer' => config('mail.default'),
+            'host' => config('mail.mailers.smtp.host'),
+            'port' => config('mail.mailers.smtp.port'),
+            'username' => config('mail.mailers.smtp.username'),
+            'encryption' => config('mail.mailers.smtp.encryption'),
+        ];
+        
+        \Illuminate\Support\Facades\Log::info('Test email attempt', $config);
+        
+        \Illuminate\Support\Facades\Mail::raw('Test OTP email. If you get this, email works!', function ($message) {
+            $message->to(config('mail.mailers.smtp.username') ?: 'test@example.com')
+                    ->subject('Test - Laravel OTP System');
+        });
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Email sent! Check inbox.',
+            'config' => $config,
+        ]);
+    } catch (\Exception $e) {
+        \Illuminate\Support\Facades\Log::error('Test email error', ['error' => $e->getMessage()]);
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'config' => $config ?? [],
+        ], 500);
+    }
 });

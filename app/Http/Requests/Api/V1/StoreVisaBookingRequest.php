@@ -31,6 +31,7 @@ class StoreVisaBookingRequest extends FormRequest
             'phone' => [$isRequired, 'string', 'max:255'],
             'visa_type' => ['nullable', 'string', 'max:255'],
             'country_id' => ['nullable', 'exists:countries,id'],
+            'nationality_id' => ['nullable', 'exists:countries,id'],
             'duration' => ['nullable', 'integer'],
             'passport_number' => ['nullable', 'string', 'max:255'],
             'comment' => ['nullable', 'string'],

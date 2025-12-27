@@ -49,24 +49,5 @@ class TransferController extends Controller
         }
     }
 
-    public function getCitiesByCountry($countryId)
-    {
-        try {
-            $country = Country::with('cities')->findOrFail($countryId);
-            $cities = $country->cities()->orderBy('name')->get();
 
-            return response()->json($cities->map(function ($city) {
-                return [
-                    'id' => $city->id,
-                    'name' => $city->locale_name,
-                    'name_ar' => $city->name_ar,
-                    'code' => $city->code,
-                ];
-            }));
-        } catch (\Exception $e) {
-            Log::error('Failed to fetch cities: '.$e->getMessage());
-
-            return response()->json(['error' => __('Failed to fetch cities')], 500);
-        }
-    }
 }

@@ -16,6 +16,7 @@ class VisaBookingRequest extends FormRequest
         $rules = [
             'visa_type' => ['required', 'string', 'max:255'],
             'country_id' => ['required', 'exists:countries,id'],
+            'nationality_id' => ['required', 'exists:countries,id'],
             'duration' => ['required', 'integer', 'min:1', 'max:365'],
         ];
 

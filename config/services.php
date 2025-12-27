@@ -46,4 +46,27 @@ return [
         'callback_url' => env('APS_CALLBACK_URL'),
     ],
 
+    'sms' => [
+        'enabled' => env('SMS_ENABLED', false),
+        'provider' => env('SMS_PROVIDER', 'log'), // Options: twilio, vonage, unifonic, log
+        'from' => env('SMS_FROM'),
+        
+        // Twilio configuration
+        'twilio' => [
+            'sid' => env('TWILIO_SID'),
+            'token' => env('TWILIO_AUTH_TOKEN'),
+        ],
+        
+        // Vonage configuration
+        'vonage' => [
+            'api_key' => env('VONAGE_API_KEY'),
+            'api_secret' => env('VONAGE_API_SECRET'),
+        ],
+        
+        // Unifonic configuration
+        'unifonic' => [
+            'app_sid' => env('UNIFONIC_APP_SID'),
+        ],
+    ],
+
 ];
