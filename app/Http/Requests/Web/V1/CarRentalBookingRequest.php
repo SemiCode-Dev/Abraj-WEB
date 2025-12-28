@@ -19,7 +19,7 @@ class CarRentalBookingRequest extends FormRequest
             'phone_country_code' => ['required', 'string', 'max:10'],
             'phone' => ['required', 'string', 'max:11'],
             'destination_country_id' => ['required', 'exists:countries,id'],
-            'destination_city_id' => ['required', 'exists:cities,id'],
+            'destination_city_id' => ['required'],
             'pickup_date' => ['required', 'date', 'after_or_equal:today'],
             'pickup_time' => ['required'],
             'return_date' => ['required', 'date', 'after:pickup_date'],

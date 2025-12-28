@@ -1,0 +1,58 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        // 1. Car Rental Bookings
+        try {
+            DB::statement("ALTER TABLE `car_rental_bookings` DROP FOREIGN KEY `car_rental_bookings_destination_city_id_foreign`");
+        } catch (\Throwable $e) {}
+        
+        try {
+            DB::statement("ALTER TABLE `car_rental_bookings` DROP INDEX `car_rental_bookings_destination_city_id_foreign`");
+        } catch (\Throwable $e) {}
+
+        // 2. Transfer Bookings
+        try {
+            DB::statement("ALTER TABLE `transfer_bookings` DROP FOREIGN KEY `transfer_bookings_destination_city_id_foreign`");
+        } catch (\Throwable $e) {}
+
+        try {
+            DB::statement("ALTER TABLE `transfer_bookings` DROP INDEX `transfer_bookings_destination_city_id_foreign`");
+        } catch (\Throwable $e) {}
+
+        // 3. Flight Bookings
+        try {
+            DB::statement("ALTER TABLE `flight_bookings` DROP FOREIGN KEY `flight_bookings_origin_city_id_foreign`");
+        } catch (\Throwable $e) {}
+
+        try {
+            DB::statement("ALTER TABLE `flight_bookings` DROP INDEX `flight_bookings_origin_city_id_foreign`");
+        } catch (\Throwable $e) {}
+
+        try {
+            DB::statement("ALTER TABLE `flight_bookings` DROP FOREIGN KEY `flight_bookings_destination_city_id_foreign`");
+        } catch (\Throwable $e) {}
+
+        try {
+            DB::statement("ALTER TABLE `flight_bookings` DROP INDEX `flight_bookings_destination_city_id_foreign`");
+        } catch (\Throwable $e) {}
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        // Re-adding constraints is risky if invalid data was inserted.
+        // We will skip re-adding them to avoid breaking rollbacks with "Invalid Foreign Key" errors.
+    }
+};

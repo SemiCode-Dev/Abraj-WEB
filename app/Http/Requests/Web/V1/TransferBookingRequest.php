@@ -20,7 +20,7 @@ class TransferBookingRequest extends FormRequest
             'phone_country_code' => ['required', 'string', 'max:10'],
             'phone' => ['required', 'string', 'max:11'],
             'destination_country_id' => ['required', 'exists:countries,id'],
-            'destination_city_id' => ['required', 'exists:cities,id'],
+            'destination_city_id' => ['required'],
             'transfer_date' => ['required', 'date', 'after_or_equal:today'],
             'transfer_time' => ['required'],
             'trip_type' => ['required', Rule::in(['go', 'go_and_back'])],
