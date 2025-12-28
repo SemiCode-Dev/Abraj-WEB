@@ -37,83 +37,99 @@ class LocationController extends Controller
             
             // Cache for 24 hours
             $cities = Cache::remember($cacheKey, 60 * 60 * 24, function () use ($country, $locale) {
-                // Determine the name column based on locale
                 $nameColumn = $locale == 'ar' ? 'name_ar' : 'name';
                 
+                // Resolve input to confirmed Country ID and Code
+                $countryModel = Country::where('id', $country)
+                                ->orWhere('code', $country)
+                                ->first();
+
                 // 1. Try fetching from Local Database
-                $localCities = \App\Models\City::where('country_id', $country)
-                    ->select('id', 'name', 'name_ar', 'code')
-                    ->orderBy($nameColumn)
-                    ->get();
-                    
-                if ($localCities->isNotEmpty()) {
-                    return $localCities->map(function ($city) {
-                        return [
-                            'id' => $city->id,
-                            'name' => $city->locale_name,
-                            'code' => $city->code,
-                        ];
-                    });
+                if ($countryModel) {
+                    $localCities = \App\Models\City::where('country_id', $countryModel->id)
+                        ->select('id', 'name', 'name_ar', 'code')
+                        ->orderBy($nameColumn)
+                        ->get();
+                        
+                    if ($localCities->isNotEmpty()) {
+                        return $localCities->map(function ($city) {
+                            return [
+                                'id' => $city->id,
+                                'name' => $city->locale_name,
+                                'code' => $city->code,
+                            ];
+                        });
+                    }
                 }
 
-                // 2. Fallback to TBO API if local DB is empty
-                $countryModel = Country::find($country);
-                if (!$countryModel || empty($countryModel->code)) {
+                // 2. Fallback to TBO API
+                $apiCountryCode = $countryModel ? $countryModel->code : (is_string($country) ? strtoupper($country) : null);
+
+                if (empty($apiCountryCode) || strlen($apiCountryCode) > 3) {
+                    Log::warning("getCities: Invalid country code resolved: $apiCountryCode");
                     return [];
                 }
 
-                try {
-                    $apiLanguage = $locale === 'ar' ? 'ar' : 'en';
-                    $response = $this->hotelApiService->getCitiesByCountry($countryModel->code, $apiLanguage);
-                    
-                    $apiCities = [];
-                    if (isset($response['CityList']) && is_array($response['CityList'])) {
-                        $apiCities = $response['CityList'];
-                    } elseif (is_array($response) && isset($response[0])) {
-                        $apiCities = $response;
+                $fetchFromApi = function($lang) use ($apiCountryCode) {
+                    try {
+                        $response = $this->hotelApiService->getCitiesByCountry($apiCountryCode, $lang);
+                        
+                        if (isset($response['CityList']) && is_array($response['CityList'])) {
+                            return $response['CityList'];
+                        } elseif (is_array($response) && isset($response[0])) {
+                            return $response;
+                        }
+                        return [];
+                    } catch (\Exception $e) {
+                        Log::error("getCities API exception for $apiCountryCode ($lang): " . $e->getMessage());
+                        return [];
                     }
+                };
 
-                    // Translate cities if needed
-                    if ($locale === 'ar') {
-                        // Transform to format expected by translateHotels (array with Name)
-                        $citiesToTranslate = array_map(function ($city) {
-                            return [
-                                'HotelCode' => $city['Code'] ?? $city['CityCode'] ?? null, // Use CityCode as key
-                                'Name' => $city['Name'] ?? $city['CityName'] ?? '',
-                                'OriginalCity' => $city // Keep original data
-                            ];
-                        }, $apiCities);
+                // Try current locale first
+                $apiLanguage = $locale === 'ar' ? 'ar' : 'en';
+                $apiCities = $fetchFromApi($apiLanguage);
 
-                        // Use the existing service (it works for anything with Code and Name)
-                        // Pass count as 2nd argument to allow translating ALL cities in this batch
-                        $translated = $this->translationService->translateHotels($citiesToTranslate, count($citiesToTranslate));
+                // If empty and we were trying Arabic, fallback to English
+                if (empty($apiCities) && $apiLanguage === 'ar') {
+                    $apiCities = $fetchFromApi('en');
+                }
 
-                        // Map back to our structure
-                        return collect($translated)->map(function ($item) {
-                            return [
-                                'id' => $item['HotelCode'], // City Code
-                                'name' => $item['Name'],    // Translated Name
-                                'code' => $item['HotelCode'],
-                            ];
-                        })->filter(function ($city) {
-                            return !empty($city['id']);
-                        })->sortBy('name')->values();
-                    }
-
-                    return collect($apiCities)->map(function ($city) {
-                        return [
-                            'id' => $city['Code'] ?? $city['CityCode'] ?? '', 
-                            'name' => $city['Name'] ?? $city['CityName'] ?? '',
-                            'code' => $city['Code'] ?? $city['CityCode'] ?? '',
-                        ];
-                    })->filter(function ($city) {
-                        return !empty($city['id']); // Ensure we have an ID/Code
-                    })->sortBy('name')->values();
-
-                } catch (\Exception $e) {
-                    Log::warning("Failed to fetch cities from TBO API for country {$country}: " . $e->getMessage());
+                if (empty($apiCities)) {
                     return [];
                 }
+
+                // Translate to Arabic if needed and not already translated by Provider
+                if ($locale === 'ar') {
+                    // Transform to format expected by translation service
+                    $citiesToTranslate = array_map(function ($city) {
+                        return [
+                            'HotelCode' => $city['Code'] ?? $city['CityCode'] ?? null,
+                            'Name' => $city['Name'] ?? $city['CityName'] ?? '',
+                        ];
+                    }, $apiCities);
+
+                    // Use the service to translate names (it handles caching)
+                    $translated = $this->translationService->translateHotels($citiesToTranslate, count($citiesToTranslate));
+
+                    return collect($translated)->map(function ($item) {
+                        return [
+                            'id' => $item['HotelCode'],
+                            'name' => $item['Name'],
+                            'code' => $item['HotelCode'],
+                        ];
+                    })->filter(fn($c) => !empty($c['id']) && !empty($c['name']))
+                      ->sortBy('name')->values();
+                }
+
+                return collect($apiCities)->map(function ($city) {
+                    return [
+                        'id' => $city['Code'] ?? $city['CityCode'] ?? '', 
+                        'name' => $city['Name'] ?? $city['CityName'] ?? '',
+                        'code' => $city['Code'] ?? $city['CityCode'] ?? '',
+                    ];
+                })->filter(fn($c) => !empty($c['id']) && !empty($c['name']))
+                  ->sortBy('name')->values();
             });
 
             return response()->json($cities)

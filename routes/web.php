@@ -53,7 +53,7 @@ Route::group([
 
     // Hotels
 
-    Route::get('/get-hotels/{cityCode}', [HotelController::class, 'getHotels']);
+    Route::get('/get-hotels/{cityCode}', [HotelController::class, 'getHotels'])->name('ajax.get-hotels');
 
     Route::get('/hotels/{cityCode}', [HotelController::class, 'getCityHotels'])->name('city.hotels');
     Route::get('/hotel', [HotelController::class, 'search'])->name('hotels.search');

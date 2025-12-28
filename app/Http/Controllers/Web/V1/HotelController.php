@@ -183,26 +183,30 @@ class HotelController extends Controller
     public function getHotels($cityCode)
     {
         try {
+            Log::info("getHotels: Fetching for CityCode: $cityCode");
+            
             // Get all hotels from all pages
             $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
             $response = $this->hotelApi->getAllCityHotels($cityCode, true, $language);
 
             $hotels = $response['Hotels'] ?? [];
+            Log::info("getHotels: Received " . count($hotels) . " hotels from API");
 
             if (! is_array($hotels)) {
                 $hotels = json_decode(json_encode($hotels), true);
             }
 
             // Apply robust Hotel Name Translation if Arabic
-            if ($language === 'ar') {
+            if ($language === 'ar' && !empty($hotels)) {
                 $translator = new \App\Services\HotelTranslationService();
-                $hotels = $translator->translateHotels($hotels);
+                // Pass count to allow translating more than 1 hotel if needed (within service limits)
+                $hotels = $translator->translateHotels($hotels, count($hotels)); 
             }
 
             $formattedHotels = collect($hotels)->map(function ($hotel) {
                 return [
-                    'HotelCode' => $hotel['HotelCode'] ?? '',
-                    'HotelName' => $hotel['HotelName'] ?? '',
+                    'HotelCode' => $hotel['HotelCode'] ?? $hotel['Code'] ?? '',
+                    'HotelName' => $hotel['HotelName'] ?? $hotel['Name'] ?? '',
                     'HotelRating' => $hotel['HotelRating'] ?? '',
                     'Address' => $hotel['Address'] ?? '',
                     'CityName' => $hotel['CityName'] ?? '',
@@ -213,9 +217,11 @@ class HotelController extends Controller
                 return ! empty($hotel['HotelCode']);
             });
 
+            Log::info("getHotels: Returning " . $formattedHotels->count() . " formatted hotels");
+
             return response()->json($formattedHotels->values());
         } catch (\Exception $e) {
-            Log::error('Failed to fetch hotels from TBO API: '.$e->getMessage());
+            Log::error('Failed to fetch hotels from TBO API for city ' . $cityCode . ': ' . $e->getMessage());
 
             return response()->json(['error' => __('Failed to fetch hotels')], 500);
         }

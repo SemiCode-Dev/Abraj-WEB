@@ -1631,7 +1631,12 @@
                 cityInput.disabled = true;
 
                 // Fetch cities for selected country from TBO API
-                fetch("{{ url('/get-cities') }}/" + countryCode)
+                // Use a placeholder for the ID that we will replace in JS
+                // The route is: /locations/countries/{country}/cities
+                let url = "{{ route('locations.cities', ['country' => ':id']) }}";
+                url = url.replace(':id', countryCode);
+
+                fetch(url)
                     .then(res => {
                         if (!res.ok) {
                             throw new Error('Failed to fetch cities');
@@ -1673,12 +1678,12 @@
                 }
 
                 if (keyword === "") {
-                    results = filteredCities.slice(0, 10);
+                    results = filteredCities.slice(0, 15); // Show more results by default
                 } else {
                     const lowerKeyword = keyword.toLowerCase();
                     results = filteredCities.filter(city =>
-                        (city.Name && city.Name.toLowerCase().includes(lowerKeyword)) ||
-                        (city.Name_ar && city.Name_ar.includes(keyword))
+                        (city.name && city.name.toLowerCase().includes(lowerKeyword)) ||
+                        (city.code && city.code.toLowerCase().includes(lowerKeyword))
                     );
                 }
 
@@ -1695,19 +1700,19 @@
                         "px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100";
 
                     div.innerHTML = `
-                <div class="flex justify-between">
-                    <span>${city.Name || ''}</span>
-                    <span class="text-gray-500">${city.Name_ar || ''}</span>
+                <div class="flex justify-between items-center w-full">
+                    <span class="font-medium">${city.name || ''}</span>
+                    <span class="text-xs text-gray-400 font-mono">${city.code || ''}</span>
                 </div>
             `;
 
                     div.addEventListener("click", () => {
-                        cityInput.value = city.Name || city.Name_ar;
-                        destinationCode.value = city.Code;
+                        cityInput.value = city.name;
+                        destinationCode.value = city.code;
                         cityBox.classList.add("hidden");
 
                         // Load hotels for selected city
-                        loadHotelsForCity(city.Code);
+                        loadHotelsForCity(city.code);
                     });
 
                     cityBox.appendChild(div);
@@ -1750,7 +1755,10 @@
                 hotelSelect.disabled = true;
 
                 // Fetch hotels for selected city
-                fetch("{{ url('/get-hotels') }}/" + cityCode)
+                let url = "{{ route('ajax.get-hotels', ['cityCode' => ':code']) }}";
+                url = url.replace(':code', cityCode);
+
+                fetch(url)
                     .then(res => {
                         if (!res.ok) {
                             throw new Error('Failed to fetch hotels');
