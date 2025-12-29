@@ -30,6 +30,19 @@
         .dark input.force-input-text[readonly] {
             color: #ffffff !important;
         }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
     </style>
 
     <section id="home"
@@ -124,177 +137,63 @@
                 <p class="text-slate-400">{{ __('Book Now and Save up to 40%') }}</p>
             </div>
 
-            <!-- Enhanced Search Box -->
-            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 max-w-6xl mx-auto">
-                <div id="hotelLoading" class="hidden text-center py-4">
-                    <div class="animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent mx-auto">
-                    </div>
-                    <p class="text-sm text-gray-500 dark:text-gray-300 mt-2">{{ __('Loading hotels...') }}
-                    </p>
-                </div>
-                <!-- Search Form -->
-                <form id="searchForm" action="{{ route('city.hotels', ['cityCode' => 'PLACEHOLDER']) }}" method="GET"
-                    class="space-y-3">
-
-                    <!-- Row 1: Country Select, City Select, Hotel Search, Guests -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <!-- Country Select -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-globe text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Country') }}
-                            </label>
-                            <select id="countrySelect" name="country_code" required
-                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white dark:bg-gray-700">
-                                <option value="">{{ __('Select Country') }}</option>
-                                @if (is_array($countries) && count($countries) > 0)
-                                    @foreach ($countries as $country)
-                                        <option value="{{ $country['Code'] ?? ($country['CountryCode'] ?? '') }}">
-                                            {{ $country['Name'] ?? ($country['CountryName'] ?? '') }}</option>
-                                    @endforeach
-                                @endif
-                            </select>
-                            <div
-                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
+            <!-- Simplified Hero Search Box -->
+            <div
+                class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-3xl shadow-2xl p-6 max-w-4xl mx-auto border border-white/20">
+                <form id="heroSearchForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Country Select -->
+                    <div class="relative">
+                        <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                            <i
+                                class="fas fa-globe text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                            {{ __('Country') }}
+                        </label>
+                        <select id="heroCountrySelect" name="country_code" required
+                            class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg appearance-none bg-white">
+                            <option value="">{{ __('Select Country') }}</option>
+                            @if (is_array($countries) && count($countries) > 0)
+                                @foreach ($countries as $country)
+                                    <option value="{{ $country['Code'] ?? ($country['CountryCode'] ?? '') }}">
+                                        {{ $country['Name'] ?? ($country['CountryName'] ?? '') }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                        <div
+                            class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                            <i class="fas fa-chevron-down"></i>
                         </div>
-
-                        <!-- Destination - City Select -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-map-marker-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('City') }}
-                            </label>
-                            <input type="text" id="citySelect" autocomplete="off"
-                                placeholder="{{ __('Select City') }}"
-                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg force-input-text"
-                                disabled readonly>
-
-                            <input type="hidden" name="destination" id="destinationCode">
-
-                            <div id="cityAutocomplete"
-                                class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
-                            </div>
-                            <div
-                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                        </div>
-
-                        <!-- Hotel Select -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-hotel text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Hotel') }}
-                            </label>
-                            <select id="hotelSelect" name="hotel_code"
-                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white dark:bg-gray-700"
-                                disabled>
-                                <option value="">{{ __('Select Hotel') }}</option>
-                            </select>
-                            <div
-                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                        </div>
-
-
                     </div>
 
-                    <!-- Row 2: Check In, Check Out, and Search Button -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                        <!-- Guests & Rooms -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-users text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Guests / Rooms') }}
-                            </label>
-                            <div class="relative">
-                                <select name="PaxRooms[Adults]"
-                                    class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white dark:bg-gray-700">
-                                    <option value="1">1 {{ __('Guest') }}</option>
-                                    <option value="2" selected>2 {{ __('Guests') }}</option>
-                                    <option value="3">3 {{ __('Guests') }}</option>
-                                    <option value="4">4 {{ __('Guests') }}</option>
-                                    <option value="5">5+ {{ __('Guests') }}</option>
-                                </select>
-                                <div
-                                    class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-4 text-gray-400 pointer-events-none">
-                                    <i class="fas fa-chevron-down"></i>
-                                </div>
-                            </div>
+                    <!-- City Select -->
+                    <div class="relative">
+                        <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                            <i
+                                class="fas fa-map-marker-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                            {{ __('City') }}
+                        </label>
+                        <input type="text" id="heroCitySelect" autocomplete="off"
+                            placeholder="{{ __('Select City') }}"
+                            class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-2xl text-lg force-input-text"
+                            disabled>
+                        <input type="hidden" id="heroDestinationCode">
+                        <div id="heroCityAutocomplete"
+                            class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
                         </div>
-                        <!-- Check-in -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-calendar-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Check In') }}
-                            </label>
-                            <input type="date" name="CheckIn" required
-                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
+                        <div
+                            class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                            <i class="fas fa-chevron-down"></i>
                         </div>
+                    </div>
 
-                        <!-- Check-out -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-calendar-check text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Check Out') }}
-                            </label>
-                            <input type="date" name="CheckOut" required
-                                class="w-full px-4 py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
-                        </div>
-
-                        <!-- Search Button -->
-                        <div class="flex items-end">
-                            <button type="submit" id="searchBtn"
-                                class="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-105 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed force-button-text">
-                                <i class="fas fa-search {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
-                                <span class="btn-text">{{ __('Search') }}</span>
-                                <svg class="btn-loader hidden animate-spin h-5 w-5 text-white {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}"
-                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10"
-                                        stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8v4l3-3-3-3v4a12 12 0 00-12 12h4z">
-                                    </path>
-                                </svg>
-                            </button>
-                        </div>
+                    <!-- Search Button -->
+                    <div class="flex items-end">
+                        <button type="submit" id="heroSearchBtn"
+                            class="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-4 rounded-2xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-[1.02] shadow-lg flex items-center justify-center text-white">
+                            <i class="fas fa-search {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                            <span>{{ __('Search') }}</span>
+                        </button>
                     </div>
                 </form>
-
-                <!-- Quick Filters -->
-                <div class="p-4 flex flex-wrap gap-2">
-                    <span class="text-xs text-gray-500 dark:text-gray-300 font-semibold">{{ __('Quick Search') }}</span>
-                    <a href="#"
-                        class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900 text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full text-xs font-medium transition">
-                        <i class="fas fa-fire text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                        {{ __('Today\'s Offers') }}
-                    </a>
-                    <a href="#"
-                        class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900 text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full text-xs font-medium transition">
-                        <i class="fas fa-star text-yellow-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                        {{ __('5 Star Hotels') }}
-                    </a>
-                    <a href="#"
-                        class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900 text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full text-xs font-medium transition">
-                        <i
-                            class="fas fa-swimming-pool text-blue-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                        {{ __('With Pool') }}
-                    </a>
-                    <a href="#"
-                        class="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900 text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full text-xs font-medium transition">
-                        <i class="fas fa-wifi text-purple-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                        {{ __('Free WiFi') }}
-                    </a>
-                </div>
             </div>
         </div>
     </section>
@@ -415,8 +314,8 @@
         </div>
     </section>
 
-    <!-- Popular Destinations - Enhanced -->
-    <section id="destinations" class="py-16 bg-white">
+    <!-- Popular Destinations - Enhanced & Random Global Cities -->
+    <section id="destinations" class="py-16 bg-white overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-extrabold text-gray-900 mb-3">{{ __('Popular Destinations') }}</h2>
@@ -424,37 +323,59 @@
                 </p>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                @foreach ($cities as $city)
-                    <div class="group relative cursor-pointer">
+            @php
+                // Fetch 5 random cities from different countries that have hotels
+                $randomCities = \App\Models\City::where('hotels_count', '>', 0)
+                    ->whereNotNull('code')
+                    ->where('code', '!=', '')
+                    ->inRandomOrder()
+                    ->take(50)
+                    ->get()
+                    ->unique('country_id')
+                    ->take(5);
+
+                // Predefined high-quality destination images
+                $fallbackImages = [
+                    'https://images.unsplash.com/photo-1506929113675-bc7a264fa1d7?auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80',
+                ];
+                shuffle($fallbackImages);
+            @endphp
+
+            <div
+                class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
+                @foreach ($randomCities as $index => $city)
+                    <div class="group relative cursor-pointer min-w-[280px] sm:min-w-0">
                         <a href="{{ route('city.hotels', $city->code) }}">
                             <div
                                 class="relative h-80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                                @if ($loop->first)
-                                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                        alt="مكة المكرمة"
-                                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                                @elseif ($loop->last)
-                                    <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                        alt="المدينة المنورة"
-                                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                                @elseif ($loop->index == 1)
-                                    <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                        alt="أبو ظبي"
-                                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                                @else
-                                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                        alt="مكة المكرمة"
-                                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                                @endif
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                                @php
+                                    $cityImage = $city->image;
+                                    // Robust check: must be non-empty and look like a URL if present
+                                    if (
+                                        empty($cityImage) ||
+                                        (!str_starts_with($cityImage, 'http') && !str_starts_with($cityImage, '/'))
+                                    ) {
+                                        $cityImage = $fallbackImages[$index % count($fallbackImages)];
+                                    }
+                                @endphp
+                                <img src="{{ $cityImage }}" alt="{{ $city->locale_name }}"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
                                 </div>
                                 <div class="absolute bottom-0 left-0 right-0 p-6">
-                                    <h3 class="text-2xl font-bold text-white mb-1">{{ $city->locale_name }}</h3>
-                                    <p class="text-white/90 text-sm mb-3">150+ {{ __('hotels available') }}</p>
-                                    <div class="flex items-center text-white text-sm">
-                                        <span>{{ __('From') }} 120 {{ __('SAR') }}</span>
-                                        <i class="fas fa-arrow-left mr-2 text-xs"></i>
+                                    <h3 class="text-2xl font-bold text-white mb-3">{{ $city->locale_name }}</h3>
+
+                                    <div class="flex items-center text-white text-sm font-semibold">
+                                        <span>{{ __('Explore Now') }}</span>
+                                        <i
+                                            class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-xs"></i>
                                     </div>
                                 </div>
                                 <div
@@ -465,10 +386,167 @@
                                 </div>
                             </div>
                         </a>
-
                     </div>
                 @endforeach
+            </div>
+        </div>
+    </section>
 
+    <!-- Main Search Form (Relocated Below Popular Destinations) -->
+    <section class="py-16 bg-gradient-to-b from-white to-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-700">
+                <div class="mb-8 text-center">
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ __('Find Your Perfect Stay') }}
+                    </h2>
+                    <p class="text-gray-600 dark:text-gray-400">{{ __('Detailed search with all options') }}</p>
+                </div>
+
+                <div id="hotelLoading" class="hidden text-center py-4">
+                    <div class="animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent mx-auto">
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-300 mt-2">{{ __('Loading hotels...') }}</p>
+                </div>
+
+                <!-- Search Form -->
+                <form id="searchForm" action="{{ route('city.hotels', ['cityCode' => 'PLACEHOLDER']) }}" method="GET"
+                    class="space-y-6">
+                    <!-- Row 1: Country, City, Hotel -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Country Select -->
+                        <div class="relative">
+                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                <i
+                                    class="fas fa-globe text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Country') }}
+                            </label>
+                            <select id="countrySelect" name="country_code" required
+                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white">
+                                <option value="">{{ __('Select Country') }}</option>
+                                @if (is_array($countries) && count($countries) > 0)
+                                    @foreach ($countries as $country)
+                                        <option value="{{ $country['Code'] ?? ($country['CountryCode'] ?? '') }}">
+                                            {{ $country['Name'] ?? ($country['CountryName'] ?? '') }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            <div
+                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+
+                        <!-- City Select -->
+                        <div class="relative">
+                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                <i
+                                    class="fas fa-map-marker-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('City') }}
+                            </label>
+                            <input type="text" id="citySelect" autocomplete="off"
+                                placeholder="{{ __('Select City') }}"
+                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg force-input-text bg-white"
+                                disabled>
+                            <input type="hidden" name="destination" id="destinationCode">
+                            <div id="cityAutocomplete"
+                                class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                            </div>
+                            <div
+                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+
+                        <!-- Hotel Select -->
+                        <div class="relative">
+                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                <i
+                                    class="fas fa-hotel text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Hotel') }}
+                            </label>
+                            <select id="hotelSelect" name="hotel_code"
+                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white">
+                                <option value="">{{ __('Select Hotel') }}</option>
+                            </select>
+                            <div
+                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Guests, Dates, Search -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <!-- Guests -->
+                        <div class="relative">
+                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                <i
+                                    class="fas fa-users text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Guests / Rooms') }}
+                            </label>
+                            <select name="PaxRooms[Adults]"
+                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white">
+                                <option value="1">1 {{ __('Guest') }}</option>
+                                <option value="2" selected>2 {{ __('Guests') }}</option>
+                                <option value="3">3 {{ __('Guests') }}</option>
+                                <option value="4">4 {{ __('Guests') }}</option>
+                                <option value="5">5+ {{ __('Guests') }}</option>
+                            </select>
+                            <div
+                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+
+                        <!-- Check-in -->
+                        <div class="relative">
+                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                <i
+                                    class="fas fa-calendar-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Check In') }}
+                            </label>
+                            <input type="date" name="CheckIn" required
+                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
+                        </div>
+
+                        <!-- Check-out -->
+                        <div class="relative">
+                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                <i
+                                    class="fas fa-calendar-check text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Check Out') }}
+                            </label>
+                            <input type="date" name="CheckOut" required
+                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
+                        </div>
+
+                        <!-- Search Button -->
+                        <div class="flex items-end">
+                            <button type="submit" id="searchBtn"
+                                class="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-105 shadow-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-white">
+                                <i class="fas fa-search {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                                <span class="btn-text">{{ __('Search') }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Quick Filters -->
+                <div class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-2 items-center">
+                    <span
+                        class="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mr-2">{{ __('Quick Search') }}:</span>
+                    <a href="#"
+                        class="px-4 py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-orange-50 dark:hover:bg-orange-900/30 text-gray-600 dark:text-gray-300 hover:text-orange-600 rounded-xl text-xs font-bold transition-all duration-300 flex items-center border border-gray-100 dark:border-gray-700">
+                        <i class="fas fa-fire text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                        {{ __('Today\'s Offers') }}
+                    </a>
+                    <a href="#"
+                        class="px-4 py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-orange-50 dark:hover:bg-orange-900/30 text-gray-600 dark:text-gray-300 hover:text-orange-600 rounded-xl text-xs font-bold transition-all duration-300 flex items-center border border-gray-100 dark:border-gray-700">
+                        <i class="fas fa-star text-yellow-500 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                        {{ __('5 Star Hotels') }}
+                    </a>
+                   
+                </div>
             </div>
         </div>
     </section>
@@ -1561,21 +1639,15 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
 
-            let cities = [];
-            let filteredCities = [];
-            const countrySelect = document.getElementById("countrySelect");
-            const cityInput = document.getElementById("citySelect");
-            const cityBox = document.getElementById("cityAutocomplete");
-            const destinationCode = document.getElementById("destinationCode");
-            const searchForm = document.getElementById("searchForm");
-            const searchBtn = document.getElementById("searchBtn");
+            // -------------------------------------------------------------
+            // DATE INITIALIZATION
+            // -------------------------------------------------------------
             const checkInInput = document.querySelector('input[name="CheckIn"]');
             const checkOutInput = document.querySelector('input[name="CheckOut"]');
 
-            // Set default dates
             const today = new Date();
-            const nextMonth = new Date(today);
-            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            const nextWeek = new Date(today);
+            nextWeek.setDate(today.getDate() + 7);
 
             const formatDate = (date) => {
                 const year = date.getFullYear();
@@ -1588,20 +1660,17 @@
                 checkInInput.value = formatDate(today);
                 checkInInput.min = formatDate(today);
             }
-
             if (checkOutInput && !checkOutInput.value) {
-                checkOutInput.value = formatDate(nextMonth);
+                checkOutInput.value = formatDate(nextWeek);
                 checkOutInput.min = formatDate(today);
             }
 
-            // Update checkout min date when checkin changes
             if (checkInInput && checkOutInput) {
                 checkInInput.addEventListener('change', function() {
                     if (this.value) {
                         const checkInDate = new Date(this.value);
                         checkInDate.setDate(checkInDate.getDate() + 1);
                         checkOutInput.min = formatDate(checkInDate);
-
                         if (checkOutInput.value && checkOutInput.value <= this.value) {
                             checkOutInput.value = formatDate(checkInDate);
                         }
@@ -1610,255 +1679,178 @@
             }
 
             // -------------------------------------------------------------
-            // COUNTRY SELECTION
+            // DUAL FORM LOGIC (Hero & Main)
             // -------------------------------------------------------------
-            countrySelect.addEventListener("change", function() {
-                const countryCode = this.value;
 
-                // Reset city input
-                cityInput.value = "";
-                destinationCode.value = "";
-                cityInput.disabled = true;
-                cityBox.classList.add("hidden");
-                filteredCities = [];
+            // Helper to initialize country/city logic
+            function initCitySearch(countryEl, cityEl, cityBoxEl, codeEl, hotelEl = null) {
+                let filteredCitiesLocal = [];
 
-                if (!countryCode) {
-                    return;
-                }
+                countryEl.addEventListener("change", function() {
+                    const countryCode = this.value;
+                    cityEl.value = "";
+                    codeEl.value = "";
+                    cityEl.disabled = true;
+                    cityBoxEl.classList.add("hidden");
+                    filteredCitiesLocal = [];
 
-                // Show loading
-                cityInput.placeholder = "{{ __('Loading cities...') }}";
-                cityInput.disabled = true;
+                    if (hotelEl) {
+                        hotelEl.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
+                        hotelEl.disabled = true;
+                    }
 
-                // Fetch cities for selected country from TBO API
-                // Use a placeholder for the ID that we will replace in JS
-                // The route is: /locations/countries/{country}/cities
-                let url = "{{ route('locations.cities', ['country' => ':id']) }}";
-                url = url.replace(':id', countryCode);
+                    if (!countryCode) return;
 
-                fetch(url)
-                    .then(res => {
-                        if (!res.ok) {
-                            throw new Error('Failed to fetch cities');
-                        }
-                        return res.json();
-                    })
-                    .then(data => {
-                        // Handle error response
-                        if (data.error) {
-                            throw new Error(data.error);
-                        }
+                    cityEl.placeholder = "{{ __('Loading cities...') }}";
 
-                        filteredCities = data;
-                        cities = data;
-                        cityInput.disabled = false;
-                        cityInput.placeholder = "{{ __('Select City') }}";
+                    let url = "{{ route('locations.cities', ['country' => ':id']) }}";
+                    url = url.replace(':id', countryCode);
+                    url += (url.includes('?') ? '&' : '?') + 'v=v10';
 
-                        if (data.length === 0) {
-                            cityInput.placeholder = "{{ __('No cities available') }}";
-                        }
-                    })
-                    .catch(err => {
-                        console.error("Error loading cities:", err);
-                        cityInput.placeholder = "{{ __('Error loading cities') }}";
-                        showToast("{{ __('Error loading cities') }}", "error");
+                    fetch(url)
+                        .then(res => res.json())
+                        .then(data => {
+                            filteredCitiesLocal = data;
+                            cityEl.disabled = false;
+                            cityEl.placeholder = "{{ __('Select City') }}";
+                        })
+                        .catch(err => {
+                            cityEl.placeholder = "{{ __('Error') }}";
+                        });
+                });
+
+                function showResultsLocal(keyword = "") {
+                    cityBoxEl.innerHTML = "";
+                    if (filteredCitiesLocal.length === 0) {
+                        cityBoxEl.classList.add("hidden");
+                        return;
+                    }
+
+                    let results = keyword === "" ? filteredCitiesLocal :
+                        filteredCitiesLocal.filter(city => city.name && city.name.toLowerCase().includes(keyword
+                            .toLowerCase()));
+
+                    if (results.length === 0) {
+                        cityBoxEl.classList.add("hidden");
+                        return;
+                    }
+
+                    cityBoxEl.classList.remove("hidden");
+                    const seenNames = new Set();
+
+                    results.forEach(city => {
+                        if (!city.name || seenNames.has(city.name)) return;
+                        seenNames.add(city.name);
+
+                        const div = document.createElement("div");
+                        div.className =
+                            "px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100";
+                        div.innerHTML = `<span class="font-medium">${city.name}</span>`;
+
+                        div.addEventListener("click", () => {
+                            cityEl.value = city.name;
+                            codeEl.value = city.code;
+                            cityBoxEl.classList.add("hidden");
+                            if (hotelEl) loadHotelsForCityInternal(city.code, hotelEl);
+                        });
+                        cityBoxEl.appendChild(div);
                     });
-            });
-
-            // -------------------------------------------------------------
-            // CITY AUTOCOMPLETE
-            // -------------------------------------------------------------
-            function showCityResults(keyword = "") {
-                cityBox.innerHTML = "";
-                let results = [];
-
-                if (filteredCities.length === 0) {
-                    cityBox.classList.add("hidden");
-                    return;
                 }
 
-                if (keyword === "") {
-                    results = filteredCities.slice(0, 15); // Show more results by default
-                } else {
-                    const lowerKeyword = keyword.toLowerCase();
-                    results = filteredCities.filter(city =>
-                        (city.name && city.name.toLowerCase().includes(lowerKeyword)) ||
-                        (city.code && city.code.toLowerCase().includes(lowerKeyword))
-                    );
-                }
-
-                if (results.length === 0) {
-                    cityBox.classList.add("hidden");
-                    return;
-                }
-
-                cityBox.classList.remove("hidden");
-
-                results.forEach(city => {
-                    const div = document.createElement("div");
-                    div.className =
-                        "px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100";
-
-                    div.innerHTML = `
-                <div class="flex justify-between items-center w-full">
-                    <span class="font-medium">${city.name || ''}</span>
-                    <span class="text-xs text-gray-400 font-mono">${city.code || ''}</span>
-                </div>
-            `;
-
-                    div.addEventListener("click", () => {
-                        cityInput.value = city.name;
-                        destinationCode.value = city.code;
-                        cityBox.classList.add("hidden");
-
-                        // Load hotels for selected city
-                        loadHotelsForCity(city.code);
-                    });
-
-                    cityBox.appendChild(div);
+                cityEl.addEventListener("focus", () => {
+                    if (!cityEl.disabled && filteredCitiesLocal.length > 0) showResultsLocal("");
+                });
+                cityEl.addEventListener("input", function() {
+                    showResultsLocal(this.value);
                 });
             }
 
-            cityInput.addEventListener("focus", function() {
-                if (!this.disabled && filteredCities.length > 0) {
-                    showCityResults("");
-                }
-            });
+            function loadHotelsForCityInternal(cityCode, selectEl) {
+                if (!cityCode) return;
+                selectEl.innerHTML = '<option value="">{{ __('Loading hotels...') }}</option>';
+                selectEl.disabled = true;
 
-            cityInput.addEventListener("input", function() {
-                if (!this.disabled) {
-                    const keyword = this.value.toLowerCase();
-                    showCityResults(keyword);
-                }
-            });
-
-            document.addEventListener("click", function(e) {
-                if (!cityInput.contains(e.target) && !cityBox.contains(e.target)) {
-                    cityBox.classList.add("hidden");
-                }
-            });
-
-            // -------------------------------------------------------------
-            // HOTEL SELECTION
-            // -------------------------------------------------------------
-            const hotelSelect = document.getElementById("hotelSelect");
-
-            function loadHotelsForCity(cityCode) {
-                if (!cityCode) {
-                    hotelSelect.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
-                    hotelSelect.disabled = true;
-                    return;
-                }
-
-                // Reset hotel select
-                hotelSelect.innerHTML = '<option value="">{{ __('Loading hotels...') }}</option>';
-                hotelSelect.disabled = true;
-
-                // Fetch hotels for selected city
                 let url = "{{ route('ajax.get-hotels', ['cityCode' => ':code']) }}";
                 url = url.replace(':code', cityCode);
 
                 fetch(url)
-                    .then(res => {
-                        if (!res.ok) {
-                            throw new Error('Failed to fetch hotels');
-                        }
-                        return res.json();
-                    })
+                    .then(res => res.json())
                     .then(data => {
-                        // Handle error response
-                        if (data.error) {
-                            throw new Error(data.error);
-                        }
-
-                        hotelSelect.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
-
-                        if (data.length === 0) {
-                            hotelSelect.innerHTML =
-                                '<option value="">{{ __('No hotels available') }}</option>';
-                            hotelSelect.disabled = true;
-                            return;
-                        }
-
-                        // Populate hotels
+                        selectEl.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
                         data.forEach(hotel => {
                             const option = document.createElement("option");
                             option.value = hotel.HotelCode || '';
                             option.textContent = hotel.HotelName || '';
-                            hotelSelect.appendChild(option);
+                            selectEl.appendChild(option);
                         });
-
-                        hotelSelect.disabled = false;
-                    })
-                    .catch(err => {
-                        console.error("Error loading hotels:", err);
-                        hotelSelect.innerHTML = '<option value="">{{ __('Error loading hotels') }}</option>';
-                        hotelSelect.disabled = true;
-                        showToast("{{ __('Error loading hotels') }}", "error");
+                        selectEl.disabled = false;
                     });
             }
 
-            // Reset hotel select when country or city changes
-            countrySelect.addEventListener("change", function() {
-                hotelSelect.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
-                hotelSelect.disabled = true;
-            });
+            // Initialize Main Form
+            initCitySearch(
+                document.getElementById("countrySelect"),
+                document.getElementById("citySelect"),
+                document.getElementById("cityAutocomplete"),
+                document.getElementById("destinationCode"),
+                document.getElementById("hotelSelect")
+            );
 
-            cityInput.addEventListener("input", function() {
-                if (this.value === "") {
-                    hotelSelect.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
-                    hotelSelect.disabled = true;
-                    destinationCode.value = "";
-                }
-            });
+            // Initialize Hero Form
+            initCitySearch(
+                document.getElementById("heroCountrySelect"),
+                document.getElementById("heroCitySelect"),
+                document.getElementById("heroCityAutocomplete"),
+                document.getElementById("heroDestinationCode")
+            );
 
-            // -------------------------------------------------------------
-            // FORM SUBMISSION
-            // -------------------------------------------------------------
-            searchForm.addEventListener("submit", function(e) {
+            // Main Form Submission
+            document.getElementById("searchForm").addEventListener("submit", function(e) {
                 e.preventDefault();
+                const hotelCode = document.getElementById("hotelSelect").value;
+                const checkIn = this.querySelector('input[name="CheckIn"]').value;
+                const checkOut = this.querySelector('input[name="CheckOut"]').value;
+                const adults = this.querySelector('select[name="PaxRooms[Adults]"]').value;
 
-                const cityCode = destinationCode.value;
-                const countryCode = countrySelect.value;
-                const hotelCode = hotelSelect.value;
-                const checkIn = document.querySelector('input[name="CheckIn"]').value;
-                const checkOut = document.querySelector('input[name="CheckOut"]').value;
-                const adults = document.querySelector('select[name="PaxRooms[Adults]"]').value;
-
-                if (!countryCode) {
-                    showToast("{{ __('Please select a country') }}", "error");
+                if (!hotelCode || !checkIn || !checkOut) {
+                    showToast("{{ __('Please complete all fields') }}", "error");
                     return;
                 }
+
+                const baseUrl = "{{ route('hotel.details', ['id' => ':hotelCode']) }}";
+                window.location.href = baseUrl.replace(':hotelCode', hotelCode) +
+                    `?check_in=${checkIn}&check_out=${checkOut}&guests=${adults}`;
+            });
+
+            // Hero Form Submission
+            document.getElementById("heroSearchForm").addEventListener("submit", function(e) {
+                e.preventDefault();
+                const cityCode = document.getElementById("heroDestinationCode").value;
 
                 if (!cityCode) {
                     showToast("{{ __('Please select a city') }}", "error");
                     return;
                 }
 
-                if (!hotelCode) {
-                    showToast("{{ __('Please select a hotel') }}", "error");
-                    return;
-                }
+                const baseUrl = "{{ route('city.hotels', ['cityCode' => ':cityCode']) }}";
+                window.location.href = baseUrl.replace(':cityCode', cityCode);
+            });
 
-                if (!checkIn || !checkOut) {
-                    showToast("{{ __('Please select check-in and check-out dates') }}", "error");
-                    return;
-                }
-
-                // Disable button and show loading
-                const btnText = searchBtn.querySelector(".btn-text");
-                const btnLoader = searchBtn.querySelector(".btn-loader");
-                searchBtn.disabled = true;
-                if (btnText) btnText.classList.add("hidden");
-                if (btnLoader) btnLoader.classList.remove("hidden");
-
-                // Prepare Redirect URL to Hotel Details Page
-                const baseUrl = "{{ route('hotel.details', ['id' => ':hotelCode']) }}";
-                const redirectUrl = baseUrl.replace(':hotelCode', hotelCode) +
-                    `?check_in=${checkIn}&check_out=${checkOut}&guests=${adults}`;
-
-                // Redirect
-                window.location.href = redirectUrl;
+            // Global click to close autocompletes
+            document.addEventListener("click", function(e) {
+                const boxes = [
+                    document.getElementById("cityAutocomplete"),
+                    document.getElementById("heroCityAutocomplete")
+                ];
+                const inputs = [
+                    document.getElementById("citySelect"),
+                    document.getElementById("heroCitySelect")
+                ];
+                boxes.forEach((box, i) => {
+                    if (box && !inputs[i].contains(e.target) && !box.contains(e.target)) {
+                        box.classList.add("hidden");
+                    }
+                });
             });
 
         });

@@ -16,8 +16,8 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
                 <!-- <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-                                                                {{ __('Booking Form') }}
-                                                            </h2> -->
+                                                                            {{ __('Booking Form') }}
+                                                                        </h2> -->
 
                 @if (session('success'))
                     <div
@@ -60,6 +60,22 @@
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
+                        <div class="mb-6 intl-tel-input-container">
+                            <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
+                                {{ __('Phone Number') }} <span class="text-red-500">*</span>
+                            </label>
+                            <input type="tel" id="flightPhone" name="phone" value="{{ old('phone') }}" required
+                                maxlength="11"
+                                class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
+                            <input type="hidden" name="phone_country_code" id="flightPhoneCountryCode"
+                                value="{{ old('phone_country_code') }}">
+                            @error('phone')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                            @error('phone_country_code')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     @else
                         <div
                             class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg">
@@ -69,24 +85,6 @@
                             </p>
                         </div>
                     @endif
-
-                    <div class="mb-6 intl-tel-input-container">
-                        <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
-                            {{ __('Phone Number') }} <span class="text-red-500">*</span>
-                        </label>
-                        <input type="tel" id="flightPhone" name="phone"
-                            value="{{ old('phone', auth()->check() ? auth()->user()->phone : '') }}" required
-                            maxlength="11"
-                            class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
-                        <input type="hidden" name="phone_country_code" id="flightPhoneCountryCode"
-                            value="{{ old('phone_country_code', auth()->check() ? auth()->user()->phone_country_code : '') }}">
-                        @error('phone')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                        @error('phone_country_code')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
 
                     <div class="mb-6">
                         <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
@@ -241,13 +239,12 @@
 
                     flightPhoneInput.addEventListener("countrychange", function() {
                         const countryData = iti.getSelectedCountryData();
-                        document.querySelector("#flightPhoneCountryCode").value = countryData.iso2
-                            .toUpperCase();
+                        document.querySelector("#flightPhoneCountryCode").value = "+" + countryData.dialCode;
                     });
 
                     // Set initial value
                     const initialCountryData = iti.getSelectedCountryData();
-                    document.querySelector("#flightPhoneCountryCode").value = initialCountryData.iso2.toUpperCase();
+                    document.querySelector("#flightPhoneCountryCode").value = "+" + initialCountryData.dialCode;
                 }
 
                 // Initialize Dynamic City Selector for Origin
@@ -259,7 +256,9 @@
                     placeholder: '{{ __('Select City') }}',
                     loadingText: '{{ __('Loading...') }}',
                     errorText: '{{ __('Error loading cities') }}',
-                    initialCityId: '{{ old('origin_city_id') }}'
+                    initialCityId: '{{ old('origin_city_id') }}',
+                    excludeSelector: '#destination_city_id',
+                    companionCountrySelector: '#destination_country_id'
                 });
 
                 // Initialize Dynamic City Selector for Destination
@@ -270,7 +269,9 @@
                     placeholder: '{{ __('Select City') }}',
                     loadingText: '{{ __('Loading...') }}',
                     errorText: '{{ __('Error loading cities') }}',
-                    initialCityId: '{{ old('destination_city_id') }}'
+                    initialCityId: '{{ old('destination_city_id') }}',
+                    excludeSelector: '#origin_city_id',
+                    companionCountrySelector: '#origin_country_id'
                 });
 
                 // Set minimum return date based on departure date

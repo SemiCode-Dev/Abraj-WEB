@@ -33,103 +33,108 @@ class LocationController extends Controller
         try {
             // Cache key based on country ID and locale
             $locale = app()->getLocale();
-            $cacheKey = "cities_country_{$country}_{$locale}_v2";
+            $cacheKey = "cities_country_{$country}_{$locale}_v10"; // Bumped to v10
             
             // Cache for 24 hours
             $cities = Cache::remember($cacheKey, 60 * 60 * 24, function () use ($country, $locale) {
-                $nameColumn = $locale == 'ar' ? 'name_ar' : 'name';
-                
-                // Resolve input to confirmed Country ID and Code
+                // 1. Resolve Country
                 $countryModel = Country::where('id', $country)
                                 ->orWhere('code', $country)
                                 ->first();
 
-                // 1. Try fetching from Local Database
-                if ($countryModel) {
-                    $localCities = \App\Models\City::where('country_id', $countryModel->id)
-                        ->select('id', 'name', 'name_ar', 'code')
-                        ->orderBy($nameColumn)
-                        ->get();
-                        
-                    if ($localCities->isNotEmpty()) {
-                        return $localCities->map(function ($city) {
-                            return [
-                                'id' => $city->id,
-                                'name' => $city->locale_name,
-                                'code' => $city->code,
-                            ];
-                        });
-                    }
-                }
-
-                // 2. Fallback to TBO API
                 $apiCountryCode = $countryModel ? $countryModel->code : (is_string($country) ? strtoupper($country) : null);
-
                 if (empty($apiCountryCode) || strlen($apiCountryCode) > 3) {
-                    Log::warning("getCities: Invalid country code resolved: $apiCountryCode");
                     return [];
                 }
 
+                // 2. Fetch from API (complete list)
                 $fetchFromApi = function($lang) use ($apiCountryCode) {
                     try {
                         $response = $this->hotelApiService->getCitiesByCountry($apiCountryCode, $lang);
-                        
-                        if (isset($response['CityList']) && is_array($response['CityList'])) {
-                            return $response['CityList'];
-                        } elseif (is_array($response) && isset($response[0])) {
-                            return $response;
-                        }
-                        return [];
+                        return (isset($response['CityList']) ? $response['CityList'] : (is_array($response) && isset($response[0]) ? $response : []));
                     } catch (\Exception $e) {
-                        Log::error("getCities API exception for $apiCountryCode ($lang): " . $e->getMessage());
                         return [];
                     }
                 };
 
-                // Try current locale first
-                $apiLanguage = $locale === 'ar' ? 'ar' : 'en';
-                $apiCities = $fetchFromApi($apiLanguage);
+                $apiCitiesRaw = $fetchFromApi('en');
+                if (empty($apiCitiesRaw)) return [];
 
-                // If empty and we were trying Arabic, fallback to English
-                if (empty($apiCities) && $apiLanguage === 'ar') {
-                    $apiCities = $fetchFromApi('en');
+                $processedCities = collect($apiCitiesRaw)->map(function ($city) {
+                    $code = $city['Code'] ?? $city['CityCode'] ?? null;
+                    $name = $city['Name'] ?? $city['CityName'] ?? null;
+                    if (!$code || !$name) return null;
+                    $name = trim(explode(',', $name)[0]);
+                    return ['code' => (string)$code, 'name' => $name];
+                })->filter()->unique('code')->values();
+
+                // 3. Sync and Translate
+                if ($countryModel) {
+                    $dbCities = \App\Models\City::where('country_id', $countryModel->id)->get()->keyBy('code');
+
+                    // Translation logic for Arabic
+                    if ($locale === 'ar') {
+                        $toTranslate = $processedCities->filter(function($city) use ($dbCities) {
+                            return !isset($dbCities[$city['code']]) || empty($dbCities[$city['code']]->name_ar);
+                        });
+
+                        if ($toTranslate->isNotEmpty()) {
+                            // Unique names to minimize API calls
+                            $uniqueNames = $toTranslate->pluck('name')->unique()->toArray();
+                            $translationsList = $this->translationService->translateStrings($uniqueNames);
+
+                            $timestamp = now();
+                            $upsertData = $processedCities->map(function($city) use ($countryModel, $translationsList, $dbCities, $timestamp) {
+                                $arName = $translationsList[$city['name']] ?? ($dbCities[$city['code']]->name_ar ?? null);
+                                return [
+                                    'country_id' => $countryModel->id,
+                                    'name' => $city['name'],
+                                    'name_ar' => $arName,
+                                    'code' => $city['code'],
+                                    'created_at' => $dbCities[$city['code']]->created_at ?? $timestamp,
+                                    'updated_at' => $timestamp,
+                                ];
+                            })->toArray();
+
+                            if (!empty($upsertData)) {
+                                \App\Models\City::upsert($upsertData, ['code', 'country_id'], ['name', 'name_ar', 'updated_at']);
+                            }
+                        }
+                    } else {
+                        // Standard Sync (English)
+                        $timestamp = now();
+                        $upsertData = $processedCities->map(function($city) use ($countryModel, $dbCities, $timestamp) {
+                            return [
+                                'country_id' => $countryModel->id,
+                                'name' => $city['name'],
+                                'code' => $city['code'],
+                                'created_at' => $dbCities[$city['code']]->created_at ?? $timestamp,
+                                'updated_at' => $timestamp,
+                            ];
+                        })->toArray();
+                        
+                        if (!empty($upsertData)) {
+                             \App\Models\City::upsert($upsertData, ['code', 'country_id'], ['name', 'updated_at']);
+                        }
+                    }
                 }
 
-                if (empty($apiCities)) {
-                    return [];
-                }
-
-                // Translate to Arabic if needed and not already translated by Provider
-                if ($locale === 'ar') {
-                    // Transform to format expected by translation service
-                    $citiesToTranslate = array_map(function ($city) {
+                // 4. Return Final List from DB (Deduplicated by Name for UI)
+                if ($countryModel) {
+                    $finalCities = \App\Models\City::where('country_id', $countryModel->id)
+                        ->select('id', 'name', 'name_ar', 'code')
+                        ->get();
+                    
+                    return $finalCities->map(function ($city) {
                         return [
-                            'HotelCode' => $city['Code'] ?? $city['CityCode'] ?? null,
-                            'Name' => $city['Name'] ?? $city['CityName'] ?? '',
+                            'id' => $city->id,
+                            'name' => $city->locale_name,
+                            'code' => $city->code,
                         ];
-                    }, $apiCities);
-
-                    // Use the service to translate names (it handles caching)
-                    $translated = $this->translationService->translateHotels($citiesToTranslate, count($citiesToTranslate));
-
-                    return collect($translated)->map(function ($item) {
-                        return [
-                            'id' => $item['HotelCode'],
-                            'name' => $item['Name'],
-                            'code' => $item['HotelCode'],
-                        ];
-                    })->filter(fn($c) => !empty($c['id']) && !empty($c['name']))
-                      ->sortBy('name')->values();
+                    })->sortBy('name')->unique('name')->values(); // DEDUPLICATE BY NAME here
                 }
 
-                return collect($apiCities)->map(function ($city) {
-                    return [
-                        'id' => $city['Code'] ?? $city['CityCode'] ?? '', 
-                        'name' => $city['Name'] ?? $city['CityName'] ?? '',
-                        'code' => $city['Code'] ?? $city['CityCode'] ?? '',
-                    ];
-                })->filter(fn($c) => !empty($c['id']) && !empty($c['name']))
-                  ->sortBy('name')->values();
+                return $processedCities->unique('name')->values();
             });
 
             return response()->json($cities)

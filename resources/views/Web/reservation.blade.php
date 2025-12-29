@@ -807,12 +807,12 @@
 
                 guestPhoneInput.addEventListener("countrychange", function() {
                     const countryData = guestIti.getSelectedCountryData();
-                    document.querySelector("#guestPhoneCountryCode").value = countryData.iso2.toUpperCase();
+                    document.querySelector("#guestPhoneCountryCode").value = "+" + countryData.dialCode;
                 });
 
                 // Set initial value
                 const countryData = guestIti.getSelectedCountryData();
-                document.querySelector("#guestPhoneCountryCode").value = countryData.iso2.toUpperCase();
+                document.querySelector("#guestPhoneCountryCode").value = "+" + countryData.dialCode;
             }
         });
 

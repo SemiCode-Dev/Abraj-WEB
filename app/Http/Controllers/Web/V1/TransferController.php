@@ -24,11 +24,16 @@ class TransferController extends Controller
         try {
             $user = auth()->user();
 
+            $countryCode = $user ? ($user->phone_country_code ?? '966') : $request->phone_country_code;
+            if ($countryCode && !str_starts_with($countryCode, '+')) {
+                $countryCode = '+' . $countryCode;
+            }
+
             TransferBooking::create([
                 'user_id' => $user?->id,
                 'name' => $user ? $user->name : $request->name,
                 'email' => $user ? $user->email : $request->email,
-                'phone_country_code' => $user ? ($user->phone_country_code ?? '966') : $request->phone_country_code,
+                'phone_country_code' => $countryCode,
                 'phone' => $user ? ($user->phone ?? '') : $request->phone,
                 'destination_country_id' => $request->destination_country_id,
                 'destination_city_id' => $request->destination_city_id,

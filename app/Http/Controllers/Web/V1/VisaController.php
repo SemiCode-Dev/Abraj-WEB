@@ -28,10 +28,15 @@ class VisaController extends Controller
         try {
             $user = auth()->user();
 
+            $countryCode = $user ? ($user->phone_country_code ?? '966') : $request->phone_country_code;
+            if ($countryCode && !str_starts_with($countryCode, '+')) {
+                $countryCode = '+' . $countryCode;
+            }
+
             VisaBooking::create([
                 'user_id' => $user?->id,
                 'name' => $user ? $user->name : $request->name,
-                'phone_country_code' => $user ? ($user->phone_country_code ?? '966') : $request->phone_country_code,
+                'phone_country_code' => $countryCode,
                 'phone' => $user ? ($user->phone ?? '') : $request->phone,
                 'visa_type' => $request->visa_type,
                 'country_id' => $request->country_id,

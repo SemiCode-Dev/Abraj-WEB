@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\VisaBookingController;
 use App\Http\Controllers\Web\V1\AuthController;
 use App\Http\Controllers\Web\V1\CarRentalController;
+use App\Http\Controllers\Web\V1\ContactController;
 use App\Http\Controllers\Web\V1\FlightController;
 use App\Http\Controllers\Web\V1\HomeController;
 use App\Http\Controllers\Web\V1\HotelController;
@@ -73,9 +74,8 @@ Route::group([
     Route::get('/booking/success/{reference}', [HotelController::class, 'bookingSuccess'])->name('booking.success');
 
     // Contact Us
-    Route::get('/contact', function () {
-        return view('Web.contact');
-    })->name('contact');
+    Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+    Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
     // Packages
     Route::get('/packages', [PackageController::class, 'index'])->name('packages');

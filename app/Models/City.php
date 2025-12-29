@@ -24,6 +24,9 @@ class City extends Model
 
     public function getLocaleNameAttribute(): string
     {
-        return app()->getLocale() == 'ar' ? $this->name_ar : $this->name;
+        if (app()->getLocale() === 'ar' && !empty($this->name_ar)) {
+            return $this->name_ar;
+        }
+        return $this->name;
     }
 }

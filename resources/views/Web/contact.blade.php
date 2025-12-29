@@ -19,31 +19,41 @@
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
                         <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">{{ __('Get in Touch') }}</h2>
                         <form id="contactForm" class="space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
-                                        {{ __('Your Name') }} <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="text" name="name" required
-                                        class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
+                            @if (!auth()->check())
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
+                                            {{ __('Your Name') }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="text" name="name" required
+                                            class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
+                                            {{ __('Your Email') }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="email" name="email" required
+                                            class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
-                                        {{ __('Your Email') }} <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="email" name="email" required
-                                        class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
-                                </div>
-                            </div>
 
-                            <div class="mb-6 intl-tel-input-container">
-                                <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
-                                    {{ __('Your Phone') }} <span class="text-red-500">*</span>
-                                </label>
-                                <input type="tel" id="contactPhone" name="phone" required maxlength="11"
-                                    class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
-                                <input type="hidden" name="phone_country_code" id="contactPhoneCountryCode">
-                            </div>
+                                <div class="mb-6 intl-tel-input-container">
+                                    <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
+                                        {{ __('Your Phone') }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="tel" id="contactPhone" name="phone" required maxlength="15"
+                                        class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
+                                    <input type="hidden" name="phone_country_code" id="contactPhoneCountryCode">
+                                </div>
+                            @else
+                                <div
+                                    class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg">
+                                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                                        {{ __('You are logged in as') }}: <strong>{{ auth()->user()->name }}</strong>
+                                        ({{ auth()->user()->email }})
+                                    </p>
+                                </div>
+                            @endif
 
                             <div>
                                 <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
@@ -180,7 +190,7 @@
             const contactPhoneInput = document.querySelector("#contactPhone");
             if (contactPhoneInput) {
                 const iti = window.intlTelInput(contactPhoneInput, {
-                    initialCountry: "sa",
+                    initialCountry: "{{ auth()->check() ? strtolower(auth()->user()->phone_country_code ?? 'sa') : 'sa' }}",
                     separateDialCode: true,
                     countrySearch: false,
                     geoIpLookup: function(callback) {
@@ -192,15 +202,18 @@
                     utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
                 });
 
+                @if (auth()->check())
+                    iti.setNumber("{{ auth()->user()->phone }}");
+                @endif
+
                 contactPhoneInput.addEventListener("countrychange", function() {
                     const countryData = iti.getSelectedCountryData();
-                    document.querySelector("#contactPhoneCountryCode").value = countryData.iso2
-                    .toUpperCase();
+                    document.querySelector("#contactPhoneCountryCode").value = "+" + countryData.dialCode;
                 });
 
                 // Set initial value
                 const initialCountryData = iti.getSelectedCountryData();
-                document.querySelector("#contactPhoneCountryCode").value = initialCountryData.iso2.toUpperCase();
+                document.querySelector("#contactPhoneCountryCode").value = "+" + initialCountryData.dialCode;
             }
         });
 
@@ -208,17 +221,46 @@
         document.getElementById('contactForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
 
+            const form = this;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnContent = submitBtn.innerHTML;
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> {{ __('Sending...') }}';
+
             // Get form data
-            const formData = new FormData(this);
-            const data = Object.fromEntries(formData);
+            const formData = new FormData(form);
 
-            // Here you would normally send the data to your backend
-            // For now, we'll just show a success message
-            alert(
-                '{{ __('Message sent successfully!') }}\n{{ __('Thank you for contacting us. We will get back to you soon.') }}');
-
-            // Reset form
-            this.reset();
+            fetch("{{ route('contact.store') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, 'success');
+                        form.reset();
+                        // If user is logged in, values will be reset but we want to keep them
+                        @if (auth()->check())
+                            window.location.reload();
+                        @endif
+                    } else {
+                        showToast(data.message || '{{ __('Something went wrong') }}', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('{{ __('Failed to send message') }}', 'error');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnContent;
+                });
         });
     </script>
 @endpush

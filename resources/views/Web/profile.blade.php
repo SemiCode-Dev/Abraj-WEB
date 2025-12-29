@@ -192,13 +192,12 @@
 
                 profilePhoneInput.addEventListener("countrychange", function() {
                     const countryData = iti.getSelectedCountryData();
-                    document.querySelector("#profilePhoneCountryCode").value = countryData.iso2
-                        .toUpperCase();
+                    document.querySelector("#profilePhoneCountryCode").value = "+" + countryData.dialCode;
                 });
 
                 // Set initial value
-                const countryData = iti.getSelectedCountryData();
-                document.querySelector("#profilePhoneCountryCode").value = countryData.iso2.toUpperCase();
+                const initialCountryData = iti.getSelectedCountryData();
+                document.querySelector("#profilePhoneCountryCode").value = "+" + initialCountryData.dialCode;
             }
         });
     </script>

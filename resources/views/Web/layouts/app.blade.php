@@ -234,8 +234,6 @@
         </div>
     </div>
 
-    @stack('scripts')
-
     <script>
         // Mobile menu toggle functions
         function openMobileMenu() {
@@ -364,13 +362,12 @@
 
                 regPhoneInput.addEventListener("countrychange", function() {
                     const countryData = iti.getSelectedCountryData();
-                    document.querySelector("#reg_phone_country_code").value = countryData.iso2
-                        .toUpperCase();
+                    document.querySelector("#reg_phone_country_code").value = "+" + countryData.dialCode;
                 });
 
                 // Set initial value
                 const initialCountryData = iti.getSelectedCountryData();
-                document.querySelector("#reg_phone_country_code").value = initialCountryData.iso2.toUpperCase();
+                document.querySelector("#reg_phone_country_code").value = "+" + initialCountryData.dialCode;
 
                 // Ensure it's updated on input as well (though countrychange should be enough for the code)
             }

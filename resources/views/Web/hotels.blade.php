@@ -33,59 +33,21 @@
                     <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
                         <h3 class="text-xl font-bold text-gray-900 mb-6">{{ __('Filter Results') }}</h3>
 
-                        <!-- Date Selection -->
+                        <!-- City Selection -->
                         <div class="mb-6">
-                            <h4 class="font-semibold text-gray-900 mb-4">{{ __('Select Dates') }}</h4>
+                            <h4 class="font-semibold text-gray-900 mb-4">{{ __('Select City') }}</h4>
                             <div class="space-y-3">
-                                <div>
-                                    <label class="block text-gray-700 text-sm font-medium mb-2">
-                                        <i
-                                            class="fas fa-calendar-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                        {{ __('Check In') }}
-                                    </label>
-                                    <input type="date" id="filterCheckIn" name="check_in"
-                                        value="{{ request('check_in') }}"
-                                        class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-gray-700 text-sm font-medium mb-2">
-                                        <i
-                                            class="fas fa-calendar-check text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                        {{ __('Check Out') }}
-                                    </label>
-                                    <input type="date" id="filterCheckOut" name="check_out"
-                                        value="{{ request('check_out') }}"
-                                        class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-sm">
-                                </div>
+                                <select id="cityFilter"
+                                    class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-sm searchable-select">
+                                    <option value="all">{{ __('All Destinations') }}</option>
+                                    @foreach ($cities as $city)
+                                        <option value="{{ $city->code }}"
+                                            {{ isset($cityCode) && $cityCode == $city->code ? 'selected' : '' }}>
+                                            {{ $city->locale_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
-                        </div>
-
-                        <!-- Price Range -->
-                        <div class="mb-6 opacity-50">
-                            <h4 class="font-semibold text-gray-900 mb-4">{{ __('Price Range') }}</h4>
-                            <div class="space-y-3">
-                                <label class="flex items-center cursor-not-allowed">
-                                    <input type="checkbox" class="w-5 h-5 text-orange-600 rounded" disabled>
-                                    <span
-                                        class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }} text-gray-700">{{ __('Less than 200 SAR') }}</span>
-                                </label>
-                                <label class="flex items-center cursor-not-allowed">
-                                    <input type="checkbox" class="w-5 h-5 text-orange-600 rounded" disabled>
-                                    <span
-                                        class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }} text-gray-700">{{ __('200 - 400 SAR') }}</span>
-                                </label>
-                                <label class="flex items-center cursor-not-allowed">
-                                    <input type="checkbox" class="w-5 h-5 text-orange-600 rounded" disabled>
-                                    <span
-                                        class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }} text-gray-700">{{ __('400 - 600 SAR') }}</span>
-                                </label>
-                                <label class="flex items-center cursor-not-allowed">
-                                    <input type="checkbox" class="w-5 h-5 text-orange-600 rounded" disabled>
-                                    <span
-                                        class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }} text-gray-700">{{ __('More than 600 SAR') }}</span>
-                                </label>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-2">{{ __('Available after room search') }}</p>
                         </div>
 
                         <!-- Star Rating -->
@@ -177,10 +139,6 @@
                             </div>
                         </div>
 
-                        <button type="button" id="applyFiltersBtn"
-                            class="w-full bg-orange-600 text-white py-3 rounded-xl font-semibold hover:bg-orange-700 transition">
-                            {{ __('Apply Filter') }}
-                        </button>
                     </div>
                 </div>
 
@@ -333,25 +291,6 @@
 
 @push('scripts')
     <script>
-        // Set minimum date to today
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('filterCheckIn')?.setAttribute('min', today);
-        document.getElementById('filterCheckOut')?.setAttribute('min', today);
-
-        // Update check-out minimum date when check-in changes
-        document.getElementById('filterCheckIn')?.addEventListener('change', function() {
-            const checkInDate = this.value;
-            const checkOutInput = document.getElementById('filterCheckOut');
-            if (checkOutInput && checkInDate) {
-                const nextDay = new Date(checkInDate);
-                nextDay.setDate(nextDay.getDate() + 1);
-                checkOutInput.setAttribute('min', nextDay.toISOString().split('T')[0]);
-                if (checkOutInput.value && checkOutInput.value <= checkInDate) {
-                    checkOutInput.value = nextDay.toISOString().split('T')[0];
-                }
-            }
-        });
-
         // Pagination Configuration
         const HOTELS_PER_PAGE = 12;
         let currentPage = 1;
@@ -528,27 +467,24 @@
             checkbox.addEventListener('change', applyFiltersAndPagination);
         });
 
-        // Apply filters button (for date changes)
-        document.getElementById('applyFiltersBtn')?.addEventListener('click', function() {
-            const checkIn = document.getElementById('filterCheckIn').value;
-            const checkOut = document.getElementById('filterCheckOut').value;
+        // Apply filters button (for city changes)
+        document.getElementById('cityFilter')?.addEventListener('change', function() {
+            const cityCode = this.value;
+            let targetUrl;
+
+            if (cityCode === 'all') {
+                targetUrl = "{{ route('all.hotels', ['locale' => app()->getLocale()]) }}";
+            } else {
+                targetUrl = "{{ route('city.hotels', ['cityCode' => ':code', 'locale' => app()->getLocale()]) }}"
+                    .replace(':code', cityCode);
+            }
+
+            // Keep existing query parameters except page
             const currentUrl = new URL(window.location.href);
+            const params = new URLSearchParams(currentUrl.search);
+            params.delete('page');
 
-            // Update URL parameters
-            if (checkIn) {
-                currentUrl.searchParams.set('check_in', checkIn);
-            } else {
-                currentUrl.searchParams.delete('check_in');
-            }
-
-            if (checkOut) {
-                currentUrl.searchParams.set('check_out', checkOut);
-            } else {
-                currentUrl.searchParams.delete('check_out');
-            }
-
-            // Reload page with new parameters
-            window.location.href = currentUrl.toString();
+            window.location.href = targetUrl + (params.toString() ? '?' + params.toString() : '');
         });
 
         // Initialize on page load

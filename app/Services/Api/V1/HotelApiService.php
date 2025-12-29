@@ -3,6 +3,8 @@
 namespace App\Services\Api\V1;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\Pool;
+use Illuminate\Support\Facades\Log;
 
 class HotelApiService
 {
@@ -190,11 +192,73 @@ class HotelApiService
     }
 
     /**
+     * Get hotels from multiple cities using TBOHotelCodeList with concurrency
+     */
+    public function getHotelsConcurrent(array $cityCodes, bool $detailed = true, ?int $maxHotelsPerCity = null, string $language = 'en', int $maxPages = 1): array
+    {
+        $allHotels = [];
+        // Chunk city codes to avoid overwhelming the API or exceeding connection limits
+        $chunks = array_chunk($cityCodes, 10); 
+
+        foreach ($chunks as $chunk) {
+            try {
+                $responses = Http::pool(function (Pool $pool) use ($chunk, $detailed, $language) {
+                    $requests = [];
+                    foreach ($chunk as $cityCode) {
+                        $requests[] = $pool->asJson()
+                            ->withBasicAuth($this->username, $this->password)
+                            ->timeout(20)
+                            ->post(rtrim($this->baseUrl, '/').'/TBOHotelCodeList', [
+                                'CityCode' => (string)$cityCode,
+                                'IsDetailedResponse' => $detailed ? 'true' : 'false',
+                                'PageNo' => 1,
+                                'Language' => $language,
+                            ]);
+                    }
+                    return $requests;
+                });
+
+                foreach ($responses as $response) {
+                    if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
+                        $data = $response->json();
+                        $hotels = $data['Hotels'] ?? [];
+                        if (!empty($hotels) && is_array($hotels)) {
+                            if ($maxHotelsPerCity !== null) {
+                                $hotels = array_slice($hotels, 0, $maxHotelsPerCity);
+                            }
+                            $allHotels = array_merge($allHotels, $hotels);
+                        }
+                    } elseif ($response instanceof \Exception) {
+                        Log::warning('Concurrent hotel fetch exception: ' . $response->getMessage());
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('Guzzle Pool Error: ' . $e->getMessage());
+            }
+        }
+
+        return [
+            'Status' => [
+                'Code' => 200,
+                'Description' => 'Success',
+            ],
+            'Hotels' => $allHotels,
+            'TotalHotels' => count($allHotels),
+            'CitiesProcessed' => count($cityCodes),
+        ];
+    }
+
+    /**
      * Get hotels from multiple cities using TBOHotelCodeList
      * This replaces the random city approach with a comprehensive approach
      */
     public function getHotelsFromMultipleCities(array $cityCodes, bool $detailed = true, ?int $maxHotelsPerCity = null, string $language = 'en', int $maxPages = 1): array
     {
+        // For better performance, use the concurrent version if only 1 page is requested
+        if ($maxPages === 1) {
+            return $this->getHotelsConcurrent($cityCodes, $detailed, $maxHotelsPerCity, $language);
+        }
+
         $allHotels = [];
         $totalPagesFetched = 0;
 

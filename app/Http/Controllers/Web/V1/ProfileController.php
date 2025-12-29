@@ -26,11 +26,16 @@ class ProfileController extends Controller
         try {
             $user = Auth::user();
 
+            $countryCode = $request->phone_country_code;
+            if ($countryCode && !str_starts_with($countryCode, '+')) {
+                $countryCode = '+' . $countryCode;
+            }
+
             $data = [
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
-                'phone_country_code' => $request->phone_country_code,
+                'phone_country_code' => $countryCode,
             ];
 
             // Update password if provided

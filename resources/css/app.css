@@ -149,23 +149,72 @@
     flex-direction: row-reverse !important;
 }
 
-/* Dark Mode for intl-tel-input */
+/* Global phone input dropdown styling */
+.iti__country-list {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid #e5e7eb !important;
+    width: auto !important;
+    min-width: 120px !important;
+    max-width: 180px !important;
+    position: absolute !important;
+    z-index: 1000 !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.iti--allow-dropdown {
+    width: 100% !important;
+}
+
+.iti__dropdown-content {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.iti__country {
+    padding: 10px 12px !important;
+    transition: background-color 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.iti__country-name {
+    display: none !important;
+}
+
+.iti__dial-code {
+    color: #111827 !important;
+    font-weight: 600 !important;
+}
+
+.iti__country:hover {
+    background-color: #f3f4f6 !important;
+}
+
+.iti__selected-dial-code {
+    color: #374151 !important;
+    margin-left: 4px !important;
+}
+
+/* Dark Mode Overrides */
 .dark .iti__country-list {
     background-color: #1f2937 !important;
-    border-color: #374151 !important;
-    color: #f3f4f6 !important;
+    color: #f9fafb !important;
+    border-color: #4b5563 !important;
 }
 
 .dark .iti__country:hover {
     background-color: #374151 !important;
 }
 
-.dark .iti__country-name {
-    color: #f3f4f6 !important;
-}
-
 .dark .iti__dial-code {
-    color: #9ca3af !important;
+    color: #f9fafb !important;
 }
 
 .dark .iti__selected-flag {
@@ -177,94 +226,55 @@
     background-color: #374151 !important;
 }
 
-.iti__country-list {
-    background-color: #ffffff !important;
-    color: #111827 !important;
-    border-radius: 0.75rem !important;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
-    border: 1px solid #e5e7eb !important;
-    width: 280px !important;
-    max-width: 280px !important;
-    position: absolute !important;
-    z-index: 1000 !important;
-    overflow-x: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* Fix for the white 'container' area - making sure it doesn't stretch or have a background */
-.iti--allow-dropdown {
-    width: 100% !important;
-}
-
-.iti__dropdown-content {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-.dark .iti__country-list {
-    background-color: #1f2937 !important;
-    color: #f9fafb !important;
-    border-color: #4b5563 !important;
-}
-
-.iti__country {
-    padding: 12px 16px !important;
-    transition: background-color 0.2s ease !important;
-}
-
-.iti__country-name {
-    color: #111827 !important;
-}
-
-.dark .iti__country-name {
-    color: #f9fafb !important;
-}
-
-.iti__dial-code {
-    color: #6b7280 !important;
-}
-
-.dark .iti__dial-code {
-    color: #9ca3af !important;
-}
-
-.iti__country:hover {
-    background-color: #f3f4f6 !important;
-}
-
-.dark .iti__country:hover {
-    background-color: #374151 !important;
-}
-
-.iti__selected-dial-code {
-    color: #374151 !important;
-    margin-left: 4px !important;
-}
-
 .dark .iti__selected-dial-code {
-    color: #f3f4f6 !important;
+    color: #ffffff !important;
 }
 
-/* Ensure register form inputs are black even in dark mode since it has a white background */
-.dark section.bg-white input {
-    color: #111827 !important;
+.dark .iti__arrow {
+    border-top-color: #f3f4f6 !important;
 }
 
-/* Ensure input text is visible elsewhere */
-input[type="tel"] {
-    color: #111827 !important;
+.dark .iti__arrow--up {
+    border-bottom-color: #f3f4f6 !important;
+    border-top-color: transparent !important;
 }
 
+/* Base input text visibility in dark mode */
 .dark input[type="tel"] {
     color: #ffffff !important;
 }
 
-.dark section.bg-white input[type="tel"] {
+/* Forced White Sections (Register Modal) Overrides inside Dark Mode */
+.dark section.bg-white:not([class*="dark:bg-"]) .iti__country-list {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #e5e7eb !important;
+}
+
+.dark section.bg-white:not([class*="dark:bg-"]) .iti__country:hover {
+    background-color: #f3f4f6 !important;
+}
+
+.dark section.bg-white:not([class*="dark:bg-"]) input[type="tel"],
+.dark section.bg-white:not([class*="dark:bg-"]) .iti__selected-dial-code,
+.dark section.bg-white:not([class*="dark:bg-"]) .iti__dial-code {
     color: #111827 !important;
 }
 
-.dark section.bg-white .iti__selected-dial-code {
-    color: #374151 !important;
+.dark section.bg-white:not([class*="dark:bg-"]) .iti__selected-flag {
+    background-color: #ffffff !important;
+}
+
+/* Light scrollbar for forced white sections */
+.dark section.bg-white:not([class*="dark:bg-"]) .iti__country-list::-webkit-scrollbar-track {
+    background: #f1f1f1 !important;
+}
+
+.dark section.bg-white:not([class*="dark:bg-"]) .iti__country-list::-webkit-scrollbar-thumb {
+    background: #d1d5db !important;
+    border-radius: 5px !important;
+}
+
+.dark section.bg-white:not([class*="dark:bg-"]) .iti__country-list::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af !important;
 }

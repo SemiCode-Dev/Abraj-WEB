@@ -232,22 +232,28 @@ class HotelController extends Controller
         try {
             // Get current page from request
             $page = (int) request('page', 1);
+            // Cache key for this specific city and locale
+            $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
+            $cacheKey = 'city_hotels_'.$cityCode.'_'.$language;
             $perPage = 12; // Hotels per page
 
-            // Cache key for this specific city
-            $cacheKey = 'city_hotels_'.$cityCode;
-
             // Cache for 24 hours - hotels don't change frequently
-            $allHotels = Cache::remember($cacheKey, 86400, function () use ($cityCode) {
+            $allHotels = Cache::remember($cacheKey, 86400, function () use ($cityCode, $language) {
                 try {
                     // Get all hotels from all pages
-                    $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
                     $response = $this->hotelApi->getAllCityHotels($cityCode, true, $language);
 
                     $hotels = $response['Hotels'] ?? [];
 
                     if (! is_array($hotels)) {
                         $hotels = json_decode(json_encode($hotels), true);
+                    }
+
+                    // Apply robust Hotel Translation if Arabic
+                    if ($language === 'ar' && !empty($hotels)) {
+                        $translator = new \App\Services\HotelTranslationService();
+                        // Use a higher limit for the city view to translate more hotels initially
+                        $hotels = $translator->translateHotels($hotels, 10); 
                     }
 
                     return $hotels;
@@ -266,6 +272,16 @@ class HotelController extends Controller
             // Get hotels for current page
             $hotels = array_slice($allHotels, $offset, $perPage);
 
+            // Re-apply translation check just in case cache was old or limit was hit partially
+            // (translateHotels handles cached entries very quickly)
+            if ($language === 'ar' && !empty($hotels)) {
+                $translator = new \App\Services\HotelTranslationService();
+                $hotels = $translator->translateHotels($hotels, 5); // Small additional limit per page view
+            }
+
+            // Fetch cities that have hotels for the sidebar filter
+            $cities = City::whereNotNull('code')->where('hotels_count', '>', 0)->orderBy('name', 'asc')->get();
+
             return view('Web.hotels', [
                 'hotels' => $hotels,
                 'currentPage' => $page,
@@ -273,10 +289,12 @@ class HotelController extends Controller
                 'totalHotels' => $totalHotels,
                 'perPage' => $perPage,
                 'cityCode' => $cityCode,
+                'cities' => $cities,
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to fetch city hotels: '.$e->getMessage());
 
+            $cities = City::whereNotNull('code')->where('hotels_count', '>', 0)->orderBy('name', 'asc')->get();
             return view('Web.hotels', [
                 'hotels' => [],
                 'currentPage' => 1,
@@ -284,6 +302,7 @@ class HotelController extends Controller
                 'totalHotels' => 0,
                 'perPage' => 12,
                 'cityCode' => $cityCode,
+                'cities' => $cities,
             ]);
         }
     }
@@ -294,10 +313,11 @@ class HotelController extends Controller
             // Increase execution time for this request to 180s for larger dataset
             set_time_limit(180);
 
-            // Get all city codes from database (Fast local query)
+            // Get top city codes from database (Prioritize popular destinations)
             $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
-                ->orderBy('name', 'asc') // Consistent ordering
+                ->orderBy('hotels_count', 'desc') // Best indicator of popular cities
+                ->limit(50) // Reduced from 3500+ to 50 for performance
                 ->pluck('code')
                 ->toArray();
 
@@ -308,25 +328,23 @@ class HotelController extends Controller
                 ]);
             }
 
-            // Use cache key based on ALL cities and LANGUAGE
+            // Use cache key based on TOP cities and LANGUAGE
             $language = app()->getLocale();
-            $cacheKey = 'all_hotels_'.$language.'_v2_'.md5(implode(',', $allCityCodes));
+            $cacheKey = 'all_hotels_'.$language.'_v3_'.md5(implode(',', $allCityCodes));
 
             // Cache for 24 hours
             $hotels = \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function () use ($allCityCodes, $language) {
                 try {
-                    // Fetch from API for ALL cities
-                    // Increase to 10 hotels per city for more comprehensive results
                     $apiLang = $language === 'ar' ? 'ar' : 'en';
                     
-                    // Fetch from ALL cities (no limit)
-                    // This will take longer but gives complete results
+                    // Fetch from top cities concurrently
+                    // 10 hotels per city for a total of ~500 high-quality results
                     $response = $this->hotelApi->getHotelsFromMultipleCities(
                         $allCityCodes, 
                         true, 
-                        10, // 10 hotels per city
+                        10, 
                         $apiLang,
-                        1 // 1 page per city for faster loading
+                        1 // Single page fetch per city is much faster
                     );
 
                     $hotels = $response['Hotels'] ?? [];
@@ -348,16 +366,22 @@ class HotelController extends Controller
                 $hotels = $translator->translateHotels($hotels);
             }
 
+            // Fetch cities that have hotels for the sidebar filter
+            $cities = City::whereNotNull('code')->where('hotels_count', '>', 0)->orderBy('name', 'asc')->get();
+
             return view('Web.hotels', [
                 'hotels' => $hotels, // All hotels loaded at once
                 'allHotelsJson' => json_encode($hotels), // For JavaScript access
+                'cities' => $cities,
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to fetch all hotels: '.$e->getMessage());
 
+            $cities = City::whereNotNull('code')->where('hotels_count', '>', 0)->orderBy('name', 'asc')->get();
             return view('Web.hotels', [
                 'hotels' => [],
                 'allHotelsJson' => '[]',
+                'cities' => $cities,
             ]);
         }
     }

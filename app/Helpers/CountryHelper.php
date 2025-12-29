@@ -73,6 +73,14 @@ class CountryHelper
 
         $isoCode = strtoupper($isoCode);
 
+        // If it starts with +, remove it and check if the rest is numeric
+        if (str_starts_with($isoCode, '+')) {
+            $numericPart = substr($isoCode, 1);
+            if (is_numeric($numericPart)) {
+                return $numericPart;
+            }
+        }
+
         // If it's already numeric, return it
         if (is_numeric($isoCode)) {
             return $isoCode;

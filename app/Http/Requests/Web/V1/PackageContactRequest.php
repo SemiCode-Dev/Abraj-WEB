@@ -17,10 +17,12 @@ class PackageContactRequest extends FormRequest
             'message' => ['nullable', 'string', 'max:1000'],
         ];
 
-        $rules['name'] = ['required', 'string', 'max:255'];
-        $rules['email'] = ['required', 'string', 'email', 'max:255'];
-        $rules['phone_country_code'] = ['required', 'string', 'max:10'];
-        $rules['phone'] = ['required', 'string', 'max:11'];
+        if (!auth()->check()) {
+            $rules['name'] = ['required', 'string', 'max:255'];
+            $rules['email'] = ['required', 'string', 'email', 'max:255'];
+            $rules['phone_country_code'] = ['required', 'string', 'max:10'];
+            $rules['phone'] = ['required', 'string', 'max:11'];
+        }
 
         return $rules;
     }

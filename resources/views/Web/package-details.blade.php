@@ -66,47 +66,53 @@
                             method="POST">
                             @csrf
 
-                            <div class="mb-4">
-                                <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
-                                    {{ __('Full Name') }} <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" name="name"
-                                    value="{{ old('name', auth()->check() ? auth()->user()->name : '') }}" required
-                                    class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
-                                @error('name')
-                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+                            @if (!auth()->check())
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
+                                        {{ __('Full Name') }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" name="name" value="{{ old('name') }}" required
+                                        class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
+                                    @error('name')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-                            <div class="mb-4">
-                                <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
-                                    {{ __('Email') }} <span class="text-red-500">*</span>
-                                </label>
-                                <input type="email" name="email"
-                                    value="{{ old('email', auth()->check() ? auth()->user()->email : '') }}" required
-                                    class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
-                                @error('email')
-                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
+                                        {{ __('Email') }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="email" name="email" value="{{ old('email') }}" required
+                                        class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
+                                    @error('email')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-                            <div class="mb-4 intl-tel-input-container">
-                                <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
-                                    {{ __('Phone') }} <span class="text-red-500">*</span>
-                                </label>
-                                <input type="tel" id="packagePhone" name="phone"
-                                    value="{{ old('phone', auth()->check() ? auth()->user()->phone : '') }}" required
-                                    maxlength="11"
-                                    class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
-                                <input type="hidden" name="phone_country_code" id="packagePhoneCountryCode"
-                                    value="{{ old('phone_country_code', auth()->check() ? auth()->user()->phone_country_code : '') }}">
-                                @error('phone')
-                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                                @enderror
-                                @error('phone_country_code')
-                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+                                <div class="mb-4 intl-tel-input-container">
+                                    <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
+                                        {{ __('Phone') }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="tel" id="packagePhone" name="phone" value="{{ old('phone') }}"
+                                        required maxlength="11"
+                                        class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
+                                    <input type="hidden" name="phone_country_code" id="packagePhoneCountryCode"
+                                        value="{{ old('phone_country_code') }}">
+                                    @error('phone')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                    @error('phone_country_code')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @else
+                                <div
+                                    class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg">
+                                    <p class="text-sm text-blue-700 dark:text-blue-300 text-center">
+                                        {{ __('You are logged in as') }}:<br><strong>{{ auth()->user()->name }}</strong>
+                                    </p>
+                                </div>
+                            @endif
 
                             <div class="mb-6">
                                 <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
@@ -152,13 +158,12 @@
 
                 packagePhoneInput.addEventListener("countrychange", function() {
                     const countryData = iti.getSelectedCountryData();
-                    document.querySelector("#packagePhoneCountryCode").value = countryData.iso2
-                    .toUpperCase();
+                    document.querySelector("#packagePhoneCountryCode").value = "+" + countryData.dialCode;
                 });
 
                 // Set initial value
                 const initialCountryData = iti.getSelectedCountryData();
-                document.querySelector("#packagePhoneCountryCode").value = initialCountryData.iso2.toUpperCase();
+                document.querySelector("#packagePhoneCountryCode").value = "+" + initialCountryData.dialCode;
             }
         });
     </script>
