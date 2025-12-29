@@ -62,12 +62,16 @@ class AuthService
             'phone_country_code' => $countryCode, // With +: +20
         ]);
 
-        $token = $user->createToken('abraj')->plainTextToken;
+        // Login user for session-based auth (Web)
+        auth()->login($user);
+
+        // Create token for API use
+        $token = $user->createToken('auth-token')->plainTextToken;
 
         return [
             'status' => 'success',
             'message' => 'User registered successfully',
-            'user' => $user,
+            'data' => $user,
             'token' => $token,
         ];
     }

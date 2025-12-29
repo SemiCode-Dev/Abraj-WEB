@@ -53,10 +53,16 @@ class AuthController extends Controller
              return response()->json($data, 400);
         }
 
-        $user = $data['data'];
-        $token = $user->createToken('auth-token')->plainTextToken;
+        // The service now returns both 'data' (user) and 'token'
+        $user = $data['data'] ?? null;
+        $token = $data['token'] ?? null;
         
-        $userData = $user->toArray();
+        if (!$user) {
+             return response()->json(['status' => 'error', 'message' => 'User creation failed'], 500);
+        }
+
+        // Return user data with token included in 'data' attribute for consistency
+        $userData = ($user instanceof \Illuminate\Database\Eloquent\Model) ? $user->toArray() : (array)$user;
         $userData['token'] = $token;
         $data['data'] = $userData;
 

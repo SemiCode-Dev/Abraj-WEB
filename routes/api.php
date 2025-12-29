@@ -1,14 +1,13 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AuthController;
-use App\Http\Controllers\Api\V1\ProfileController;
-use App\Http\Controllers\Api\V1\PackageController;
-use App\Http\Controllers\Api\V1\FlightController;
-use App\Http\Controllers\Api\V1\TransferController;
 use App\Http\Controllers\Api\V1\CarRentalController;
+use App\Http\Controllers\Api\V1\FlightController;
+use App\Http\Controllers\Api\V1\PackageController;
+use App\Http\Controllers\Api\V1\ProfileController;
+use App\Http\Controllers\Api\V1\TransferController;
 use App\Http\Controllers\Api\V1\VisaController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,27 +60,25 @@ Route::post('/car-rentals/book', [CarRentalController::class, 'store']);
 // Visa Booking
 Route::post('/visas/book', [VisaController::class, 'store']);
 
-
-
 // ============================================
 // DEVELOPMENT HELPER - Get OTP from Database
 // REMOVE THIS IN PRODUCTION!
 // ============================================
-Route::get('/dev/get-otp/{identifier}', function($identifier) {
+Route::get('/dev/get-otp/{identifier}', function ($identifier) {
     $user = \App\Models\User::where('email', $identifier)
         ->orWhere('phone', str_replace('+', '', preg_replace('/[^0-9+]/', '', $identifier)))
         ->first();
-    
-    if (!$user) {
+
+    if (! $user) {
         return response()->json(['error' => 'User not found'], 404);
     }
-    
+
     $otp = \App\Models\Otp::where('user_id', $user->id)->first();
-    
-    if (!$otp) {
+
+    if (! $otp) {
         return response()->json(['error' => 'No OTP found. Request one first.'], 404);
     }
-    
+
     return response()->json([
         'otp' => $otp->token,
         'expires_at' => $otp->expires_at,
