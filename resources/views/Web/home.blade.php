@@ -325,6 +325,7 @@
 
             @php
                 // Fetch 5 random cities from different countries that have hotels
+                // Primary query: Cities known to have hotels
                 $randomCities = \App\Models\City::where('hotels_count', '>', 0)
                     ->whereNotNull('code')
                     ->where('code', '!=', '')
@@ -334,15 +335,27 @@
                     ->unique('country_id')
                     ->take(5);
 
-                // Predefined high-quality destination images
-                $fallbackImages = [
-                    'https://images.unsplash.com/photo-1506929113675-bc7a264fa1d7?auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80',
+                // Fallback query: If no cities found with hotels_count > 0 (e.g. data not synced yet)
+                // Just show any valid cities so the section isn't empty
+if ($randomCities->isEmpty()) {
+    $randomCities = \App\Models\City::whereNotNull('code')
+        ->where('code', '!=', '')
+        ->inRandomOrder()
+        ->take(50)
+        ->get()
+        ->unique('country_id')
+        ->take(5);
+}
+
+// Predefined high-quality destination images
+$fallbackImages = [
+    'https://images.unsplash.com/photo-1506929113675-bc7a264fa1d7?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80',
                 ];
                 shuffle($fallbackImages);
             @endphp
@@ -545,7 +558,7 @@
                         <i class="fas fa-star text-yellow-500 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
                         {{ __('5 Star Hotels') }}
                     </a>
-                   
+
                 </div>
             </div>
         </div>

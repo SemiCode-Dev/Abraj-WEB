@@ -91,14 +91,18 @@ class CitySeeder extends Seeder
         ];
 
         foreach ($cities as $city) {
-            DB::table('cities')->insert([
-                'name' => $city['Name'],
-                'name_ar' => $city['Name_ar'],
-                'code' => $city['Code'],
-                'country_id' => $saudiArabia->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            DB::table('cities')->updateOrInsert(
+                [
+                    'code' => $city['Code'],
+                    'country_id' => $saudiArabia->id,
+                ],
+                [
+                    'name' => $city['Name'],
+                    'name_ar' => $city['Name_ar'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
         }
     }
 }
