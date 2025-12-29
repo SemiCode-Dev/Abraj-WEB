@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('cities', function (Blueprint $table) {
-            // Drop old non-composite unique index
-            $table->dropUnique(['code']);
-        });
+        try {
+            Schema::table('cities', function (Blueprint $table) {
+                // Drop old non-composite unique index if it exists
+                $table->dropUnique(['code']);
+            });
+        } catch (\Exception $e) {
+            // If the index doesn't exist, we can ignore the error and proceed
+        }
 
         // Truncate to remove contaminated data
         DB::table('cities')->truncate();

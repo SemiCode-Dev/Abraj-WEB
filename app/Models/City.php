@@ -15,6 +15,10 @@ class City extends Model
         'name_ar',
         'code',
         'country_id',
+        'hotels_count',
+        'image_url',
+        'display_name_en',
+        'display_name_ar',
     ];
 
     public function country(): BelongsTo
