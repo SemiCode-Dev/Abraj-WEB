@@ -342,4 +342,122 @@ class HotelTranslationService
 
         return $map[$nameLower] ?? $name;
     }
+
+    /**
+     * Translate Room Names with Caching and Local Dictionary
+     * @param array $names List of room names
+     * @return array Map of [Original => Translated]
+     */
+    public function translateRoomNames(array $names): array
+    {
+        if (empty($names)) return [];
+
+        $roomParamsFile = 'translations/rooms_ar.json';
+        $cachedRooms = [];
+        
+        // Dictionary for common terms to improve quality and speed
+        $localDictionary = [
+            'Standard' => 'قياسية',
+            'Double' => 'مزدوجة',
+            'Single' => 'فردية',
+            'Twin' => 'توأم',
+            'King' => 'كينغ',
+            'Queen' => 'كوين',
+            'Deluxe' => 'ديلوكس',
+            'Superior' => 'سوبريور',
+            'Suite' => 'جناح',
+            'Junior Suite' => 'جناح جونيور',
+            'Executive' => 'تنفيذية',
+            'Family' => 'عائلية',
+            'Studio' => 'استوديو',
+            'Apartment' => 'شقة',
+            'Room' => 'غرفة',
+            'Bedroom' => 'غرفة نوم',
+            'Sea View' => 'إطلالة على البحر',
+            'City View' => 'إطلالة على المدينة',
+            'Garden View' => 'إطلالة على الحديقة',
+            'Pool View' => 'إطلالة على المسبح',
+            'With Balcony' => 'مع شرفة',
+            'Non Smoking' => 'لغير المدخنين',
+            'Smoking' => 'للمدخنين',
+            'Standard Double' => 'مزدوجة قياسية',
+            'Standard Twin' => 'توأم قياسية',
+            'Standard King' => 'كينغ قياسية',
+            'Disability Access' => 'ذوي الاحتياجات الخاصة',
+            'Disability Access Double' => 'مزدوجة لذوي الاحتياجات الخاصة',
+            'Accessible' => 'مجهزة لذوي الاحتياجات الخاصة',
+            'Economy' => 'اقتصادية',
+            'Premium' => 'بريميوم',
+            'Club' => 'كلوب',
+            'Room Only' => 'غرفة فقط',
+            'Breakfast Included' => 'شامل الإفطار',
+        ];
+
+        // Load existing cache
+        if (Storage::exists($roomParamsFile)) {
+            $cachedRooms = json_decode(Storage::get($roomParamsFile), true) ?? [];
+        }
+
+        $result = [];
+        $toTranslate = [];
+
+        foreach ($names as $name) {
+            $cleanName = trim($name);
+            if (empty($cleanName)) continue;
+            
+            // 1. Check Local Dictionary (Exact Match)
+            if (isset($localDictionary[$cleanName])) {
+                 $result[$name] = $localDictionary[$cleanName];
+                 continue;
+            }
+
+            // 2. Check Cache
+            if (isset($cachedRooms[$cleanName]) && $cachedRooms[$cleanName] !== $cleanName) {
+                $result[$name] = $cachedRooms[$cleanName];
+            } else {
+                // 3. Try "Smart" translation using dictionary parts if plain translation failed before
+                $translatedParts = $cleanName;
+                foreach ($localDictionary as $eng => $ar) {
+                    // Simple case-insensitive replace for common terms
+                     $translatedParts = str_ireplace($eng, $ar, $translatedParts);
+                }
+                
+                if ($translatedParts !== $cleanName) {
+                     // If we successfully replaced parts, use that as translation
+                     $result[$name] = $translatedParts;
+                     // We can cache this too
+                     $cachedRooms[$cleanName] = $translatedParts;
+                     $toTranslate[] = null; // Mark as handled
+                } else {
+                     $toTranslate[] = $cleanName;
+                     $result[$name] = $name; 
+                }
+            }
+        }
+        
+        // Remove nulls
+        $toTranslate = array_filter($toTranslate);
+
+        // Translate missing ones via API
+        if (!empty($toTranslate)) {
+            $toTranslate = array_unique($toTranslate);
+            $translatedBatch = $this->translateStrings($toTranslate, 'en', 'ar');
+            
+            $modified = false;
+            foreach ($translatedBatch as $original => $translated) {
+                if ($original !== $translated) {
+                    $cachedRooms[$original] = $translated;
+                    $result[$original] = $translated;
+                    $modified = true;
+                }
+            }
+
+            // Save cache if modified
+            if ($modified) {
+                Storage::put($roomParamsFile, json_encode($cachedRooms, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            }
+        }
+        
+        return $result;
+    }
 }

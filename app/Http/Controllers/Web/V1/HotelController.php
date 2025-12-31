@@ -232,58 +232,160 @@ class HotelController extends Controller
         try {
             // Get current page from request
             $page = (int) request('page', 1);
-            // Cache key for this specific city and locale
-            $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
-            $cacheKey = 'city_hotels_'.$cityCode.'_'.$language;
             $perPage = 12; // Hotels per page
+            
+            // Get City from DB for name verification
+            $cityParam = City::where('code', $cityCode)->first();
+            $cityNames = [];
+            if ($cityParam) {
+                // Normalize names for comparison (lowercase)
+                if ($cityParam->name_en) $cityNames[] = strtolower($cityParam->name_en);
+                if ($cityParam->name_ar) $cityNames[] = strtolower($cityParam->name_ar);
+                // Add city name part if it contains comma (e.g. "Dubai, UAE" -> "dubai")
+                foreach ($cityNames as $name) {
+                    if (str_contains($name, ',')) {
+                        $parts = explode(',', $name);
+                        $cityNames[] = trim($parts[0]);
+                    }
+                }
+            }
 
-            // Cache for 24 hours - hotels don't change frequently
-            $allHotels = Cache::remember($cacheKey, 86400, function () use ($cityCode, $language) {
+            // Cache key for the FULL LIGHTWEIGHT LIST
+            // We fetch ALL hotels lightweight (no images) to allow accurate filtering and sorting
+            $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
+            $cacheKey = 'city_hotels_light_'.$cityCode.'_'.$language;
+
+            // Cache for 24 hours
+            $allLightweightHotels = Cache::remember($cacheKey, 86400, function () use ($cityCode, $language) {
                 try {
-                    // Get all hotels from all pages
-                    $response = $this->hotelApi->getAllCityHotels($cityCode, true, $language);
-
+                    // Fetch lightweight list (IsDetailedResponse=false)
+                    // We fetch multiple pages to ensure we get all potential hotels
+                    // But since it's lightweight, it's much faster
+                    $response = $this->hotelApi->getAllCityHotels($cityCode, false, $language);
+                    
                     $hotels = $response['Hotels'] ?? [];
-
                     if (! is_array($hotels)) {
                         $hotels = json_decode(json_encode($hotels), true);
                     }
-
-                    // Apply robust Hotel Translation if Arabic
-                    if ($language === 'ar' && !empty($hotels)) {
-                        $translator = new \App\Services\HotelTranslationService();
-                        // Use a higher limit for the city view to translate more hotels initially
-                        $hotels = $translator->translateHotels($hotels, 10); 
-                    }
-
                     return $hotels;
                 } catch (\Exception $e) {
                     Log::error('Failed to fetch city hotels from API: '.$e->getMessage());
-
                     return [];
                 }
             });
 
-            // Calculate pagination
-            $totalHotels = count($allHotels);
+            // STRICT FILTERING
+            // Filter hotels to ensure they actually belong to the requested city
+            $filteredHotels = [];
+            
+            // Special handling for 6th of October (Code 100639) if names are missing
+            if ($cityCode == '100639' && empty($cityNames)) {
+                $cityNames = ['october', '6th', 'wahat'];
+            }
+
+            if (!empty($cityNames)) {
+                foreach ($allLightweightHotels as $hotel) {
+                    $hotelCityName = strtolower($hotel['CityName'] ?? '');
+                    $hotelAddress = strtolower($hotel['Address'] ?? '');
+                    
+                    $match = false;
+                    foreach ($cityNames as $validName) {
+                        if (empty($validName)) continue;
+                        
+                        // Check if API CityName contains our valid name
+                        if (str_contains($hotelCityName, $validName)) {
+                            $match = true;
+                            break;
+                        }
+                        // Fallback: Check address
+                        if (str_contains($hotelAddress, $validName)) {
+                            $match = true;
+                            break;
+                        }
+                    }
+                    
+                    if ($match) {
+                        $filteredHotels[] = $hotel;
+                    }
+                }
+            }
+            
+            // Safety Fallback: If strict filtering removed EVERYTHING, it might contain a bug or data mismatch.
+            // In that case, return the original list to avoid showing empty page (unless the city really has no hotels).
+            if (empty($filteredHotels) && !empty($allLightweightHotels)) {
+                // Log the potential issue
+                Log::warning("Strict filtering returned 0 results for CityCode: $cityCode. Falling back to original list.", [
+                   'valid_names' => $cityNames 
+                ]);
+                $filteredHotels = $allLightweightHotels; 
+            }
+
+            // Calculate pagination on the FILTERED list
+            $totalHotels = count($filteredHotels);
             $totalPages = (int) ceil($totalHotels / $perPage);
             $offset = ($page - 1) * $perPage;
 
             // Get hotels for current page
-            $hotels = array_slice($allHotels, $offset, $perPage);
+            $pagedHotels = array_slice($filteredHotels, $offset, $perPage);
 
-            // Re-apply translation check just in case cache was old or limit was hit partially
-            // (translateHotels handles cached entries very quickly)
-            if ($language === 'ar' && !empty($hotels)) {
-                $translator = new \App\Services\HotelTranslationService();
-                $hotels = $translator->translateHotels($hotels, 5); // Small additional limit per page view
+            // Fetch DETAILS (Images, Amenities) ONLY for current page
+            // We extract codes and make a single bulk call if possible, or individual calls
+            // TBO's HotelDetails often takes 1 code, let's try comma separated or loop
+            // Based on optimization, we'll assign details back to $pagedHotels
+            
+            $detailedHotels = [];
+            if (!empty($pagedHotels)) {
+                $hotelCodes = array_column($pagedHotels, 'HotelCode'); // or 'Code'
+                $codesString = implode(',', $hotelCodes);
+                
+                // Cache details for this specific page/batch
+                $detailsCacheKey = 'hotel_details_batch_' . md5($codesString) . '_' . $language;
+                
+                $detailedHotelsMap = Cache::remember($detailsCacheKey, 86400, function() use ($codesString, $language) {
+                     try {
+                        $response = $this->hotelApi->getHotelDetails($codesString, $language);
+                        
+                        // Handle response structure variations
+                        $detailsList = $response['HotelDetails'] ?? $response['HotelResult'] ?? [];
+                        
+                        // Map by code for easy lookup
+                        $map = [];
+                        if (is_array($detailsList)) {
+                             foreach ($detailsList as $detail) {
+                                 $code = $detail['HotelCode'] ?? $detail['Code'] ?? '';
+                                 if ($code) $map[$code] = $detail;
+                             }
+                        }
+                        return $map;
+                     } catch (\Exception $e) {
+                         Log::error("Failed to fetch hotel details batch: " . $e->getMessage());
+                         return [];
+                     }
+                });
+                
+                // Merge details into paged hotels
+                foreach ($pagedHotels as &$hotel) {
+                    $code = $hotel['HotelCode'] ?? $hotel['Code'] ?? '';
+                    if (isset($detailedHotelsMap[$code])) {
+                        // Merge detailed info (Images, Facilities, Description)
+                        $hotel = array_merge($hotel, $detailedHotelsMap[$code]);
+                    }
+                }
+                unset($hotel); // break reference
+                $detailedHotels = $pagedHotels;
             }
 
-            // Fetch cities that have hotels for the sidebar filter
+            // Apply translation if needed
+            if ($language === 'ar' && !empty($detailedHotels)) {
+                $translator = new \App\Services\HotelTranslationService();
+                $detailedHotels = $translator->translateHotels($detailedHotels);
+            }
+
+            // Fetch cities for sidebar
             $cities = City::whereNotNull('code')->where('hotels_count', '>', 0)->orderBy('name', 'asc')->get();
 
             return view('Web.hotels', [
-                'hotels' => $hotels,
+                'hotels' => $detailedHotels,
                 'currentPage' => $page,
                 'totalPages' => $totalPages,
                 'totalHotels' => $totalHotels,
@@ -399,6 +501,29 @@ class HotelController extends Controller
             $hotelDetails = Cache::remember("hotel_details_{$id}_{$language}", 86400, function () use ($id, $language) {
                 return $this->hotelApi->getHotelDetails($id, $language);
             });
+
+            // Translate Hotel Details if Arabic
+            if ($language === 'ar' && !empty($hotelDetails['HotelDetails'])) {
+                try {
+                    $translator = new \App\Services\HotelTranslationService();
+                    // Translate main fields (Name, Address)
+                    $hotelDetails['HotelDetails'] = $translator->translateHotels($hotelDetails['HotelDetails']);
+                    
+                    // Translate Facilities (Specific to Details page)
+                    if (isset($hotelDetails['HotelDetails'][0]['HotelFacilities']) && is_array($hotelDetails['HotelDetails'][0]['HotelFacilities'])) {
+                        $facilities = $hotelDetails['HotelDetails'][0]['HotelFacilities'];
+                        // Translate the list of facilities efficiently (batch)
+                        $translatedFacilities = $translator->translateStrings($facilities, 'en', 'ar');
+                        
+                        // Map back to the facilities array
+                        $hotelDetails['HotelDetails'][0]['HotelFacilities'] = array_values(array_map(function($facility) use ($translatedFacilities) {
+                            return $translatedFacilities[$facility] ?? $facility;
+                        }, $facilities));
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to translate hotel details: '.$e->getMessage());
+                }
+            }
 
             // 2. Check for availability (use default dates if not provided)
             $availableRooms = [];
@@ -520,6 +645,42 @@ class HotelController extends Controller
 
                 } catch (\Exception $e) {
                     Log::error('Error fetching room availability: '.$e->getMessage());
+                }
+            }
+
+            // Translate Room Names if Arabic and rooms exist
+            if ($language === 'ar' && !empty($availableRooms)) {
+                try {
+                    $translator = new \App\Services\HotelTranslationService();
+                    // Extract unique room names to translate
+                    $roomNames = [];
+                    foreach ($availableRooms as $room) {
+                        $name = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
+                        if (!empty($name)) {
+                            $roomNames[] = $name;
+                        }
+                    }
+                    $roomNames = array_unique($roomNames);
+                    
+                    if (!empty($roomNames)) {
+                        // Use persistent cache translation
+                        $translatedNames = $translator->translateRoomNames($roomNames);
+                        
+                        // Apply translations back to rooms
+                        foreach ($availableRooms as &$room) {
+                             $originalName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
+                             if (isset($translatedNames[$originalName])) {
+                                 if (is_array($room['Name'])) {
+                                     $room['Name'][0] = $translatedNames[$originalName];
+                                 } else {
+                                     $room['Name'] = $translatedNames[$originalName];
+                                 }
+                             }
+                        }
+                        unset($room);
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to translate room names: '.$e->getMessage());
                 }
             }
 
