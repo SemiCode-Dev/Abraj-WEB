@@ -62,6 +62,7 @@ Route::post('/visas/book', [VisaController::class, 'store']);
 Route::get('/visas/types', [VisaController::class, 'getTypes']);
 Route::get('/visas/countries', [VisaController::class, 'getCountries']);
 Route::get('/visas/cities', [VisaController::class, 'getCities']);
+Route::get('/visas/nationalities', [VisaController::class, 'getNationalities']);
 
 // ============================================
 // DEVELOPMENT HELPER - Get OTP from Database

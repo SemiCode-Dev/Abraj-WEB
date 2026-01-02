@@ -81,4 +81,23 @@ class VisaController extends Controller
             'data' => $cities,
         ]);
     }
+
+    public function getNationalities(\Illuminate\Http\Request $request): JsonResponse
+    {
+        if ($request->has('lang')) {
+            app()->setLocale($request->lang);
+        }
+
+        $nationalities = \App\Models\Country::all()->map(function ($country) {
+            return [
+                'id' => $country->id,
+                'name' => $country->locale_nationality,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $nationalities,
+        ]);
+    }
 }

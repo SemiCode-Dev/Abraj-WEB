@@ -14,6 +14,8 @@ class Country extends Model
         'name',
         'name_ar',
         'code',
+        'nationality',
+        'nationality_ar',
     ];
 
     public function cities(): HasMany
@@ -24,5 +26,11 @@ class Country extends Model
     public function getLocaleNameAttribute(): string
     {
         return app()->getLocale() == 'ar' ? $this->name_ar : $this->name;
+    }
+
+    public function getLocaleNationalityAttribute(): ?string
+    {
+        $nationality = app()->getLocale() == 'ar' ? $this->nationality_ar : $this->nationality;
+        return $nationality ?? '';
     }
 }
