@@ -59,6 +59,9 @@ Route::post('/car-rentals/book', [CarRentalController::class, 'store']);
 
 // Visa Booking
 Route::post('/visas/book', [VisaController::class, 'store']);
+Route::get('/visas/types', [VisaController::class, 'getTypes']);
+Route::get('/visas/countries', [VisaController::class, 'getCountries']);
+Route::get('/visas/cities', [VisaController::class, 'getCities']);
 
 // ============================================
 // DEVELOPMENT HELPER - Get OTP from Database
