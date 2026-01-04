@@ -31,12 +31,16 @@ class HotelController extends Controller
 
             // Validate HotelCodes
             if (empty($hotelCodes)) {
-                return response()->json([
-                    'Status' => [
-                        'Code' => 400,
-                        'Description' => 'Hotel Codes can not be null or empty',
-                    ],
-                ], 400);
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'Status' => [
+                            'Code' => 400,
+                            'Description' => 'Hotel Codes can not be null or empty',
+                        ],
+                    ], 400);
+                }
+                // For standard requests, redirect back or show error
+                return redirect()->back()->with('error', __('Invalid search parameters.'));
             }
 
             // Handle PaxRooms - can be array or single object
@@ -57,12 +61,15 @@ class HotelController extends Controller
 
             // Validate dates are not empty
             if (empty($checkIn) || empty($checkOut)) {
-                return response()->json([
-                    'Status' => [
-                        'Code' => 400,
-                        'Description' => 'CheckIn and CheckOut dates are required',
-                    ],
-                ], 400);
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'Status' => [
+                            'Code' => 400,
+                            'Description' => 'CheckIn and CheckOut dates are required',
+                        ],
+                    ], 400);
+                }
+                return redirect()->back()->with('error', __('CheckIn and CheckOut dates are required.'));
             }
 
             $data = [

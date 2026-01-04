@@ -57,7 +57,7 @@ Route::group([
     Route::get('/get-hotels/{cityCode}', [HotelController::class, 'getHotels'])->name('ajax.get-hotels');
 
     Route::get('/hotels/{cityCode}', [HotelController::class, 'getCityHotels'])->name('city.hotels');
-    Route::get('/hotel', [HotelController::class, 'search'])->name('hotels.search');
+    Route::get('/hotel', [HotelController::class, 'getAllHotels'])->name('hotels.search');
     Route::post('/hotel/search', [HotelController::class, 'search'])->name('hotel.search');
     Route::get('/hotels', [HotelController::class, 'getAllHotels'])->name('all.hotels');
 

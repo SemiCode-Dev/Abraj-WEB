@@ -7,7 +7,7 @@
     <section class="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center mb-4">
-                <a href="{{ route('hotels.search') }}?destination={{ request('destination') }}&check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}"
+                <a href="{{ route('all.hotels') }}?destination={{ request('destination') }}&check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}"
                     class="text-white/80 hover:text-white transition">
                     <i
                         class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
