@@ -382,7 +382,7 @@ class HotelController extends Controller
             }
 
             // Fetch cities for sidebar
-            $cities = City::whereNotNull('code')->where('hotels_count', '>', 0)->orderBy('name', 'asc')->get();
+            $cities = City::whereNotNull('code')->where('code', '!=', '')->orderBy('name', 'asc')->get();
 
             return view('Web.hotels', [
                 'hotels' => $detailedHotels,
@@ -396,7 +396,7 @@ class HotelController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to fetch city hotels: '.$e->getMessage());
 
-            $cities = City::whereNotNull('code')->where('hotels_count', '>', 0)->orderBy('name', 'asc')->get();
+            $cities = City::whereNotNull('code')->where('code', '!=', '')->orderBy('name', 'asc')->get();
             return view('Web.hotels', [
                 'hotels' => [],
                 'currentPage' => 1,
@@ -469,7 +469,7 @@ class HotelController extends Controller
             }
 
             // Fetch cities that have hotels for the sidebar filter
-            $cities = City::whereNotNull('code')->where('hotels_count', '>', 0)->orderBy('name', 'asc')->get();
+            $cities = City::whereNotNull('code')->where('code', '!=', '')->orderBy('name', 'asc')->get();
 
             return view('Web.hotels', [
                 'hotels' => $hotels, // All hotels loaded at once
@@ -479,7 +479,7 @@ class HotelController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to fetch all hotels: '.$e->getMessage());
 
-            $cities = City::whereNotNull('code')->where('hotels_count', '>', 0)->orderBy('name', 'asc')->get();
+            $cities = City::whereNotNull('code')->where('code', '!=', '')->orderBy('name', 'asc')->get();
             return view('Web.hotels', [
                 'hotels' => [],
                 'allHotelsJson' => '[]',

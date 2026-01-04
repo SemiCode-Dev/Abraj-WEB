@@ -43,7 +43,7 @@
                                     @foreach ($cities as $city)
                                         <option value="{{ $city->code }}"
                                             {{ isset($cityCode) && $cityCode == $city->code ? 'selected' : '' }}>
-                                            {{ $city->locale_name }}
+                                            {{ app()->getLocale() === 'ar' && !empty($city->name_ar) ? $city->name_ar : $city->name }}
                                         </option>
                                     @endforeach
                                 </select>
