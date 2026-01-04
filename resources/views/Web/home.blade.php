@@ -148,16 +148,13 @@
                                 class="fas fa-globe text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                             {{ __('Country') }}
                         </label>
-                        <select id="heroCountrySelect" name="country_code" required
-                            class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-lg appearance-none bg-white">
-                            <option value="">{{ __('Select Country') }}</option>
-                            @if (is_array($countries) && count($countries) > 0)
-                                @foreach ($countries as $country)
-                                    <option value="{{ $country['Code'] ?? ($country['CountryCode'] ?? '') }}">
-                                        {{ $country['Name'] ?? ($country['CountryName'] ?? '') }}</option>
-                                @endforeach
-                            @endif
-                        </select>
+                        <input type="text" id="heroCountrySearchInput" autocomplete="off"
+                            placeholder="{{ __('Select Country') }}"
+                            class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-2xl text-lg force-input-text bg-white">
+                        <input type="hidden" id="heroCountrySelect" name="country_code">
+                        <div id="heroCountryAutocomplete"
+                            class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                        </div>
                         <div
                             class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
                             <i class="fas fa-chevron-down"></i>
@@ -424,7 +421,7 @@ $fallbackImages = [
                 <!-- Search Form -->
                 <form id="searchForm" action="{{ route('city.hotels', ['cityCode' => 'PLACEHOLDER']) }}" method="GET"
                     class="space-y-6">
-                    <!-- Row 1: Country, City, Hotel -->
+                    <!-- Row 1: Country, City, Adults -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Country Select -->
                         <div class="relative">
@@ -433,16 +430,13 @@ $fallbackImages = [
                                     class="fas fa-globe text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                 {{ __('Country') }}
                             </label>
-                            <select id="countrySelect" name="country_code" required
-                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white">
-                                <option value="">{{ __('Select Country') }}</option>
-                                @if (is_array($countries) && count($countries) > 0)
-                                    @foreach ($countries as $country)
-                                        <option value="{{ $country['Code'] ?? ($country['CountryCode'] ?? '') }}">
-                                            {{ $country['Name'] ?? ($country['CountryName'] ?? '') }}</option>
-                                    @endforeach
-                                @endif
-                            </select>
+                            <input type="text" id="countrySearchInput" autocomplete="off"
+                                placeholder="{{ __('Select Country') }}"
+                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg force-input-text bg-white">
+                            <input type="hidden" id="countrySelect" name="country_code">
+                            <div id="countryAutocomplete"
+                                class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                            </div>
                             <div
                                 class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
                                 <i class="fas fa-chevron-down"></i>
@@ -470,16 +464,20 @@ $fallbackImages = [
                             </div>
                         </div>
 
-                        <!-- Hotel Select -->
+                        <!-- Adults -->
                         <div class="relative">
                             <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                                 <i
-                                    class="fas fa-hotel text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Hotel') }}
+                                    class="fas fa-user text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Adults') }}
                             </label>
-                            <select id="hotelSelect" name="hotel_code"
+                            <select name="adults"
                                 class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white">
-                                <option value="">{{ __('Select Hotel') }}</option>
+                                <option value="1">{{ app()->getLocale() === 'ar' ? '1 بالغ' : '1 Adult' }}</option>
+                                <option value="2" selected>2 {{ __('Adults') }}</option>
+                                <option value="3">3 {{ __('Adults') }}</option>
+                                <option value="4">4 {{ __('Adults') }}</option>
+                                <option value="5">5+ {{ __('Adults') }}</option>
                             </select>
                             <div
                                 class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
@@ -488,22 +486,22 @@ $fallbackImages = [
                         </div>
                     </div>
 
-                    <!-- Row 2: Guests, Dates, Search -->
+                    <!-- Row 2: Children, CheckIn, CheckOut, Search Button -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <!-- Guests -->
+                        <!-- Children -->
                         <div class="relative">
                             <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                                 <i
-                                    class="fas fa-users text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Guests / Rooms') }}
+                                    class="fas fa-child text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Children') }}
                             </label>
-                            <select name="PaxRooms[Adults]"
+                            <select name="children"
                                 class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white">
-                                <option value="1">1 {{ __('Guest') }}</option>
-                                <option value="2" selected>2 {{ __('Guests') }}</option>
-                                <option value="3">3 {{ __('Guests') }}</option>
-                                <option value="4">4 {{ __('Guests') }}</option>
-                                <option value="5">5+ {{ __('Guests') }}</option>
+                                <option value="0" selected>0 {{ __('Children') }}</option>
+                                <option value="1">{{ app()->getLocale() === 'ar' ? '1 طفل' : '1 Child' }}</option>
+                                <option value="2">2 {{ __('Children') }}</option>
+                                <option value="3">3 {{ __('Children') }}</option>
+                                <option value="4">4+ {{ __('Children') }}</option>
                             </select>
                             <div
                                 class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
@@ -536,7 +534,7 @@ $fallbackImages = [
                         <!-- Search Button -->
                         <div class="flex items-end">
                             <button type="submit" id="searchBtn"
-                                class="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-105 shadow-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-white">
+                                class="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-[1.02] shadow-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-white">
                                 <i class="fas fa-search {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
                                 <span class="btn-text">{{ __('Search') }}</span>
                             </button>
@@ -1691,9 +1689,64 @@ $fallbackImages = [
                 });
             }
 
-            // -------------------------------------------------------------
+            // -----------------------------------------------------------------------------
+            // DATA INJECTION
+            // -----------------------------------------------------------------------------
+            const allCountries = @json($countries ?? []);
+
+            // -----------------------------------------------------------------------------
+            // COUNTRY SEARCH LOGIC
+            // -----------------------------------------------------------------------------
+            function initCountrySearch(inputEl, codeEl, listEl, data) {
+                if (!inputEl || !codeEl || !listEl) return;
+
+                function showCountryResults(keyword = "") {
+                    listEl.innerHTML = "";
+                    const lowerK = keyword.toLowerCase();
+                    const results = keyword === "" ? data : data.filter(c => {
+                        const name = c.Name || c.CountryName || "";
+                        return name.toLowerCase().includes(lowerK);
+                    });
+
+                    if (results.length === 0) {
+                        listEl.classList.add("hidden");
+                        return;
+                    }
+
+                    listEl.classList.remove("hidden");
+                    const seenCodes = new Set(); // Prevent duplicates if needed
+
+                    results.forEach(c => {
+                        const code = c.Code || c.CountryCode;
+                        const name = c.Name || c.CountryName;
+                        if (!code || seenCodes.has(code)) return;
+                        seenCodes.add(code);
+
+                        const div = document.createElement("div");
+                        div.className =
+                            "px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100";
+                        div.innerHTML = `<span class="font-medium">${name}</span>`;
+
+                        div.addEventListener("click", () => {
+                            inputEl.value = name;
+                            codeEl.value = code;
+                            listEl.classList.add("hidden");
+                            // Trigger change on the hidden input so City logic picks it up
+                            codeEl.dispatchEvent(new Event("change"));
+                        });
+
+                        listEl.appendChild(div);
+                    });
+                }
+
+                inputEl.addEventListener("focus", () => showCountryResults(inputEl.value));
+                inputEl.addEventListener("input", () => showCountryResults(inputEl.value));
+            }
+
+
+            // -----------------------------------------------------------------------------
             // DUAL FORM LOGIC (Hero & Main)
-            // -------------------------------------------------------------
+            // -----------------------------------------------------------------------------
 
             // Helper to initialize country/city logic
             function initCitySearch(countryEl, cityEl, cityBoxEl, codeEl, hotelEl = null) {
@@ -1800,16 +1853,34 @@ $fallbackImages = [
                     });
             }
 
-            // Initialize Main Form
+            // Initialize Main Form Country
+            initCountrySearch(
+                document.getElementById("countrySearchInput"),
+                document.getElementById("countrySelect"),
+                document.getElementById("countryAutocomplete"),
+                allCountries
+            );
+
+            // Initialize Main Form City
+            // Note: We pass the HIDDEN input 'countrySelect' as the country element
             initCitySearch(
                 document.getElementById("countrySelect"),
                 document.getElementById("citySelect"),
                 document.getElementById("cityAutocomplete"),
                 document.getElementById("destinationCode"),
-                document.getElementById("hotelSelect")
+                document.getElementById(
+                    "hotelSelect") // This is removed/null now probably, but logic handles null
             );
 
-            // Initialize Hero Form
+            // Initialize Hero Form Country
+            initCountrySearch(
+                document.getElementById("heroCountrySearchInput"),
+                document.getElementById("heroCountrySelect"),
+                document.getElementById("heroCountryAutocomplete"),
+                allCountries
+            );
+
+            // Initialize Hero Form City
             initCitySearch(
                 document.getElementById("heroCountrySelect"),
                 document.getElementById("heroCitySelect"),
@@ -1820,19 +1891,42 @@ $fallbackImages = [
             // Main Form Submission
             document.getElementById("searchForm").addEventListener("submit", function(e) {
                 e.preventDefault();
-                const hotelCode = document.getElementById("hotelSelect").value;
+
+                const cityCode = document.getElementById("destinationCode").value;
                 const checkIn = this.querySelector('input[name="CheckIn"]').value;
                 const checkOut = this.querySelector('input[name="CheckOut"]').value;
-                const adults = this.querySelector('select[name="PaxRooms[Adults]"]').value;
+                const adults = this.querySelector('select[name="adults"]').value;
+                const children = this.querySelector('select[name="children"]').value;
 
-                if (!hotelCode || !checkIn || !checkOut) {
-                    showToast("{{ __('Please complete all fields') }}", "error");
+                if (!cityCode) {
+                    // Falls back to Country selection?? 
+                    // Actually, if only Country is selected, we might want to go to all hotels in country?
+                    // But current logic favors City.
+                    // If no city, let's check if Country is selected
+                    const countrySelect = document.getElementById("countrySelect");
+                    if (countrySelect && countrySelect.value) {
+                        // Redirect to All Hotels with Country Filter
+                        const baseUrl = "{{ route('all.hotels') }}";
+                        window.location.href = baseUrl +
+                            `?country=${countrySelect.value}&check_in=${checkIn}&check_out=${checkOut}&adults=${adults}&children=${children}`;
+                        return;
+                    }
+
+                    showToast("{{ __('Please select a destination') }}", "error");
                     return;
                 }
 
-                const baseUrl = "{{ route('hotel.details', ['id' => ':hotelCode']) }}";
-                window.location.href = baseUrl.replace(':hotelCode', hotelCode) +
-                    `?check_in=${checkIn}&check_out=${checkOut}&guests=${adults}`;
+                if (!checkIn || !checkOut) {
+                    showToast("{{ __('Please select dates') }}", "error");
+                    return;
+                }
+
+                // Redirect to City Hotels with Availability Params
+                let baseUrl = "{{ route('city.hotels', ['cityCode' => ':code']) }}";
+                baseUrl = baseUrl.replace(':code', cityCode);
+
+                window.location.href = baseUrl +
+                    `?CheckIn=${checkIn}&CheckOut=${checkOut}&adults=${adults}&children=${children}`;
             });
 
             // Hero Form Submission
@@ -1853,14 +1947,19 @@ $fallbackImages = [
             document.addEventListener("click", function(e) {
                 const boxes = [
                     document.getElementById("cityAutocomplete"),
-                    document.getElementById("heroCityAutocomplete")
+                    document.getElementById("countryAutocomplete"),
+                    document.getElementById("heroCityAutocomplete"),
+                    document.getElementById("heroCountryAutocomplete")
                 ];
                 const inputs = [
                     document.getElementById("citySelect"),
-                    document.getElementById("heroCitySelect")
+                    document.getElementById("countrySearchInput"),
+                    document.getElementById("heroCitySelect"),
+                    document.getElementById("heroCountrySearchInput")
                 ];
                 boxes.forEach((box, i) => {
-                    if (box && !inputs[i].contains(e.target) && !box.contains(e.target)) {
+                    if (box && inputs[i] && !inputs[i].contains(e.target) && !box.contains(e
+                            .target)) {
                         box.classList.add("hidden");
                     }
                 });

@@ -14,12 +14,7 @@
                         {{ request('destination', __('All Destinations')) }}
                     </p>
                 </div>
-                <div class="hidden md:block bg-white/20 backdrop-blur-sm px-6 py-4 rounded-xl">
-                    <div class="text-sm text-orange-100 mb-1">{{ __('Stay Date') }}</div>
-                    <div class="font-bold">
-                        {{ request('check_in', '--') }} → {{ request('check_out', '--') }}
-                    </div>
-                </div>
+
             </div>
         </div>
     </section>
@@ -33,20 +28,32 @@
                     <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
                         <h3 class="text-xl font-bold text-gray-900 mb-6">{{ __('Filter Results') }}</h3>
 
+                        <!-- Country Selection -->
+                        <div class="mb-6">
+                            <h4 class="font-semibold text-gray-900 mb-4">{{ __('Select Country') }}</h4>
+                            <div class="relative">
+                                <input type="text" id="countrySearchInput" autocomplete="off"
+                                    placeholder="{{ __('Select Country') }}"
+                                    class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-sm">
+                                <input type="hidden" id="countryFilter"
+                                    value="{{ isset($selectedCountryCode) ? $selectedCountryCode : '' }}">
+                                <div id="countryAutocomplete"
+                                    class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden">
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- City Selection -->
                         <div class="mb-6">
                             <h4 class="font-semibold text-gray-900 mb-4">{{ __('Select City') }}</h4>
-                            <div class="space-y-3">
-                                <select id="cityFilter"
-                                    class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-sm searchable-select">
-                                    <option value="all">{{ __('All Destinations') }}</option>
-                                    @foreach ($cities as $city)
-                                        <option value="{{ $city->code }}"
-                                            {{ isset($cityCode) && $cityCode == $city->code ? 'selected' : '' }}>
-                                            {{ app()->getLocale() === 'ar' && !empty($city->name_ar) ? $city->name_ar : $city->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                            <div class="relative">
+                                <input type="text" id="citySearchInput" autocomplete="off"
+                                    placeholder="{{ __('Select City') }}"
+                                    class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-sm">
+                                <input type="hidden" id="cityFilter" value="{{ isset($cityCode) ? $cityCode : '' }}">
+                                <div id="cityAutocomplete"
+                                    class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden">
+                                </div>
                             </div>
                         </div>
 
@@ -295,6 +302,11 @@
         const HOTELS_PER_PAGE = 12;
         let currentPage = 1;
         let filteredHotels = [];
+        const isRTL = '{{ app()->getLocale() }}' === 'ar';
+
+        // Data Injection
+        const allCountries = @json($countries ?? []);
+        const allCities = @json($cities ?? []);
 
         // Hotel Filtering and Pagination Logic
         function applyFiltersAndPagination() {
@@ -327,7 +339,6 @@
 
                     // Check if hotel has ALL selected amenities
                     const hasAllAmenities = selectedAmenities.every(amenity => {
-                        // Check for various possible names for each amenity
                         const amenityPatterns = {
                             'wifi': ['wifi', 'wi-fi', 'internet', 'wireless'],
                             'pool': ['pool', 'swimming', 'piscine'],
@@ -376,7 +387,6 @@
             paginationContainer.innerHTML = '';
             if (totalPages <= 1) return;
 
-            const isRTL = '{{ app()->getLocale() }}' === 'ar';
             const prevBtn = document.createElement('button');
             prevBtn.className = currentPage === 1 ?
                 'px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-400 cursor-not-allowed flex items-center' :
@@ -462,34 +472,137 @@
             if (countElement) countElement.textContent = filteredHotels.length + ' {{ __('hotels') }}';
         }
 
-        // Apply filters when checkboxes change
-        document.querySelectorAll('.filter-rating, .filter-amenity').forEach(checkbox => {
-            checkbox.addEventListener('change', applyFiltersAndPagination);
-        });
+        // -----------------------------------------------------------------------------
+        // SEARCHABLE FILTER LOGIC
+        // -----------------------------------------------------------------------------
+        function initSearchableFilter(inputEl, hiddenEl, listEl, data, onSelect) {
+            if (!inputEl || !hiddenEl || !listEl) return;
 
-        // Apply filters button (for city changes)
-        document.getElementById('cityFilter')?.addEventListener('change', function() {
-            const cityCode = this.value;
-            let targetUrl;
+            function showResults(keyword = "") {
+                listEl.innerHTML = "";
+                const lowerK = keyword.toLowerCase();
+                const results = keyword === "" ? data : data.filter(item =>
+                    item.name.toLowerCase().includes(lowerK)
+                );
 
-            if (cityCode === 'all') {
-                targetUrl = "{{ route('all.hotels', ['locale' => app()->getLocale()]) }}";
-            } else {
-                targetUrl = "{{ route('city.hotels', ['cityCode' => ':code', 'locale' => app()->getLocale()]) }}"
-                    .replace(':code', cityCode);
+                if (results.length === 0) {
+                    listEl.classList.add("hidden");
+                    return;
+                }
+
+                listEl.classList.remove("hidden");
+                const seenCodes = new Set();
+
+                results.forEach(item => {
+                    if (seenCodes.has(item.code)) return;
+                    seenCodes.add(item.code);
+
+                    const div = document.createElement("div");
+                    div.className = "px-4 py-2 cursor-pointer hover:bg-gray-100 text-gray-900";
+                    div.textContent = item.name;
+
+                    div.addEventListener("click", () => {
+                        inputEl.value = item.name;
+                        hiddenEl.value = item.code;
+                        listEl.classList.add("hidden");
+                        if (onSelect) onSelect(item.code);
+                    });
+
+                    listEl.appendChild(div);
+                });
             }
 
-            // Keep existing query parameters except page
-            const currentUrl = new URL(window.location.href);
-            const params = new URLSearchParams(currentUrl.search);
-            params.delete('page');
+            inputEl.addEventListener("focus", () => showResults(inputEl.value));
+            inputEl.addEventListener("input", () => showResults(inputEl.value));
 
-            window.location.href = targetUrl + (params.toString() ? '?' + params.toString() : '');
-        });
+            // Set initial name if value exists
+            const initialCode = hiddenEl.value;
+            if (initialCode) {
+                const initialItem = data.find(d => d.code == initialCode);
+                if (initialItem) inputEl.value = initialItem.name;
+            }
+        }
 
-        // Initialize on page load
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             applyFiltersAndPagination();
+
+            // Apply filters when checkboxes change
+            document.querySelectorAll('.filter-rating, .filter-amenity').forEach(checkbox => {
+                checkbox.addEventListener('change', applyFiltersAndPagination);
+            });
+
+            // Prepare Data for Search
+            const countryData = allCountries.map(c => ({
+                name: isRTL ? (c.name_ar || c.name) : c.name,
+                code: c.code
+            }));
+
+            const cityData = allCities.map(c => ({
+                name: isRTL ? (c.name_ar || c.name) : c.name,
+                code: c.code
+            }));
+
+            // Init Country Search
+            initSearchableFilter(
+                document.getElementById('countrySearchInput'),
+                document.getElementById('countryFilter'),
+                document.getElementById('countryAutocomplete'),
+                countryData,
+                (countryCode) => {
+                    // Redirect logic
+                    const routeUrl = "{{ route('all.hotels', ['locale' => app()->getLocale()]) }}";
+                    const targetUrl = new URL(routeUrl, window.location.origin);
+                    targetUrl.searchParams.set('country', countryCode);
+                    window.location.href = targetUrl.toString();
+                }
+            );
+
+            // Init City Search
+            initSearchableFilter(
+                document.getElementById('citySearchInput'),
+                document.getElementById('cityFilter'),
+                document.getElementById('cityAutocomplete'),
+                cityData,
+                (cityCode) => {
+                    // Redirect Logic
+                    let routeUrl;
+                    if (cityCode === 'all') {
+                        routeUrl = "{{ route('all.hotels', ['locale' => app()->getLocale()]) }}";
+                    } else {
+                        routeUrl =
+                            "{{ route('city.hotels', ['cityCode' => ':code', 'locale' => app()->getLocale()]) }}"
+                            .replace(':code', cityCode);
+                    }
+                    const urlObj = new URL(routeUrl, window.location.origin);
+                    const currentParams = new URLSearchParams(window.location.search);
+                    currentParams.delete('page');
+                    for (const [key, value] of currentParams) {
+                        if (!urlObj.searchParams.has(key)) {
+                            urlObj.searchParams.set(key, value);
+                        }
+                    }
+                    window.location.href = urlObj.toString();
+                }
+            );
+
+            // Global click to close
+            document.addEventListener("click", function(e) {
+                const boxes = [
+                    document.getElementById("countryAutocomplete"),
+                    document.getElementById("cityAutocomplete")
+                ];
+                const inputs = [
+                    document.getElementById("countrySearchInput"),
+                    document.getElementById("citySearchInput")
+                ];
+                boxes.forEach((box, i) => {
+                    if (box && inputs[i] && !inputs[i].contains(e.target) && !box.contains(e
+                        .target)) {
+                        box.classList.add("hidden");
+                    }
+                });
+            });
         });
     </script>
 @endpush
