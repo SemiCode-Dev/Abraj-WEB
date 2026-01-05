@@ -16,8 +16,8 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
                 <!-- <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-                                                                                        {{ __('Booking Form') }}
-                                                                                    </h2> -->
+                                                                                                    {{ __('Booking Form') }}
+                                                                                                </h2> -->
 
                 @if (session('success'))
                     <div
@@ -259,7 +259,8 @@
                         resultsEl,
                         data = [],
                         onSelect,
-                        placeholder
+                        placeholder,
+                        getExcludeId // Optional function to get ID to exclude
                     } = options;
                     if (!inputEl || !hiddenEl || !resultsEl) return;
 
@@ -268,6 +269,8 @@
                     function showResults(keyword = "") {
                         resultsEl.innerHTML = "";
                         const lowerK = keyword.toLowerCase();
+                        const excludeId = getExcludeId ? getExcludeId() : null;
+
                         const results = items.filter(item => {
                             const name = item.name || item.locale_name || "";
                             return name.toLowerCase().includes(lowerK);
@@ -280,17 +283,26 @@
 
                         resultsEl.classList.remove("hidden");
                         results.forEach(item => {
+                            const isExcluded = excludeId && item.id == excludeId;
                             const div = document.createElement("div");
                             div.className =
-                                "px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm";
+                                "px-4 py-2 text-sm " +
+                                (isExcluded ?
+                                    "bg-gray-50 dark:bg-gray-700/50 text-gray-400 dark:text-gray-500 cursor-not-allowed italic" :
+                                    "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                );
+
                             div.innerHTML = `<span class="font-medium">${item.name}</span>`;
-                            div.addEventListener("click", () => {
-                                inputEl.value = item.name;
-                                hiddenEl.value = item.id;
-                                resultsEl.classList.add("hidden");
-                                if (onSelect) onSelect(item);
-                                hiddenEl.dispatchEvent(new Event("change"));
-                            });
+
+                            if (!isExcluded) {
+                                div.addEventListener("click", () => {
+                                    inputEl.value = item.name;
+                                    hiddenEl.value = item.id;
+                                    resultsEl.classList.add("hidden");
+                                    if (onSelect) onSelect(item);
+                                    hiddenEl.dispatchEvent(new Event("change"));
+                                });
+                            }
                             resultsEl.appendChild(div);
                         });
                     }
@@ -341,7 +353,8 @@
                     inputEl: document.getElementById('originAirportSearchInput'),
                     hiddenEl: document.getElementById('origin_airport_id'),
                     resultsEl: document.getElementById('originAirportAutocomplete'),
-                    placeholder: '{{ __('Select Airport') }}'
+                    placeholder: '{{ __('Select Airport') }}',
+                    getExcludeId: () => document.getElementById('destination_airport_id').value
                 });
 
                 document.getElementById('origin_country_id').addEventListener('change', function() {
@@ -375,7 +388,8 @@
                     inputEl: document.getElementById('destinationAirportSearchInput'),
                     hiddenEl: document.getElementById('destination_airport_id'),
                     resultsEl: document.getElementById('destinationAirportAutocomplete'),
-                    placeholder: '{{ __('Select Airport') }}'
+                    placeholder: '{{ __('Select Airport') }}',
+                    getExcludeId: () => document.getElementById('origin_airport_id').value
                 });
 
                 document.getElementById('destination_country_id').addEventListener('change', function() {
@@ -404,12 +418,6 @@
                         document.getElementById('originCountrySearchInput').value = c.name;
                         // Trigger the change to load airports
                         document.getElementById('origin_country_id').dispatchEvent(new Event('change'));
-                        // Wait for airports to load then set the airport name if exists
-                        const initialOriginAirportId = '{{ old('origin_airport_id') }}';
-                        if (initialOriginAirportId) {
-                            // This is tricky because fetch is async. 
-                            // We'd need to handle this in the fetch callback.
-                        }
                     }
                 }
 
@@ -435,6 +443,18 @@
                         if (returnDateInput.value && returnDateInput.value <= this.value) {
                             returnDateInput.value = '';
                         }
+                    }
+                });
+
+                // Final form validation
+                const bookingForm = document.querySelector('form');
+                bookingForm.addEventListener('submit', function(e) {
+                    const originId = document.getElementById('origin_airport_id').value;
+                    const destId = document.getElementById('destination_airport_id').value;
+
+                    if (originId && destId && originId == destId) {
+                        e.preventDefault();
+                        alert('{{ __('Origin and destination airports cannot be the same.') }}');
                     }
                 });
             });
