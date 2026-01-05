@@ -10,7 +10,7 @@ class FlightBookingController extends Controller
 {
     public function index(Request $request): \Illuminate\Contracts\View\View
     {
-        $query = FlightBooking::with(['user', 'originCountry', 'originCity', 'destinationCountry', 'destinationCity'])
+        $query = FlightBooking::with(['user', 'originCountry', 'originAirport', 'destinationCountry', 'destinationAirport'])
             ->latest('created_at');
 
         // Filter by status

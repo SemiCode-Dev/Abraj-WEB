@@ -26,4 +26,12 @@ class LocationController extends Controller
         return response()->json($cities)
                 ->header('Cache-Control', 'public, max-age=86400');
     }
+
+    public function getAirports($country): JsonResponse
+    {
+        $airports = $this->locationService->getAirports($country);
+        
+        return response()->json($airports)
+                ->header('Cache-Control', 'public, max-age=86400');
+    }
 }

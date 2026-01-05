@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\City;
+use App\Models\Airport;
 use App\Models\Country;
 use App\Services\Api\V1\HotelApiService;
 use Illuminate\Support\Collection;
@@ -169,6 +170,61 @@ class LocationService
             if (! empty($upsertData)) {
                 City::upsert($upsertData, ['code', 'country_id'], ['name', 'updated_at']);
             }
+        }
+    }
+
+    public function getAirports($country)
+    {
+        try {
+            $locale = app()->getLocale();
+            $cacheKey = "airports_country_{$country}_{$locale}_v1";
+
+            return Cache::remember($cacheKey, 60 * 60 * 24, function () use ($country, $locale) {
+                $countryModel = Country::where('id', $country)
+                    ->orWhere('code', $country)
+                    ->first();
+
+                if (! $countryModel) {
+                    return collect([]);
+                }
+
+                $airports = Airport::where('country_id', $countryModel->id)
+                    ->whereNotNull('iata')
+                    ->where('iata', '!=', '')
+                    ->where('iata', '!=', '\\N')
+                    ->orderBy('name')
+                    ->get();
+
+                // Translate if Arabic and missing name_ar
+                if ($locale === 'ar') {
+                    $toTranslate = $airports->filter(function ($airport) {
+                        return empty($airport->name_ar);
+                    });
+
+                    if ($toTranslate->isNotEmpty()) {
+                        $uniqueNames = $toTranslate->pluck('name')->unique()->toArray();
+                        $translationsList = $this->translationService->translateStrings($uniqueNames);
+
+                        foreach ($toTranslate as $airport) {
+                            if (isset($translationsList[$airport->name])) {
+                                $airport->update(['name_ar' => $translationsList[$airport->name]]);
+                            }
+                        }
+                    }
+                }
+
+                return $airports->map(function ($airport) {
+                    return [
+                        'id' => $airport->id,
+                        'name' => $airport->locale_name.' ('.$airport->iata.')',
+                        'code' => $airport->iata,
+                    ];
+                });
+            });
+        } catch (\Exception $e) {
+            Log::error('LocationService: Failed to get airports: '.$e->getMessage());
+
+            return collect([]);
         }
     }
 }

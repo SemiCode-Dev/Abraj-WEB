@@ -17,9 +17,9 @@ class FlightBooking extends Model
         'phone_country_code',
         'phone',
         'origin_country_id',
-        'origin_city_id',
+        'origin_airport_id',
         'destination_country_id',
-        'destination_city_id',
+        'destination_airport_id',
         'adults',
         'children',
         'departure_date',
@@ -45,9 +45,9 @@ class FlightBooking extends Model
         return $this->belongsTo(Country::class, 'origin_country_id');
     }
 
-    public function originCity(): BelongsTo
+    public function originAirport(): BelongsTo
     {
-        return $this->belongsTo(City::class, 'origin_city_id');
+        return $this->belongsTo(Airport::class, 'origin_airport_id');
     }
 
     public function destinationCountry(): BelongsTo
@@ -55,8 +55,8 @@ class FlightBooking extends Model
         return $this->belongsTo(Country::class, 'destination_country_id');
     }
 
-    public function destinationCity(): BelongsTo
+    public function destinationAirport(): BelongsTo
     {
-        return $this->belongsTo(City::class, 'destination_city_id');
+        return $this->belongsTo(Airport::class, 'destination_airport_id');
     }
 }

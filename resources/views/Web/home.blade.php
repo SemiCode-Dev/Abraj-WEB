@@ -137,60 +137,160 @@
                 <p class="text-slate-400">{{ __('Book Now and Save up to 40%') }}</p>
             </div>
 
-            <!-- Simplified Hero Search Box -->
+            <!-- Relocated Detailed Search Box -->
             <div
-                class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-3xl shadow-2xl p-6 max-w-4xl mx-auto border border-white/20">
-                <form id="heroSearchForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Country Select -->
-                    <div class="relative">
-                        <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                            <i
-                                class="fas fa-globe text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                            {{ __('Country') }}
-                        </label>
-                        <input type="text" id="heroCountrySearchInput" autocomplete="off"
-                            placeholder="{{ __('Select Country') }}"
-                            class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-2xl text-lg force-input-text bg-white">
-                        <input type="hidden" id="heroCountrySelect" name="country_code">
-                        <div id="heroCountryAutocomplete"
-                            class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-3xl shadow-2xl p-8 max-w-5xl mx-auto border border-white/20">
+                <div class="mb-8 text-center">
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ __('Find Your Perfect Stay') }}
+                    </h2>
+                    <p class="text-gray-600 dark:text-gray-400">{{ __('Detailed search with all options') }}</p>
+                </div>
+
+                <div id="hotelLoading" class="hidden text-center py-4">
+                    <div class="animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent mx-auto">
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-300 mt-2">{{ __('Loading hotels...') }}</p>
+                </div>
+
+                <!-- Search Form -->
+                <form id="searchForm" action="{{ route('city.hotels', ['cityCode' => 'PLACEHOLDER']) }}" method="GET"
+                    class="space-y-6">
+                    <!-- Row 1: Country, City, Adults -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Country Select -->
+                        <div class="relative">
+                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                <i
+                                    class="fas fa-globe text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Country') }}
+                            </label>
+                            <input type="text" id="countrySearchInput" autocomplete="off"
+                                placeholder="{{ __('Select Country') }}"
+                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg force-input-text bg-white">
+                            <input type="hidden" id="countrySelect" name="country_code">
+                            <div id="countryAutocomplete"
+                                class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                            </div>
+                            <div
+                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
                         </div>
-                        <div
-                            class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
-                            <i class="fas fa-chevron-down"></i>
+
+                        <!-- City Select -->
+                        <div class="relative">
+                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                <i
+                                    class="fas fa-map-marker-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('City') }}
+                            </label>
+                            <input type="text" id="citySelect" autocomplete="off"
+                                placeholder="{{ __('Select City') }}"
+                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg force-input-text bg-white"
+                                disabled>
+                            <input type="hidden" name="destination" id="destinationCode">
+                            <div id="cityAutocomplete"
+                                class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                            </div>
+                            <div
+                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+
+                        <!-- Adults -->
+                        <div class="relative">
+                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                <i
+                                    class="fas fa-user text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Adults') }}
+                            </label>
+                            <select name="adults"
+                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white">
+                                <option value="1">{{ app()->getLocale() === 'ar' ? '1 بالغ' : '1 Adult' }}</option>
+                                <option value="2" selected>2 {{ __('Adults') }}</option>
+                                <option value="3">3 {{ __('Adults') }}</option>
+                                <option value="4">4 {{ __('Adults') }}</option>
+                                <option value="5">5+ {{ __('Adults') }}</option>
+                            </select>
+                            <div
+                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- City Select -->
-                    <div class="relative">
-                        <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                            <i
-                                class="fas fa-map-marker-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                            {{ __('City') }}
-                        </label>
-                        <input type="text" id="heroCitySelect" autocomplete="off"
-                            placeholder="{{ __('Select City') }}"
-                            class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-2xl text-lg force-input-text"
-                            disabled>
-                        <input type="hidden" id="heroDestinationCode">
-                        <div id="heroCityAutocomplete"
-                            class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                    <!-- Row 2: Children, CheckIn, CheckOut, Search Button -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <!-- Children -->
+                        <div class="relative">
+                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                <i
+                                    class="fas fa-child text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Children') }}
+                            </label>
+                            <select name="children"
+                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white">
+                                <option value="0" selected>0 {{ __('Children') }}</option>
+                                <option value="1">{{ app()->getLocale() === 'ar' ? '1 طفل' : '1 Child' }}</option>
+                                <option value="2">2 {{ __('Children') }}</option>
+                                <option value="3">3 {{ __('Children') }}</option>
+                                <option value="4">4+ {{ __('Children') }}</option>
+                            </select>
+                            <div
+                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
                         </div>
-                        <div
-                            class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                    </div>
 
-                    <!-- Search Button -->
-                    <div class="flex items-end">
-                        <button type="submit" id="heroSearchBtn"
-                            class="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-4 rounded-2xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-[1.02] shadow-lg flex items-center justify-center text-white">
-                            <i class="fas fa-search {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
-                            <span>{{ __('Search') }}</span>
-                        </button>
+                        <!-- Check-in -->
+                        <div class="relative">
+                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                <i
+                                    class="fas fa-calendar-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Check In') }}
+                            </label>
+                            <input type="date" name="CheckIn" required
+                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
+                        </div>
+
+                        <!-- Check-out -->
+                        <div class="relative">
+                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                <i
+                                    class="fas fa-calendar-check text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Check Out') }}
+                            </label>
+                            <input type="date" name="CheckOut" required
+                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
+                        </div>
+
+                        <!-- Search Button -->
+                        <div class="flex items-end">
+                            <button type="submit" id="searchBtn"
+                                class="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-[1.02] shadow-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-white">
+                                <i class="fas fa-search {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                                <span class="btn-text">{{ __('Search') }}</span>
+                            </button>
+                        </div>
                     </div>
                 </form>
+
+                <!-- Quick Filters -->
+                <div class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-2 items-center">
+                    <span
+                        class="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mr-2">{{ __('Quick Search') }}:</span>
+                    <a href="#"
+                        class="px-4 py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-orange-50 dark:hover:bg-orange-900/30 text-gray-600 dark:text-gray-300 hover:text-orange-600 rounded-xl text-xs font-bold transition-all duration-300 flex items-center border border-gray-100 dark:border-gray-700">
+                        <i class="fas fa-fire text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                        {{ __('Today\'s Offers') }}
+                    </a>
+                    <a href="#"
+                        class="px-4 py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-orange-50 dark:hover:bg-orange-900/30 text-gray-600 dark:text-gray-300 hover:text-orange-600 rounded-xl text-xs font-bold transition-all duration-300 flex items-center border border-gray-100 dark:border-gray-700">
+                        <i class="fas fa-star text-yellow-500 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                        {{ __('5 Star Hotels') }}
+                    </a>
+                </div>
             </div>
         </div>
     </section>
@@ -402,165 +502,7 @@ $fallbackImages = [
         </div>
     </section>
 
-    <!-- Main Search Form (Relocated Below Popular Destinations) -->
-    <section class="py-16 bg-gradient-to-b from-white to-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-700">
-                <div class="mb-8 text-center">
-                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ __('Find Your Perfect Stay') }}
-                    </h2>
-                    <p class="text-gray-600 dark:text-gray-400">{{ __('Detailed search with all options') }}</p>
-                </div>
 
-                <div id="hotelLoading" class="hidden text-center py-4">
-                    <div class="animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent mx-auto">
-                    </div>
-                    <p class="text-sm text-gray-500 dark:text-gray-300 mt-2">{{ __('Loading hotels...') }}</p>
-                </div>
-
-                <!-- Search Form -->
-                <form id="searchForm" action="{{ route('city.hotels', ['cityCode' => 'PLACEHOLDER']) }}" method="GET"
-                    class="space-y-6">
-                    <!-- Row 1: Country, City, Adults -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Country Select -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-globe text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Country') }}
-                            </label>
-                            <input type="text" id="countrySearchInput" autocomplete="off"
-                                placeholder="{{ __('Select Country') }}"
-                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg force-input-text bg-white">
-                            <input type="hidden" id="countrySelect" name="country_code">
-                            <div id="countryAutocomplete"
-                                class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
-                            </div>
-                            <div
-                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                        </div>
-
-                        <!-- City Select -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-map-marker-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('City') }}
-                            </label>
-                            <input type="text" id="citySelect" autocomplete="off"
-                                placeholder="{{ __('Select City') }}"
-                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg force-input-text bg-white"
-                                disabled>
-                            <input type="hidden" name="destination" id="destinationCode">
-                            <div id="cityAutocomplete"
-                                class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
-                            </div>
-                            <div
-                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                        </div>
-
-                        <!-- Adults -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-user text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Adults') }}
-                            </label>
-                            <select name="adults"
-                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white">
-                                <option value="1">{{ app()->getLocale() === 'ar' ? '1 بالغ' : '1 Adult' }}</option>
-                                <option value="2" selected>2 {{ __('Adults') }}</option>
-                                <option value="3">3 {{ __('Adults') }}</option>
-                                <option value="4">4 {{ __('Adults') }}</option>
-                                <option value="5">5+ {{ __('Adults') }}</option>
-                            </select>
-                            <div
-                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Row 2: Children, CheckIn, CheckOut, Search Button -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <!-- Children -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-child text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Children') }}
-                            </label>
-                            <select name="children"
-                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white">
-                                <option value="0" selected>0 {{ __('Children') }}</option>
-                                <option value="1">{{ app()->getLocale() === 'ar' ? '1 طفل' : '1 Child' }}</option>
-                                <option value="2">2 {{ __('Children') }}</option>
-                                <option value="3">3 {{ __('Children') }}</option>
-                                <option value="4">4+ {{ __('Children') }}</option>
-                            </select>
-                            <div
-                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                        </div>
-
-                        <!-- Check-in -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-calendar-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Check In') }}
-                            </label>
-                            <input type="date" name="CheckIn" required
-                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
-                        </div>
-
-                        <!-- Check-out -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-calendar-check text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Check Out') }}
-                            </label>
-                            <input type="date" name="CheckOut" required
-                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
-                        </div>
-
-                        <!-- Search Button -->
-                        <div class="flex items-end">
-                            <button type="submit" id="searchBtn"
-                                class="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-[1.02] shadow-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-white">
-                                <i class="fas fa-search {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
-                                <span class="btn-text">{{ __('Search') }}</span>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-                <!-- Quick Filters -->
-                <div class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-2 items-center">
-                    <span
-                        class="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mr-2">{{ __('Quick Search') }}:</span>
-                    <a href="#"
-                        class="px-4 py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-orange-50 dark:hover:bg-orange-900/30 text-gray-600 dark:text-gray-300 hover:text-orange-600 rounded-xl text-xs font-bold transition-all duration-300 flex items-center border border-gray-100 dark:border-gray-700">
-                        <i class="fas fa-fire text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
-                        {{ __('Today\'s Offers') }}
-                    </a>
-                    <a href="#"
-                        class="px-4 py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-orange-50 dark:hover:bg-orange-900/30 text-gray-600 dark:text-gray-300 hover:text-orange-600 rounded-xl text-xs font-bold transition-all duration-300 flex items-center border border-gray-100 dark:border-gray-700">
-                        <i class="fas fa-star text-yellow-500 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
-                        {{ __('5 Star Hotels') }}
-                    </a>
-
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Featured Hotels - Premium Design -->
     <section id="hotels" class="py-16 bg-gradient-to-b from-gray-50 to-white">

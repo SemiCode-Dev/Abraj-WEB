@@ -1,0 +1,26 @@
+
+   INFO  Running migrations.  
+
+  2026_01_05_124238_modify_flight_bookings_table_add_airport_columns  4ms FAIL
+
+   Illuminate\Database\QueryException 
+
+  SQLSTATE[42S21]: Column already exists: 1060 Duplicate column name 'origin_airport_id' (Connection: mysql, SQL: alter table `flight_bookings` add `origin_airport_id` bigint unsigned null after `origin_country_id`, add `destination_airport_id` bigint unsigned null after `destination_country_id`)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:829
+    825▕                     $this->getName(), $query, $this->prepareBindings($bindings), $e
+    826▕                 );
+    827▕             }
+    828▕ 
+  ➜ 829▕             throw new QueryException(
+    830▕                 $this->getName(), $query, $this->prepareBindings($bindings), $e
+    831▕             );
+    832▕         }
+    833▕     }
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:587
+      PDOException::("SQLSTATE[42S21]: Column already exists: 1060 Duplicate column name 'origin_airport_id'")
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:587
+      PDOStatement::execute()
+

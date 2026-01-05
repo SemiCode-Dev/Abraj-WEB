@@ -103,40 +103,37 @@
                         <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
                             {{ __('Nationality') }} <span class="text-red-500">*</span>
                         </label>
-                        <select name="nationality_id" required
-                            class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
-                            <option value="">{{ __('Select Nationality') }}</option>
-                            @foreach ($countries as $country)
-                                @if (!empty($country->locale_nationality))
-                                    <option value="{{ $country->id }}"
-                                        {{ old('nationality_id') == $country->id ? 'selected' : '' }}>
-                                        {{ $country->locale_nationality }}
-                                    </option>
-                                @endif
-                            @endforeach
-                        </select>
-                        @error('nationality_id')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                        <div class="relative">
+                            <input type="text" id="nationalitySearchInput" autocomplete="off"
+                                placeholder="{{ __('Select Nationality') }}"
+                                class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white shadow-sm">
+                            <input type="hidden" id="nationality_id" name="nationality_id"
+                                value="{{ old('nationality_id') }}">
+                            <div id="nationalityAutocomplete"
+                                class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                            </div>
+                            @error('nationality_id')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
                     <div class="mb-6">
                         <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
                             {{ __('Country') }} <span class="text-red-500">*</span>
                         </label>
-                        <select name="country_id" required
-                            class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
-                            <option value="">{{ __('Select Country') }}</option>
-                            @foreach ($countries as $country)
-                                <option value="{{ $country->id }}"
-                                    {{ old('country_id') == $country->id ? 'selected' : '' }}>
-                                    {{ $country->locale_name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('country_id')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                        <div class="relative">
+                            <input type="text" id="countrySearchInput" autocomplete="off"
+                                placeholder="{{ __('Select Country') }}"
+                                class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white shadow-sm">
+                            <input type="hidden" id="country_id" name="country_id" value="{{ old('country_id') }}">
+                            <div id="countryAutocomplete"
+                                class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                            </div>
+                            @error('country_id')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
                     <div class="mb-6">
@@ -214,6 +211,84 @@
                 const initialCountryData = iti.getSelectedCountryData();
                 document.querySelector("#visaPhoneCountryCode").value = "+" + initialCountryData.dialCode;
             }
+
+            // Searchable Selectors Logic
+            const allCountries = @json($countries->map(fn($c) => ['id' => $c->id, 'name' => $c->locale_name, 'nationality' => $c->locale_nationality]));
+
+            function initSearchableSelector(options) {
+                let {
+                    inputEl,
+                    hiddenEl,
+                    resultsEl,
+                    data = [],
+                    mode = 'name'
+                } = options;
+                if (!inputEl || !hiddenEl || !resultsEl) return;
+
+                function showResults(keyword = "") {
+                    resultsEl.innerHTML = "";
+                    const lowerK = keyword.toLowerCase();
+                    const results = data.filter(item => {
+                        const val = item[mode] || "";
+                        return val.toLowerCase().includes(lowerK);
+                    });
+
+                    if (results.length === 0) {
+                        resultsEl.classList.add("hidden");
+                        return;
+                    }
+
+                    resultsEl.classList.remove("hidden");
+                    results.forEach(item => {
+                        const val = item[mode];
+                        if (!val) return;
+                        const div = document.createElement("div");
+                        div.className =
+                            "px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm border-b border-gray-50 dark:border-gray-700 last:border-0";
+                        div.innerHTML = `<span class="font-medium">${val}</span>`;
+                        div.addEventListener("click", () => {
+                            inputEl.value = val;
+                            hiddenEl.value = item.id;
+                            resultsEl.classList.add("hidden");
+                            hiddenEl.dispatchEvent(new Event("change"));
+                        });
+                        resultsEl.appendChild(div);
+                    });
+                }
+
+                inputEl.addEventListener("focus", () => showResults(inputEl.value));
+                inputEl.addEventListener("input", () => showResults(inputEl.value));
+
+                document.addEventListener("click", (e) => {
+                    if (!inputEl.contains(e.target) && !resultsEl.contains(e.target)) {
+                        resultsEl.classList.add("hidden");
+                    }
+                });
+
+                // Handle initial value
+                if (hiddenEl.value) {
+                    const initialItem = data.find(x => x.id == hiddenEl.value);
+                    if (initialItem) {
+                        inputEl.value = initialItem[mode];
+                    }
+                }
+            }
+
+            initSearchableSelector({
+                inputEl: document.getElementById('nationalitySearchInput'),
+                hiddenEl: document.getElementById('nationality_id'),
+                resultsEl: document.getElementById('nationalityAutocomplete'),
+                data: allCountries.filter(c => c.nationality),
+                mode: 'nationality'
+            });
+
+            initSearchableSelector({
+                inputEl: document.getElementById('countrySearchInput'),
+                hiddenEl: document.getElementById('country_id'),
+                resultsEl: document.getElementById('countryAutocomplete'),
+                data: allCountries,
+                mode: 'name'
+            });
         });
     </script>
 @endpush

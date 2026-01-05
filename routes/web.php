@@ -103,6 +103,7 @@ Route::group([
 
     // Shared Location Routes
     Route::get('/locations/countries/{country}/cities', [\App\Http\Controllers\Web\V1\LocationController::class, 'getCities'])->name('locations.cities');
+    Route::get('/locations/countries/{country}/airports', [\App\Http\Controllers\Web\V1\LocationController::class, 'getAirports'])->name('locations.airports');
 
     // Profile Routes
     Route::middleware('auth')->group(function () {
