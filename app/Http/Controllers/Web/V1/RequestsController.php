@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\HotelBooking;
 use App\Models\FlightBooking;
 use App\Models\CarRentalBooking;
-use App\Models\TransferBooking;
 use App\Models\VisaBooking;
 use App\Models\PackageContact;
 use Illuminate\Http\Request;
@@ -31,7 +30,7 @@ class RequestsController extends Controller
             ->get();
 
         $flightBookings = FlightBooking::where('user_id', $user->id)
-            ->with(['originCity', 'originCountry', 'destinationCity', 'destinationCountry'])
+            ->with(['originAirport', 'originCountry', 'destinationAirport', 'destinationCountry'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -40,10 +39,6 @@ class RequestsController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $transferBookings = TransferBooking::where('user_id', $user->id)
-            ->with(['destinationCity', 'destinationCountry'])
-            ->orderBy('created_at', 'desc')
-            ->get();
 
         $visaBookings = VisaBooking::where('user_id', $user->id)
             ->with('country')
@@ -59,7 +54,6 @@ class RequestsController extends Controller
         $hasBookings = $hotelBookings->count() > 0 
             || $flightBookings->count() > 0 
             || $carRentalBookings->count() > 0 
-            || $transferBookings->count() > 0 
             || $visaBookings->count() > 0
             || $packageContacts->count() > 0;
 
@@ -67,7 +61,6 @@ class RequestsController extends Controller
             'hotelBookings',
             'flightBookings',
             'carRentalBookings',
-            'transferBookings',
             'visaBookings',
             'packageContacts',
             'hasBookings'

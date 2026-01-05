@@ -137,10 +137,10 @@
                                             <div class="flex-1">
                                                 <div class="flex items-center gap-3 mb-2">
                                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                                        {{ app()->getLocale() == 'ar' ? $booking->originCity->name_ar ?? $booking->originCity->name : $booking->originCity->name }}
+                                                        {{ $booking->originAirport->locale_name ?? __('N/A') }}
                                                         <i
                                                             class="fas {{ app()->getLocale() == 'ar' ? 'fa-arrow-left' : 'fa-arrow-right' }} mx-2 text-sm text-gray-400"></i>
-                                                        {{ app()->getLocale() == 'ar' ? $booking->destinationCity->name_ar ?? $booking->destinationCity->name : $booking->destinationCity->name }}
+                                                        {{ $booking->destinationAirport->locale_name ?? __('N/A') }}
                                                     </h3>
                                                     <span
                                                         class="px-3 py-1 rounded-full text-xs font-semibold
@@ -212,6 +212,10 @@
                                                         <i class="fas fa-calendar text-orange-600 mr-2 w-4"></i>
                                                         <span>{{ \Carbon\Carbon::parse($booking->pickup_date)->format('d M Y') }}</span>
                                                     </div>
+                                                    <div class="flex items-center">
+                                                        <i class="fas fa-user-tie text-orange-600 mr-2 w-4"></i>
+                                                        <span>{{ $booking->driver_option === 'with_driver' ? __('With Driver') : __('Without Driver') }}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <span class="text-xs text-gray-500 dark:text-gray-400">
@@ -224,53 +228,6 @@
                         </div>
                     @endif
 
-                    {{-- Transfer Bookings --}}
-                    @if ($transferBookings->count() > 0)
-                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-                            <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
-                                <i class="fas fa-shuttle-van text-orange-600 mr-3"></i>
-                                {{ __('Transfer Bookings') }}
-                            </h2>
-                            <div class="space-y-4">
-                                @foreach ($transferBookings as $booking)
-                                    <div
-                                        class="border border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:shadow-md transition">
-                                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                                            <div class="flex-1">
-                                                <div class="flex items-center gap-3 mb-2">
-                                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                                        {{ __('Transfer in') }}
-                                                        {{ app()->getLocale() == 'ar' ? $booking->destinationCity->name_ar ?? $booking->destinationCity->name : $booking->destinationCity->name }}
-                                                    </h3>
-                                                    <span
-                                                        class="px-3 py-1 rounded-full text-xs font-semibold
-                                                    @if ($booking->status === 'confirmed') bg-green-100 text-green-800
-                                                    @elseif($booking->status === 'pending') bg-yellow-100 text-yellow-800
-                                                    @else bg-gray-100 text-gray-800 @endif">
-                                                        {{ __(ucfirst($booking->status)) }}
-                                                    </span>
-                                                </div>
-                                                <div
-                                                    class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
-                                                    <div class="flex items-center">
-                                                        <i class="fas fa-calendar text-orange-600 mr-2 w-4"></i>
-                                                        <span>{{ \Carbon\Carbon::parse($booking->transfer_date)->format('d M Y') }}</span>
-                                                    </div>
-                                                    <div class="flex items-center">
-                                                        <i class="fas fa-users text-orange-600 mr-2 w-4"></i>
-                                                        <span>{{ $booking->passengers }} {{ __('Passengers') }}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">
-                                                {{ $booking->created_at->diffForHumans() }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
 
                     {{-- Visa Bookings --}}
                     @if ($visaBookings->count() > 0)

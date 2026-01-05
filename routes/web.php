@@ -5,7 +5,6 @@ use App\Http\Controllers\Admin\CarRentalBookingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FlightBookingController;
 use App\Http\Controllers\Admin\PackageContactController;
-use App\Http\Controllers\Admin\TransferBookingController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\VisaBookingController;
 use App\Http\Controllers\Web\V1\AuthController;
@@ -18,7 +17,6 @@ use App\Http\Controllers\Web\V1\PackageController;
 use App\Http\Controllers\Web\V1\PaymentController;
 use App\Http\Controllers\Web\V1\ProfileController;
 use App\Http\Controllers\Web\V1\RequestsController;
-use App\Http\Controllers\Web\V1\TransferController;
 use App\Http\Controllers\Web\V1\VisaController;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
@@ -87,9 +85,6 @@ Route::group([
     Route::post('/flights/book', [FlightController::class, 'book'])->name('flights.book');
 
 
-    // Transfer
-    Route::get('/transfer', [TransferController::class, 'index'])->name('transfer');
-    Route::post('/transfer/book', [TransferController::class, 'book'])->name('transfer.book');
 
 
     // Car Rental
@@ -156,9 +151,6 @@ Route::prefix(LaravelLocalization::setLocale().'/admin')->name('admin.')->middle
         Route::get('/flight-bookings', [FlightBookingController::class, 'index'])->name('flight-bookings.index');
         Route::patch('/flight-bookings/{flightBooking}/status', [FlightBookingController::class, 'updateStatus'])->name('flight-bookings.update-status');
 
-        // Transfer Bookings
-        Route::get('/transfer-bookings', [TransferBookingController::class, 'index'])->name('transfer-bookings.index');
-        Route::patch('/transfer-bookings/{transferBooking}/status', [TransferBookingController::class, 'updateStatus'])->name('transfer-bookings.update-status');
 
         // Car Rental Bookings
         Route::get('/car-rental-bookings', [CarRentalBookingController::class, 'index'])->name('car-rental-bookings.index');

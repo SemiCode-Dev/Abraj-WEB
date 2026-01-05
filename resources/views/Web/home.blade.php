@@ -131,10 +131,10 @@
             <div class="text-center mb-10">
                 <h1
                     class="text-5xl md:text-7xl p-2 font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-cyan-200">
-                    {{ __('Search for your perfect hotel') }}
+                    {{ __('Your Perfect Stay Starts Here') }}
                 </h1>
-                <p class="text-xl md:text-2xl text-slate-300 mb-2">{{ __('Best offers and services in one place') }}</p>
-                <p class="text-slate-400">{{ __('Book Now and Save up to 40%') }}</p>
+                <p class="text-xl md:text-2xl text-slate-300 mb-2">{{ __('Best Hotels and Selected Offers') }}</p>
+                <p class="text-slate-400">{{ __('Save up to 40% on Your Booking') }}</p>
             </div>
 
             <!-- Relocated Detailed Search Box -->
@@ -301,7 +301,7 @@
             <div class="flex flex-wrap items-center justify-center gap-8 md:gap-12">
                 <div class="flex items-center text-gray-600">
                     <i
-                        class="fas fa-shield-check text-2xl text-orange-600 {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
+                        class="fas fa-lock text-2xl text-orange-600 {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
                     <div>
                         <div class="font-bold text-sm">{{ __('Secure Booking') }}</div>
                         <div class="text-xs text-gray-500 dark:text-gray-300">{{ __('SSL Encrypted') }}</div>
@@ -821,13 +821,17 @@ $fallbackImages = [
                     <!-- Main Heading -->
                     <h2
                         class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">
-                        {{ __('Dare to live the life you\'ve always wanted') }}
+                        {{ __('Live the Experience You\'ve Always Dreamed Of') }}
                     </h2>
 
                     <!-- Description -->
                     <p
                         class="text-lg text-gray-600 dark:text-gray-400 mb-8 leading-relaxed max-w-xl {{ app()->getLocale() === 'ar' ? 'lg:mr-0 lg:ml-auto' : 'lg:ml-0 lg:mr-auto' }}">
-                        {{ __('Discover how you can offset your adventure\'s carbon emissions and support the sustainable initiatives practiced by our operators worldwide.') }}
+                        {{ __('Enjoy curated travel experiences, flexible options, and trusted support every step of the way.') }}
+                    </p>
+                    <p
+                        class="text-lg text-gray-600 dark:text-gray-400 mb-8 leading-relaxed max-w-xl {{ app()->getLocale() === 'ar' ? 'lg:mr-0 lg:ml-auto' : 'lg:ml-0 lg:mr-auto' }}">
+                        {{ __('Download the app and book your trip with ease') }}
                     </p>
 
                     <!-- App Download Buttons -->
@@ -842,8 +846,8 @@ $fallbackImages = [
                                     fill="#00D9FF" />
                             </svg>
                             <div class="text-left">
-                                <div class="text-xs">GET IT ON</div>
-                                <div class="text-base font-bold">Google Play</div>
+                                <div class="text-xs">{{ __('GET IT ON') }}</div>
+                                <div class="text-base font-bold">{{ __('Google Play') }}</div>
                             </div>
                         </a>
                         <a href="#"
@@ -855,8 +859,8 @@ $fallbackImages = [
                                     fill="#FFFFFF" />
                             </svg>
                             <div class="text-left">
-                                <div class="text-xs">Download on the</div>
-                                <div class="text-base font-bold">App Store</div>
+                                <div class="text-xs">{{ __('Download on the') }}</div>
+                                <div class="text-base font-bold">{{ __('App Store') }}</div>
                             </div>
                         </a>
                     </div>
@@ -879,7 +883,7 @@ $fallbackImages = [
                                 </div>
                                 <div class="text-4xl font-extrabold opacity-20">01</div>
                             </div>
-                            <h3 class="text-2xl font-bold mb-2">50,000+ {{ __('Destinations') }}</h3>
+                            <h3 class="text-2xl font-bold mb-2">50,000+ {{ __('Hotels Worldwide') }}</h3>
                             <p class="text-sm text-orange-100 leading-relaxed">
                                 {{ __('Our expert team handpicked all destinations in this site.') }}
                             </p>
@@ -902,9 +906,9 @@ $fallbackImages = [
                                 <div class="text-4xl font-extrabold text-gray-100 dark:text-gray-800">02</div>
                             </div>
                             <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                {{ __('Great 24/7 Support') }}</h3>
+                                {{ __('24/7 Customer Support') }}</h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                                {{ __('We are here to help, before, during, and even after your trip.') }}
+                                {{ __('We\'re here for you before, during, and throughout your journey') }}
                             </p>
                         </div>
                     </div>

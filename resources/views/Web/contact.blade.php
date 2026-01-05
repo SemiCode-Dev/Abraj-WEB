@@ -7,7 +7,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 class="text-4xl md:text-5xl font-bold mb-4">{{ __('Contact Us') }}</h1>
             <p class="text-orange-100 text-lg max-w-2xl mx-auto">
-                {{ __('We\'d love to hear from you. Send us a message and we\'ll respond as soon as possible.') }}
+                {{ __('Send us a message and we\'ll get back to you as soon as possible') }}
             </p>
         </div>
     </section>
@@ -17,7 +17,8 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-2">
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
-                        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">{{ __('Get in Touch') }}</h2>
+                        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+                            {{ __('We\'d Love to Hear From You') }}</h2>
                         <form id="contactForm" class="space-y-6">
                             @if (!auth()->check())
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -123,7 +124,7 @@
                                     <i class="fas fa-map-marker-alt text-orange-600 text-xl"></i>
                                 </div>
                                 <div class="{{ app()->getLocale() === 'ar' ? 'mr-4' : 'ml-4' }}">
-                                    <h4 class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Visit Us') }}</h4>
+                                    <h4 class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Find Us') }}</h4>
                                     <p class="text-gray-600 dark:text-gray-400 text-sm">
                                         {{ __('Riyadh') }}, {{ __('Saudi Arabia') }}<br>
                                         King Fahd Road, Building 123

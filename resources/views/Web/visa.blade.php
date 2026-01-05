@@ -5,9 +5,12 @@
 @section('content')
     <section class="bg-gradient-to-r from-orange-500 via-orange-600 to-blue-900 text-white py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4">{{ __('Visa Service') }}</h1>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                <i class="fas fa-passport {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
+                {{ __('Visa Service') }}
+            </h1>
             <p class="text-orange-100 text-lg max-w-2xl mx-auto">
-                {{ __('Apply for your visa with us and get professional assistance.') }}
+                {{ __('Fast and easy visa services with full tracking until issuance') }}
             </p>
         </div>
     </section>

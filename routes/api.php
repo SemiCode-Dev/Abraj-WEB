@@ -5,7 +5,6 @@ use App\Http\Controllers\Api\V1\CarRentalController;
 use App\Http\Controllers\Api\V1\FlightController;
 use App\Http\Controllers\Api\V1\PackageController;
 use App\Http\Controllers\Api\V1\ProfileController;
-use App\Http\Controllers\Api\V1\TransferController;
 use App\Http\Controllers\Api\V1\VisaController;
 use Illuminate\Support\Facades\Route;
 
@@ -51,8 +50,6 @@ Route::post('/packages/book', [PackageController::class, 'store']);
 // Flight Booking
 Route::post('/flights/book', [FlightController::class, 'store']);
 
-// Transfer Booking
-Route::post('/transfers/book', [TransferController::class, 'store']);
 
 // Car Rental Booking
 Route::post('/car-rentals/book', [CarRentalController::class, 'store']);

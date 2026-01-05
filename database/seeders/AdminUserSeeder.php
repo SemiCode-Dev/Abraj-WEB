@@ -17,7 +17,7 @@ class AdminUserSeeder extends Seeder
             ['email' => 'admin@abrajstay.com'],
             [
                 'name' => 'Admin User',
-                'password' => bcrypt('Admin@1234'),
+                'password' => bcrypt(''),
                 'phone' => '966501234567',
                 'is_admin' => true,
                 'email_verified_at' => now(),

@@ -238,11 +238,6 @@
                             <i class="fas fa-plane"></i>
                             <span>{{ __('Flight Bookings') }}</span>
                         </a>
-                        <a href="{{ route('admin.transfer-bookings.index') }}"
-                            class="admin-nav-link {{ request()->routeIs('admin.transfer-bookings*') ? 'active' : '' }}">
-                            <i class="fas fa-car"></i>
-                            <span>{{ __('Transfer Bookings') }}</span>
-                        </a>
                         <a href="{{ route('admin.car-rental-bookings.index') }}"
                             class="admin-nav-link {{ request()->routeIs('admin.car-rental-bookings*') ? 'active' : '' }}">
                             <i class="fas fa-car-side"></i>

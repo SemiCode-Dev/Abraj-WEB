@@ -22,6 +22,7 @@ class CarRentalBooking extends Model
         'pickup_time',
         'return_date',
         'return_time',
+        'driver_option',
         'drivers',
         'notes',
         'status',

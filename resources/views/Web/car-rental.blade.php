@@ -1,13 +1,16 @@
 @extends('Web.layouts.app')
 
-@section('title', __('Car Rental Booking') . ' - ABRAJ STAY')
+@section('title', __('Book Your Ride') . ' - ABRAJ STAY')
 
 @section('content')
     <section class="bg-gradient-to-r from-orange-500 via-orange-600 to-blue-900 text-white py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4">{{ __('Car Rental Booking') }}</h1>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                <i class="fas fa-car {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
+                {{ __('Book Your Ride') }}
+            </h1>
             <p class="text-orange-100 text-lg max-w-2xl mx-auto">
-                {{ __('Book your car rental and enjoy the freedom to explore.') }}
+                {{ __('Reliable transportation within cities and between destinations, with comfort and safety.') }}
             </p>
         </div>
     </section>
@@ -16,8 +19,8 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
                 <!-- <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-                                                            {{ __('Booking Form') }}
-                                                        </h2> -->
+                                                                        {{ __('Booking Form') }}
+                                                                    </h2> -->
 
                 @if (session('success'))
                     <div
@@ -119,6 +122,23 @@
                                 @enderror
                             </div>
                         </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
+                            {{ __('Driver Option') }} <span class="text-red-500">*</span>
+                        </label>
+                        <select name="driver_option" required
+                            class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
+                            <option value="without_driver"
+                                {{ old('driver_option') === 'without_driver' ? 'selected' : '' }}>
+                                {{ __('Without Driver') }}</option>
+                            <option value="with_driver" {{ old('driver_option') === 'with_driver' ? 'selected' : '' }}>
+                                {{ __('With Driver') }}</option>
+                        </select>
+                        @error('driver_option')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

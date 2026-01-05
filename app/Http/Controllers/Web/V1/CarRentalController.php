@@ -41,7 +41,8 @@ class CarRentalController extends Controller
                 'pickup_time' => $request->pickup_time,
                 'return_date' => $request->return_date,
                 'return_time' => $request->return_time,
-                'drivers' => 1, // Default value
+                'driver_option' => $request->driver_option,
+                'drivers' => $request->driver_option === 'with_driver' ? 1 : 0,
                 'notes' => $request->notes,
             ]);
 

@@ -5,7 +5,10 @@
 @section('content')
     <section class="bg-gradient-to-r from-orange-500 via-orange-600 to-blue-900 text-white py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4">{{ __('Flight Booking') }}</h1>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                <i class="fas fa-plane {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
+                {{ __('Flight Booking') }}
+            </h1>
             <p class="text-orange-100 text-lg max-w-2xl mx-auto">
                 {{ __('Book your flight with us and enjoy the best travel experience.') }}
             </p>
@@ -16,8 +19,8 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
                 <!-- <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-                                                                                                    {{ __('Booking Form') }}
-                                                                                                </h2> -->
+                                                                                                        {{ __('Booking Form') }}
+                                                                                                    </h2> -->
 
                 @if (session('success'))
                     <div

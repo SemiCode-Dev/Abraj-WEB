@@ -326,16 +326,6 @@
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <label
                                 class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition">
-                                <input type="checkbox" name="extra_features[]" value="airport_transfer"
-                                    class="w-5 h-5 text-orange-600 rounded">
-                                <span class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-sm text-gray-700">
-                                    <i
-                                        class="fas fa-plane text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Airport Transfer') }}
-                                </span>
-                            </label>
-                            <label
-                                class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition">
                                 <input type="checkbox" name="extra_features[]" value="late_checkout"
                                     class="w-5 h-5 text-orange-600 rounded">
                                 <span class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-sm text-gray-700">

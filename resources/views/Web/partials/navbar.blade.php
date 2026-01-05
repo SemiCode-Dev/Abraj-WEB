@@ -28,8 +28,6 @@
                     class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium text-base">{{ __('Packages') }}</a>
                 <a href="{{ route('flights') }}"
                     class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium text-base">{{ __('Flight Booking') }}</a>
-                <a href="{{ route('transfer') }}"
-                    class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium text-base">{{ __('Transfer') }}</a>
                 <a href="{{ route('car-rental') }}"
                     class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium text-base">{{ __('Car Rental') }}</a>
                 <a href="{{ route('visa') }}"
@@ -163,8 +161,6 @@
                     class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Packages') }}</a>
                 <a href="{{ route('flights') }}" onclick="closeMobileMenu()"
                     class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Flight Booking') }}</a>
-                <a href="{{ route('transfer') }}" onclick="closeMobileMenu()"
-                    class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Transfer') }}</a>
                 <a href="{{ route('car-rental') }}" onclick="closeMobileMenu()"
                     class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Car Rental') }}</a>
                 <a href="{{ route('visa') }}" onclick="closeMobileMenu()"

@@ -5,14 +5,13 @@
             <div class="flex items-center {{ app()->getLocale() === 'ar' ? 'space-x-reverse space-x-6' : 'space-x-6' }}">
                 <div class="flex items-center">
                     <i class="fas fa-users text-lg {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
-                    <span>{{ __('More than') }} <strong>2 {{ __('happy customers') }}</strong></span>
+                    <span>{{ __('5,000+ Happy Customers') }}</span>
                 </div>
                 <div class="flex items-center">
                     <i class="fas fa-hotel text-lg {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
-                    <span>{{ __('More than') }} <strong>50,000</strong> {{ __('hotels worldwide') }}</span>
+                    <span>{{ __('50,000+ Hotels Worldwide') }}</span>
                 </div>
             </div>
         </div>
     </div>
 </section>
-

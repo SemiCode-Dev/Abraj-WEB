@@ -24,6 +24,7 @@ class CarRentalBookingRequest extends FormRequest
             'pickup_time' => ['required'],
             'return_date' => ['required', 'date', 'after:pickup_date'],
             'return_time' => ['required'],
+            'driver_option' => ['required', 'string', 'in:with_driver,without_driver'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
 
@@ -52,6 +53,8 @@ class CarRentalBookingRequest extends FormRequest
             'return_date.required' => __('Return date is required.'),
             'return_date.after' => __('Return date must be after pickup date.'),
             'return_time.required' => __('Return time is required.'),
+            'driver_option.required' => __('Driver option is required.'),
+            'driver_option.in' => __('Selected driver option is invalid.'),
         ];
     }
 }
