@@ -36,8 +36,13 @@ return new class extends Migration
                 $table->dropColumn('destination_city_id');
             }
             
-            $table->foreignId('origin_airport_id')->nullable()->after('origin_country_id')->constrained('airports')->onDelete('set null');
-            $table->foreignId('destination_airport_id')->nullable()->after('destination_country_id')->constrained('airports')->onDelete('set null');
+            if (!Schema::hasColumn('flight_bookings', 'origin_airport_id')) {
+                $table->foreignId('origin_airport_id')->nullable()->after('origin_country_id')->constrained('airports')->onDelete('set null');
+            }
+            
+            if (!Schema::hasColumn('flight_bookings', 'destination_airport_id')) {
+                $table->foreignId('destination_airport_id')->nullable()->after('destination_country_id')->constrained('airports')->onDelete('set null');
+            }
         });
     }
 
