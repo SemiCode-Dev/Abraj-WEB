@@ -579,9 +579,34 @@ class HotelController extends Controller
                 // If we have data, use the popular ones
                 $allCityCodes = $cityQuery->orderBy('hotels_count', 'desc')->limit(50)->pluck('code')->toArray();
             } else {
-                // If no popularity data (new country), randomize to find valid cities
-                // This prevents showing "0 Hotels" just because the first 50 alphabetical cities are empty
-                $allCityCodes = $cityQuery->inRandomOrder()->limit(50)->pluck('code')->toArray();
+                // Cold Start: No popularity data yet.
+                // Try to find Major Cities for this country first to ensure we get results.
+                $majorCities = match($selectedCountryCode) {
+                    'SA' => ['Riyadh', 'Jeddah', 'Makkah', 'Madinah', 'Dammam', 'Khobar', 'Abha', 'Taif'],
+                    'AE' => ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah'],
+                    'EG' => ['Cairo', 'Alexandria', 'Sharm El Sheikh', 'Hurghada', 'Luxor', 'Aswan'],
+                    'TR' => ['Istanbul', 'Antalya', 'Ankara', 'Izmir', 'Bursa'],
+                    'GB' => ['London', 'Manchester', 'Birmingham', 'Edinburgh', 'Glasgow'],
+                    'FR' => ['Paris', 'Lyon', 'Marseille', 'Nice', 'Bordeaux'],
+                    default => []
+                };
+
+                $allCityCodes = [];
+                
+                if (!empty($majorCities)) {
+                    // Try to find these cities in DB
+                    $allCityCodes = (clone $cityQuery)->where(function($q) use ($majorCities) {
+                        foreach ($majorCities as $city) {
+                            $q->orWhere('name', 'LIKE', "%$city%")
+                              ->orWhere('name_en', 'LIKE', "%$city%");
+                        }
+                    })->limit(50)->pluck('code')->toArray();
+                }
+
+                // If major cities not found or country not in list, fallback to random
+                if (empty($allCityCodes)) {
+                    $allCityCodes = $cityQuery->inRandomOrder()->limit(50)->pluck('code')->toArray();
+                }
             }
 
             $language = app()->getLocale();
@@ -591,8 +616,10 @@ class HotelController extends Controller
                 // Use cache key based on COUNTRY and LANGUAGE
                 $cacheKey = 'all_hotels_'.$selectedCountryCode.'_'.$language.'_v4';
 
-                // Cache for 24 hours
-                $hotels = \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function () use ($allCityCodes, $language) {
+                // Check cache first
+                $hotels = \Illuminate\Support\Facades\Cache::get($cacheKey);
+
+                if (! $hotels) {
                     try {
                         $apiLang = $language === 'ar' ? 'ar' : 'en';
                         
@@ -611,12 +638,20 @@ class HotelController extends Controller
                             $hotels = json_decode(json_encode($hotels), true);
                         }
 
-                        return $hotels;
+                        // Only cache if we actually got results!
+                        if (!empty($hotels)) {
+                            \Illuminate\Support\Facades\Cache::put($cacheKey, $hotels, 86400); // 24 hours
+                        } else {
+                            // If empty, cache for a very short time (e.g., 1 minute) to avoid hammering API if it's down,
+                            // but allow quick recovery.
+                             \Illuminate\Support\Facades\Cache::put($cacheKey, [], 60); 
+                        }
+
                     } catch (\Exception $e) {
                         Log::error('Failed to fetch all hotels from API: '.$e->getMessage());
-                        return [];
+                        $hotels = [];
                     }
-                });
+                }
 
                 // Apply robust Hotel Name Translation if Arabic
                 if ($language === 'ar') {

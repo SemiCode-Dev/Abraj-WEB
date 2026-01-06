@@ -117,7 +117,7 @@
                         <div class="md:col-span-2 md:row-span-2 cursor-pointer"
                             onclick="openImageModal({{ $index }})">
                             <img src="{{ $imageUrl }}" alt="{{ $hotel['HotelName'] ?? 'فندق' }}"
-                                class="w-full h-full object-cover rounded-2xl hover:opacity-90 transition">
+                                class="w-full h-[400px] object-cover rounded-2xl hover:opacity-90 transition">
                         </div>
                     @elseif($index < 5)
                         <div class="cursor-pointer" onclick="openImageModal({{ $index }})">

@@ -16,7 +16,6 @@ use App\Http\Controllers\Web\V1\HotelController;
 use App\Http\Controllers\Web\V1\PackageController;
 use App\Http\Controllers\Web\V1\PaymentController;
 use App\Http\Controllers\Web\V1\ProfileController;
-use App\Http\Controllers\Web\V1\RequestsController;
 use App\Http\Controllers\Web\V1\VisaController;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
@@ -84,13 +83,9 @@ Route::group([
     Route::get('/flights', [FlightController::class, 'index'])->name('flights');
     Route::post('/flights/book', [FlightController::class, 'book'])->name('flights.book');
 
-
-
-
     // Car Rental
     Route::get('/car-rental', [CarRentalController::class, 'index'])->name('car-rental');
     Route::post('/car-rental/book', [CarRentalController::class, 'book'])->name('car-rental.book');
-
 
     // Visa Service
     Route::get('/visa', [VisaController::class, 'index'])->name('visa');
@@ -151,7 +146,6 @@ Route::prefix(LaravelLocalization::setLocale().'/admin')->name('admin.')->middle
         Route::get('/flight-bookings', [FlightBookingController::class, 'index'])->name('flight-bookings.index');
         Route::patch('/flight-bookings/{flightBooking}/status', [FlightBookingController::class, 'updateStatus'])->name('flight-bookings.update-status');
 
-
         // Car Rental Bookings
         Route::get('/car-rental-bookings', [CarRentalBookingController::class, 'index'])->name('car-rental-bookings.index');
         Route::patch('/car-rental-bookings/{carRentalBooking}/status', [CarRentalBookingController::class, 'updateStatus'])->name('car-rental-bookings.update-status');
@@ -189,14 +183,14 @@ Route::get('/test-email-debug', function () {
             'username' => config('mail.mailers.smtp.username'),
             'encryption' => config('mail.mailers.smtp.encryption'),
         ];
-        
+
         \Illuminate\Support\Facades\Log::info('Test email attempt', $config);
-        
+
         \Illuminate\Support\Facades\Mail::raw('Test OTP email. If you get this, email works!', function ($message) {
             $message->to(config('mail.mailers.smtp.username') ?: 'test@example.com')
-                    ->subject('Test - Laravel OTP System');
+                ->subject('Test - Laravel OTP System');
         });
-        
+
         return response()->json([
             'status' => 'success',
             'message' => 'Email sent! Check inbox.',
@@ -204,6 +198,7 @@ Route::get('/test-email-debug', function () {
         ]);
     } catch (\Exception $e) {
         \Illuminate\Support\Facades\Log::error('Test email error', ['error' => $e->getMessage()]);
+
         return response()->json([
             'status' => 'error',
             'message' => $e->getMessage(),
