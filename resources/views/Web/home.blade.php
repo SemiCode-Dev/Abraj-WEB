@@ -53,28 +53,23 @@
             <div class="hero-slider-wrapper">
                 <!-- Slide 1 -->
                 <div class="hero-slide active" data-slide="0" aria-label="{{ __('Slide') }} 1">
-                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
-                        alt="{{ __('Luxury Hotel') }}" class="hero-slide-image" loading="eager">
+                    <img src="{{ asset('images/banners/banner1.jpg') }}" alt="{{ __('Luxury Hotel') }}"
+                        class="hero-slide-image" loading="eager">
                 </div>
                 <!-- Slide 2 -->
                 <div class="hero-slide" data-slide="1" aria-label="{{ __('Slide') }} 2">
-                    <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
-                        alt="{{ __('Modern Hotel Room') }}" class="hero-slide-image" loading="lazy">
+                    <img src="{{ asset('images/banners/banner2.jpg') }}" alt="{{ __('Modern Hotel Room') }}"
+                        class="hero-slide-image" loading="lazy">
                 </div>
                 <!-- Slide 3 -->
                 <div class="hero-slide" data-slide="2" aria-label="{{ __('Slide') }} 3">
-                    <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
-                        alt="{{ __('Hotel Pool') }}" class="hero-slide-image" loading="lazy">
+                    <img src="{{ asset('images/banners/banner3.jpg') }}" alt="{{ __('Hotel Pool') }}"
+                        class="hero-slide-image" loading="lazy">
                 </div>
                 <!-- Slide 4 -->
                 <div class="hero-slide" data-slide="3" aria-label="{{ __('Slide') }} 4">
-                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
-                        alt="{{ __('Hotel Lobby') }}" class="hero-slide-image" loading="lazy">
-                </div>
-                <!-- Slide 5 -->
-                <div class="hero-slide" data-slide="4" aria-label="{{ __('Slide') }} 5">
-                    <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
-                        alt="{{ __('Hotel Suite') }}" class="hero-slide-image" loading="lazy">
+                    <img src="{{ asset('images/banners/banner4.jpg') }}" alt="{{ __('Hotel Lobby') }}"
+                        class="hero-slide-image" loading="lazy">
                 </div>
             </div>
             <!-- Overlay -->
@@ -110,10 +105,6 @@
                 <button
                     class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50"
                     data-slide="3" role="tab" aria-selected="false" aria-label="{{ __('Go to slide') }} 4"
-                    type="button"></button>
-                <button
-                    class="hero-slider-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white/75 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-white/50"
-                    data-slide="4" role="tab" aria-selected="false" aria-label="{{ __('Go to slide') }} 5"
                     type="button"></button>
             </div>
         </div>
@@ -166,8 +157,9 @@
                             </label>
                             <input type="text" id="countrySearchInput" autocomplete="off"
                                 placeholder="{{ __('Select Country') }}"
+                                value="{{ app()->getLocale() === 'ar' ? 'المملكة العربية السعودية' : 'Saudi Arabia' }}"
                                 class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg force-input-text bg-white">
-                            <input type="hidden" id="countrySelect" name="country_code">
+                            <input type="hidden" id="countrySelect" name="country_code" value="SA">
                             <div id="countryAutocomplete"
                                 class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
                             </div>
@@ -231,7 +223,7 @@
                             </label>
                             <select name="children"
                                 class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white">
-                                <option value="0" selected>0 {{ __('Children') }}</option>
+                                <option value="" disabled selected>{{ __('Select number of children') }}</option>
                                 <option value="1">{{ app()->getLocale() === 'ar' ? '1 طفل' : '1 Child' }}</option>
                                 <option value="2">2 {{ __('Children') }}</option>
                                 <option value="3">3 {{ __('Children') }}</option>
@@ -1695,11 +1687,11 @@ $fallbackImages = [
             // -----------------------------------------------------------------------------
 
             // Helper to initialize country/city logic
-            function initCitySearch(countryEl, cityEl, cityBoxEl, codeEl, hotelEl = null) {
+            function initCitySearch(countryEl, cityEl, cityBoxEl, codeEl, hotelEl = null, initialCountryCode =
+                null) {
                 let filteredCitiesLocal = [];
 
-                countryEl.addEventListener("change", function() {
-                    const countryCode = this.value;
+                function loadCitiesForCountry(countryCode) {
                     cityEl.value = "";
                     codeEl.value = "";
                     cityEl.disabled = true;
@@ -1729,7 +1721,18 @@ $fallbackImages = [
                         .catch(err => {
                             cityEl.placeholder = "{{ __('Error') }}";
                         });
+                }
+
+                countryEl.addEventListener("change", function() {
+                    loadCitiesForCountry(this.value);
                 });
+
+                // Auto-load cities if initial country code is provided
+                if (initialCountryCode) {
+                    setTimeout(() => {
+                        loadCitiesForCountry(initialCountryCode);
+                    }, 100);
+                }
 
                 function showResultsLocal(keyword = "") {
                     cityBoxEl.innerHTML = "";
@@ -1815,7 +1818,8 @@ $fallbackImages = [
                 document.getElementById("cityAutocomplete"),
                 document.getElementById("destinationCode"),
                 document.getElementById(
-                    "hotelSelect") // This is removed/null now probably, but logic handles null
+                    "hotelSelect"), // This is removed/null now probably, but logic handles null
+                'SA' // Auto-load Saudi Arabia cities on page load
             );
 
             // Initialize Hero Form Country
@@ -1833,6 +1837,7 @@ $fallbackImages = [
                 document.getElementById("heroCityAutocomplete"),
                 document.getElementById("heroDestinationCode")
             );
+
 
             // Main Form Submission
             document.getElementById("searchForm").addEventListener("submit", function(e) {
