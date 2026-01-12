@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Web\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\V1\ReservationReviewRequest;
 use App\Models\City;
+use App\Services\Api\V1\BookingService;
 use App\Services\Api\V1\HotelApiService;
 use App\Services\Api\V1\PaymentService;
-use App\Services\Api\V1\BookingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -16,13 +16,11 @@ use Illuminate\Support\Facades\Log;
 class HotelController extends Controller
 {
     public function __construct(
-        protected HotelApiService $hotelApi, 
-        protected PaymentService $paymentService, 
+        protected HotelApiService $hotelApi,
+        protected PaymentService $paymentService,
         protected BookingService $bookingService,
         protected \App\Services\LocationService $locationService
-    )
-    {
-    }
+    ) {}
 
     public function search(Request $request)
     {
@@ -39,6 +37,7 @@ class HotelController extends Controller
                         ],
                     ], 400);
                 }
+
                 // For standard requests, redirect back or show error
                 return redirect()->back()->with('error', __('Invalid search parameters.'));
             }
@@ -69,6 +68,7 @@ class HotelController extends Controller
                         ],
                     ], 400);
                 }
+
                 return redirect()->back()->with('error', __('CheckIn and CheckOut dates are required.'));
             }
 
@@ -108,59 +108,59 @@ class HotelController extends Controller
                 foreach ($response['HotelResult'] as $hotelIndex => $hotel) {
                     if (isset($hotel['Rooms']) && is_array($hotel['Rooms'])) {
                         $hotelCode = $hotel['HotelCode'] ?? '';
-                        
+
                         // Count bookings that should reduce availability (CONFIRMED + PENDING)
                         $reservedRoomCounts = \App\Models\HotelBooking::where('hotel_code', $hotelCode)
                             ->whereIn('booking_status', [
                                 \App\Constants\BookingStatus::CONFIRMED,
-                                \App\Constants\BookingStatus::PENDING
+                                \App\Constants\BookingStatus::PENDING,
                             ])
                             ->where(function ($query) use ($checkIn, $checkOut) {
                                 $query->where('check_in', '<', $checkOut)
-                                      ->where('check_out', '>', $checkIn);
+                                    ->where('check_out', '>', $checkIn);
                             })
                             ->selectRaw('room_name, COUNT(*) as reserved_count')
                             ->groupBy('room_name')
                             ->pluck('reserved_count', 'room_name')
                             ->toArray();
-                        
+
                         // Only filter if there are reserved rooms
-                        if (!empty($reservedRoomCounts)) {
+                        if (! empty($reservedRoomCounts)) {
                             // Group rooms by name to count how many TBO returned
                             $roomsByName = [];
                             foreach ($hotel['Rooms'] as $room) {
                                 $roomName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
-                                if (!isset($roomsByName[$roomName])) {
+                                if (! isset($roomsByName[$roomName])) {
                                     $roomsByName[$roomName] = [];
                                 }
                                 $roomsByName[$roomName][] = $room;
                             }
-                            
+
                             // For each room type, remove the number that are Reserved
                             $filteredRooms = [];
                             foreach ($roomsByName as $roomName => $rooms) {
                                 $tboAvailableCount = count($rooms);
                                 $reservedCount = $reservedRoomCounts[$roomName] ?? 0;
                                 $actuallyAvailableCount = max(0, $tboAvailableCount - $reservedCount);
-                                
+
                                 // Add only the actually available rooms
                                 for ($i = 0; $i < $actuallyAvailableCount; $i++) {
                                     if (isset($rooms[$i])) {
                                         $filteredRooms[] = $rooms[$i];
                                     }
                                 }
-                                
+
                                 if ($reservedCount > 0) {
-                                    Log::info("Room availability adjusted (Confirmed+Pending)", [
+                                    Log::info('Room availability adjusted (Confirmed+Pending)', [
                                         'hotel' => $hotelCode,
                                         'room_type' => $roomName,
                                         'tbo_count' => $tboAvailableCount,
                                         'reserved_count' => $reservedCount,
-                                        'showing_count' => $actuallyAvailableCount
+                                        'showing_count' => $actuallyAvailableCount,
                                     ]);
                                 }
                             }
-                            
+
                             $response['HotelResult'][$hotelIndex]['Rooms'] = $filteredRooms;
                         }
                     }
@@ -193,23 +193,23 @@ class HotelController extends Controller
     {
         try {
             Log::info("getHotels: Fetching for CityCode: $cityCode");
-            
+
             // Get all hotels from all pages
             $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
             $response = $this->hotelApi->getAllCityHotels($cityCode, true, $language);
 
             $hotels = $response['Hotels'] ?? [];
-            Log::info("getHotels: Received " . count($hotels) . " hotels from API");
+            Log::info('getHotels: Received '.count($hotels).' hotels from API');
 
             if (! is_array($hotels)) {
                 $hotels = json_decode(json_encode($hotels), true);
             }
 
             // Apply robust Hotel Name Translation if Arabic
-            if ($language === 'ar' && !empty($hotels)) {
-                $translator = new \App\Services\HotelTranslationService();
+            if ($language === 'ar' && ! empty($hotels)) {
+                $translator = new \App\Services\HotelTranslationService;
                 // Pass count to allow translating more than 1 hotel if needed (within service limits)
-                $hotels = $translator->translateHotels($hotels, count($hotels)); 
+                $hotels = $translator->translateHotels($hotels, count($hotels));
             }
 
             $formattedHotels = collect($hotels)->map(function ($hotel) {
@@ -226,11 +226,11 @@ class HotelController extends Controller
                 return ! empty($hotel['HotelCode']);
             });
 
-            Log::info("getHotels: Returning " . $formattedHotels->count() . " formatted hotels");
+            Log::info('getHotels: Returning '.$formattedHotels->count().' formatted hotels');
 
             return response()->json($formattedHotels->values());
         } catch (\Exception $e) {
-            Log::error('Failed to fetch hotels from TBO API for city ' . $cityCode . ': ' . $e->getMessage());
+            Log::error('Failed to fetch hotels from TBO API for city '.$cityCode.': '.$e->getMessage());
 
             return response()->json(['error' => __('Failed to fetch hotels')], 500);
         }
@@ -242,18 +242,22 @@ class HotelController extends Controller
             // Get current page from request
             $page = (int) request('page', 1);
             $perPage = 12; // Hotels per page
-            
+
             // Get City from DB for name verification
             $cityParam = City::where('code', $cityCode)->with('country')->first();
             $cityNames = [];
-            
+
             // Default to session value or SA, then override if city implies specific country
             $selectedCountryCode = session('selected_country', 'SA');
-            
+
             if ($cityParam) {
                 // Normalize names for comparison (lowercase)
-                if ($cityParam->name_en) $cityNames[] = strtolower($cityParam->name_en);
-                if ($cityParam->name_ar) $cityNames[] = strtolower($cityParam->name_ar);
+                if ($cityParam->name_en) {
+                    $cityNames[] = strtolower($cityParam->name_en);
+                }
+                if ($cityParam->name_ar) {
+                    $cityNames[] = strtolower($cityParam->name_ar);
+                }
                 // Add city name part if it contains comma (e.g. "Dubai, UAE" -> "dubai")
                 foreach ($cityNames as $name) {
                     if (str_contains($name, ',')) {
@@ -261,7 +265,7 @@ class HotelController extends Controller
                         $cityNames[] = trim($parts[0]);
                     }
                 }
-                
+
                 if ($cityParam->country) {
                     $selectedCountryCode = $cityParam->country->code;
                     // Update session to reflect the country of the selected city
@@ -281,7 +285,7 @@ class HotelController extends Controller
                     // We fetch multiple pages to ensure we get all potential hotels
                     // But since it's lightweight, it's much faster
                     $response = $this->hotelApi->getAllCityHotels($cityCode, false, $language);
-                    
+
                     $hotels = $response['Hotels'] ?? [];
                     if (! is_array($hotels)) {
                         $hotels = json_decode(json_encode($hotels), true);
@@ -289,17 +293,18 @@ class HotelController extends Controller
 
                     // Update local DB with hotels count for popularity tracking (Self-Learning)
                     // We catch exceptions to prevent breaking the flow if DB update fails
-                    if (!empty($hotels)) {
-                         try {
-                             City::where('code', $cityCode)->update(['hotels_count' => count($hotels)]);
-                         } catch (\Exception $e) {
-                             Log::warning('Failed to update hotels_count for city code: ' . $cityCode);
-                         }
+                    if (! empty($hotels)) {
+                        try {
+                            City::where('code', $cityCode)->update(['hotels_count' => count($hotels)]);
+                        } catch (\Exception $e) {
+                            Log::warning('Failed to update hotels_count for city code: '.$cityCode);
+                        }
                     }
 
                     return $hotels;
                 } catch (\Exception $e) {
                     Log::error('Failed to fetch city hotels from API: '.$e->getMessage());
+
                     return [];
                 }
             });
@@ -313,33 +318,33 @@ class HotelController extends Controller
             $adults = request('adults');
             $children = request('children');
 
-            if ($checkIn && $checkOut && $adults) { 
-                Log::info("City Availability Search", ['city' => $cityCode, 'in' => $checkIn, 'out' => $checkOut, 'adults' => $adults]);
-                
+            if ($checkIn && $checkOut && $adults) {
+                Log::info('City Availability Search', ['city' => $cityCode, 'in' => $checkIn, 'out' => $checkOut, 'adults' => $adults]);
+
                 // 1. We have $allLightweightHotels from the city list
-                if (!empty($allLightweightHotels)) {
+                if (! empty($allLightweightHotels)) {
                     // 2. Extract codes (Limit to 50-100 to avoid API overflow/timeouts)
-                    // TBO Search allows multiple codes, but performance degrades. 
-                    // Let's take the top 50 hotels (which are usually the most relevant if sorted, 
+                    // TBO Search allows multiple codes, but performance degrades.
+                    // Let's take the top 50 hotels (which are usually the most relevant if sorted,
                     // or just the first 50 found) to check availability.
                     // If we want more, we'd need complex background processing or pagination of SEARCH itself.
-                    $candidateHotels = array_slice($allLightweightHotels, 0, 50); 
+                    $candidateHotels = array_slice($allLightweightHotels, 0, 50);
                     $candidateCodes = array_column($candidateHotels, 'HotelCode');
                     $codesString = implode(',', $candidateCodes);
 
-                    if (!empty($codesString)) {
+                    if (! empty($codesString)) {
                         try {
                             $searchData = [
                                 'CheckIn' => $checkIn,
                                 'CheckOut' => $checkOut,
                                 'HotelCodes' => $codesString,
-                                'GuestNationality' => 'AE', 
+                                'GuestNationality' => 'AE',
                                 'PaxRooms' => [
                                     [
                                         'Adults' => (int) $adults,
                                         'Children' => (int) ($children ?? 0),
                                         'ChildrenAges' => [], // Default empty, or add inputs if needed
-                                    ]
+                                    ],
                                 ],
                                 'ResponseTime' => 20,
                                 'IsDetailedResponse' => false, // We just need availability status, not full details yet
@@ -352,7 +357,7 @@ class HotelController extends Controller
 
                             // Call TBO Search
                             // We use a different cache key for AVAILABILITY search
-                            $searchCacheKey = 'avail_search_' . md5(json_encode($searchData));
+                            $searchCacheKey = 'avail_search_'.md5(json_encode($searchData));
                             $searchResponse = Cache::remember($searchCacheKey, 300, function () use ($searchData) { // 5 mins cache
                                 return $this->hotelApi->searchHotel($searchData);
                             });
@@ -362,7 +367,9 @@ class HotelController extends Controller
                                 $results = $searchResponse['HotelResult'] ?? [];
                                 foreach ($results as $res) {
                                     $code = $res['HotelCode'] ?? '';
-                                    if ($code) $availableHotelCodes[] = $code;
+                                    if ($code) {
+                                        $availableHotelCodes[] = $code;
+                                    }
                                 }
                             }
 
@@ -374,16 +381,16 @@ class HotelController extends Controller
                                     $filteredByAvailability[] = $h;
                                 }
                             }
-                            
+
                             // Log results
-                            Log::info("Availability Filter: Checked " . count($candidateCodes) . ", Found " . count($availableHotelCodes));
-                            
+                            Log::info('Availability Filter: Checked '.count($candidateCodes).', Found '.count($availableHotelCodes));
+
                             // Replace the list
                             $allLightweightHotels = $filteredByAvailability;
 
                         } catch (\Exception $e) {
-                            Log::error("Availability Search Failed: " . $e->getMessage());
-                            // Fallback: Do we show all or none? 
+                            Log::error('Availability Search Failed: '.$e->getMessage());
+                            // Fallback: Do we show all or none?
                             // Usually show all with a warning, or just ignore failure and show list (safer).
                         }
                     }
@@ -394,21 +401,23 @@ class HotelController extends Controller
             // STRICT FILTERING
             // Filter hotels to ensure they actually belong to the requested city
             $filteredHotels = [];
-            
+
             // Special handling for 6th of October (Code 100639) if names are missing
             if ($cityCode == '100639' && empty($cityNames)) {
                 $cityNames = ['october', '6th', 'wahat'];
             }
 
-            if (!empty($cityNames)) {
+            if (! empty($cityNames)) {
                 foreach ($allLightweightHotels as $hotel) {
                     $hotelCityName = strtolower($hotel['CityName'] ?? '');
                     $hotelAddress = strtolower($hotel['Address'] ?? '');
-                    
+
                     $match = false;
                     foreach ($cityNames as $validName) {
-                        if (empty($validName)) continue;
-                        
+                        if (empty($validName)) {
+                            continue;
+                        }
+
                         // Check if API CityName contains our valid name
                         if (str_contains($hotelCityName, $validName)) {
                             $match = true;
@@ -420,21 +429,21 @@ class HotelController extends Controller
                             break;
                         }
                     }
-                    
+
                     if ($match) {
                         $filteredHotels[] = $hotel;
                     }
                 }
             }
-            
+
             // Safety Fallback: If strict filtering removed EVERYTHING, it might contain a bug or data mismatch.
             // In that case, return the original list to avoid showing empty page (unless the city really has no hotels).
-            if (empty($filteredHotels) && !empty($allLightweightHotels)) {
+            if (empty($filteredHotels) && ! empty($allLightweightHotels)) {
                 // Log the potential issue
                 Log::warning("Strict filtering returned 0 results for CityCode: $cityCode. Falling back to original list.", [
-                   'valid_names' => $cityNames 
+                    'valid_names' => $cityNames,
                 ]);
-                $filteredHotels = $allLightweightHotels; 
+                $filteredHotels = $allLightweightHotels;
             }
 
             // Calculate pagination on the FILTERED list
@@ -449,37 +458,41 @@ class HotelController extends Controller
             // We extract codes and make a single bulk call if possible, or individual calls
             // TBO's HotelDetails often takes 1 code, let's try comma separated or loop
             // Based on optimization, we'll assign details back to $pagedHotels
-            
+
             $detailedHotels = [];
-            if (!empty($pagedHotels)) {
+            if (! empty($pagedHotels)) {
                 $hotelCodes = array_column($pagedHotels, 'HotelCode'); // or 'Code'
                 $codesString = implode(',', $hotelCodes);
-                
+
                 // Cache details for this specific page/batch
-                $detailsCacheKey = 'hotel_details_batch_' . md5($codesString) . '_' . $language;
-                
-                $detailedHotelsMap = Cache::remember($detailsCacheKey, 86400, function() use ($codesString, $language) {
-                     try {
+                $detailsCacheKey = 'hotel_details_batch_'.md5($codesString).'_'.$language;
+
+                $detailedHotelsMap = Cache::remember($detailsCacheKey, 86400, function () use ($codesString, $language) {
+                    try {
                         $response = $this->hotelApi->getHotelDetails($codesString, $language);
-                        
+
                         // Handle response structure variations
                         $detailsList = $response['HotelDetails'] ?? $response['HotelResult'] ?? [];
-                        
+
                         // Map by code for easy lookup
                         $map = [];
                         if (is_array($detailsList)) {
-                             foreach ($detailsList as $detail) {
-                                 $code = $detail['HotelCode'] ?? $detail['Code'] ?? '';
-                                 if ($code) $map[$code] = $detail;
-                             }
+                            foreach ($detailsList as $detail) {
+                                $code = $detail['HotelCode'] ?? $detail['Code'] ?? '';
+                                if ($code) {
+                                    $map[$code] = $detail;
+                                }
+                            }
                         }
+
                         return $map;
-                     } catch (\Exception $e) {
-                         Log::error("Failed to fetch hotel details batch: " . $e->getMessage());
-                         return [];
-                     }
+                    } catch (\Exception $e) {
+                        Log::error('Failed to fetch hotel details batch: '.$e->getMessage());
+
+                        return [];
+                    }
                 });
-                
+
                 // Merge details into paged hotels
                 foreach ($pagedHotels as &$hotel) {
                     $code = $hotel['HotelCode'] ?? $hotel['Code'] ?? '';
@@ -493,8 +506,8 @@ class HotelController extends Controller
             }
 
             // Apply translation if needed
-            if ($language === 'ar' && !empty($detailedHotels)) {
-                $translator = new \App\Services\HotelTranslationService();
+            if ($language === 'ar' && ! empty($detailedHotels)) {
+                $translator = new \App\Services\HotelTranslationService;
                 $detailedHotels = $translator->translateHotels($detailedHotels);
             }
 
@@ -508,13 +521,13 @@ class HotelController extends Controller
             // Ensure Cities are synced for this country
             // This fixes the issue where cities wouldn't show up if not visited on Home page first
             if ($selectedCountryCode) {
-                 $this->locationService->syncCitiesForCountry($selectedCountryCode);
+                $this->locationService->syncCitiesForCountry($selectedCountryCode);
             }
 
             // Fetch cities for sidebar (filtered by selected country)
             $cities = City::whereNotNull('code')
                 ->where('code', '!=', '')
-                ->whereHas('country', function($q) use ($selectedCountryCode) {
+                ->whereHas('country', function ($q) use ($selectedCountryCode) {
                     $q->where('code', $selectedCountryCode);
                 })
                 ->orderBy('name', 'asc')
@@ -536,6 +549,7 @@ class HotelController extends Controller
 
             $countries = \App\Models\Country::all();
             $cities = City::whereNotNull('code')->where('code', '!=', '')->orderBy('name', 'asc')->get();
+
             return view('Web.hotels', [
                 'hotels' => [],
                 'currentPage' => 1,
@@ -554,97 +568,61 @@ class HotelController extends Controller
     {
         try {
             $request = request();
-            // Increase execution time for this request to 180s for larger dataset
-            set_time_limit(180);
+            // Increase execution time for this request to 300s for large dataset fetching
+            set_time_limit(300);
 
-            // Determine selected country
-            if ($request->has('country')) {
-                $selectedCountryCode = $request->input('country');
-                session(['selected_country' => $selectedCountryCode]);
-            } else {
-                $selectedCountryCode = session('selected_country', 'SA');
-            }
-
-            // Get top city codes from database FOR SELECTED COUNTRY
-            $cityQuery = City::whereNotNull('code')
+            // OPTIMIZED CITY FETCHING: 80 cities for safe performance
+            $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
-                ->whereHas('country', function($q) use ($selectedCountryCode) {
-                    $q->where('code', $selectedCountryCode);
-                });
+                ->orderBy('hotels_count', 'desc')
+                ->limit(80)
+                ->pluck('code')
+                ->toArray();
 
-            // Check if we have any known popular cities
-            $hasPopularCities = (clone $cityQuery)->where('hotels_count', '>', 0)->exists();
-
-            if ($hasPopularCities) {
-                // If we have data, use the popular ones
-                $allCityCodes = $cityQuery->orderBy('hotels_count', 'desc')->limit(50)->pluck('code')->toArray();
-            } else {
-                // Cold Start: No popularity data yet.
-                // Try to find Major Cities for this country first to ensure we get results.
-                $majorCities = match($selectedCountryCode) {
-                    'SA' => ['Riyadh', 'Jeddah', 'Makkah', 'Madinah', 'Dammam', 'Khobar', 'Abha', 'Taif'],
-                    'AE' => ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah'],
-                    'EG' => ['Cairo', 'Alexandria', 'Sharm El Sheikh', 'Hurghada', 'Luxor', 'Aswan'],
-                    'TR' => ['Istanbul', 'Antalya', 'Ankara', 'Izmir', 'Bursa'],
-                    'GB' => ['London', 'Manchester', 'Birmingham', 'Edinburgh', 'Glasgow'],
-                    'FR' => ['Paris', 'Lyon', 'Marseille', 'Nice', 'Bordeaux'],
-                    default => []
-                };
-
-                $allCityCodes = [];
-                
-                if (!empty($majorCities)) {
-                    // Try to find these cities in DB
-                    $allCityCodes = (clone $cityQuery)->where(function($q) use ($majorCities) {
-                        foreach ($majorCities as $city) {
-                            $q->orWhere('name', 'LIKE', "%$city%")
-                              ->orWhere('name_en', 'LIKE', "%$city%");
-                        }
-                    })->limit(50)->pluck('code')->toArray();
-                }
-
-                // If major cities not found or country not in list, fallback to random
-                if (empty($allCityCodes)) {
-                    $allCityCodes = $cityQuery->inRandomOrder()->limit(50)->pluck('code')->toArray();
-                }
+            if (empty($allCityCodes)) {
+                $allCityCodes = City::whereNotNull('code')->limit(30)->pluck('code')->toArray();
             }
 
             $language = app()->getLocale();
             $hotels = [];
-            
-            if (!empty($allCityCodes)) {
-                // Use cache key based on COUNTRY and LANGUAGE
-                $cacheKey = 'all_hotels_'.$selectedCountryCode.'_'.$language.'_v4';
 
-                // Check cache first
-                $hotels = \Illuminate\Support\Facades\Cache::get($cacheKey);
+            if (! empty($allCityCodes)) {
+                // Version V60 for 80-city result set
+                $cacheKey = 'all_hotels_global_v60_'.$language.'_'.count($allCityCodes);
+                $hotels = Cache::get($cacheKey);
 
                 if (! $hotels) {
                     try {
                         $apiLang = $language === 'ar' ? 'ar' : 'en';
-                        
-                        // Fetch from top cities concurrently
+
+                        // Use default maxPages=1 to ENABLE concurrency (getHotelsConcurrent)
+                        // This fetches cities in parallel chunks for maximum speed
                         $response = $this->hotelApi->getHotelsFromMultipleCities(
-                            $allCityCodes, 
-                            true, 
-                            10, 
-                            $apiLang,
-                            1 
+                            $allCityCodes,
+                            true,
+                            20, // More hotels per city for a bigger list
+                            $apiLang
                         );
 
                         $hotels = $response['Hotels'] ?? [];
+
+                        Log::info('Global Hotel Fetch Result:', [
+                            'hotels_found' => count($hotels),
+                            'cities_processed' => $response['CitiesProcessed'] ?? 0,
+                            'status' => $response['Status']['Code'] ?? 'no_status',
+                        ]);
 
                         if (! is_array($hotels)) {
                             $hotels = json_decode(json_encode($hotels), true);
                         }
 
                         // Only cache if we actually got results!
-                        if (!empty($hotels)) {
+                        if (! empty($hotels)) {
                             \Illuminate\Support\Facades\Cache::put($cacheKey, $hotels, 86400); // 24 hours
                         } else {
                             // If empty, cache for a very short time (e.g., 1 minute) to avoid hammering API if it's down,
                             // but allow quick recovery.
-                             \Illuminate\Support\Facades\Cache::put($cacheKey, [], 60); 
+                            \Illuminate\Support\Facades\Cache::put($cacheKey, [], 60);
                         }
 
                     } catch (\Exception $e) {
@@ -655,44 +633,24 @@ class HotelController extends Controller
 
                 // Apply robust Hotel Name Translation if Arabic
                 if ($language === 'ar') {
-                    $translator = new \App\Services\HotelTranslationService();
+                    $translator = new \App\Services\HotelTranslationService;
                     $hotels = $translator->translateHotels($hotels);
                 }
             }
 
-            // Fetch all countries
-            $countries = \App\Models\Country::select('id', 'code', 'name', 'name_ar')
-                ->whereNotNull('code')
-                ->where('code', '!=', '')
-                ->orderBy('name', 'asc')
-                ->get();
-
-            // Ensure Cities are synced for this country
-            if ($selectedCountryCode) {
-                 $this->locationService->syncCitiesForCountry($selectedCountryCode);
-            }
-
-            // Fetch cities that have hotels for the sidebar filter (FILTERED BY COUNTRY)
-            $cities = City::whereNotNull('code')
-                ->where('code', '!=', '')
-                ->whereHas('country', function($q) use ($selectedCountryCode) {
-                    $q->where('code', $selectedCountryCode);
-                })
-                ->orderBy('name', 'asc')
-                ->get();
-
             return view('Web.hotels', [
                 'hotels' => $hotels, // All hotels loaded at once
                 'allHotelsJson' => json_encode($hotels), // For JavaScript access
-                'cities' => $cities,
-                'countries' => $countries,
-                'selectedCountryCode' => $selectedCountryCode,
+                'cities' => [],
+                'countries' => [],
+                'selectedCountryCode' => 'ALL',
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to fetch all hotels: '.$e->getMessage());
 
             $countries = \App\Models\Country::all();
             $cities = City::whereNotNull('code')->where('code', '!=', '')->orderBy('name', 'asc')->get();
+
             return view('Web.hotels', [
                 'hotels' => [],
                 'allHotelsJson' => '[]',
@@ -702,8 +660,6 @@ class HotelController extends Controller
             ]);
         }
     }
-
-
 
     public function show($id)
     {
@@ -718,20 +674,20 @@ class HotelController extends Controller
             });
 
             // Translate Hotel Details if Arabic
-            if ($language === 'ar' && !empty($hotelDetails['HotelDetails'])) {
+            if ($language === 'ar' && ! empty($hotelDetails['HotelDetails'])) {
                 try {
-                    $translator = new \App\Services\HotelTranslationService();
+                    $translator = new \App\Services\HotelTranslationService;
                     // Translate main fields (Name, Address)
                     $hotelDetails['HotelDetails'] = $translator->translateHotels($hotelDetails['HotelDetails']);
-                    
+
                     // Translate Facilities (Specific to Details page)
                     if (isset($hotelDetails['HotelDetails'][0]['HotelFacilities']) && is_array($hotelDetails['HotelDetails'][0]['HotelFacilities'])) {
                         $facilities = $hotelDetails['HotelDetails'][0]['HotelFacilities'];
                         // Translate the list of facilities efficiently (batch)
                         $translatedFacilities = $translator->translateStrings($facilities, 'en', 'ar');
-                        
+
                         // Map back to the facilities array
-                        $hotelDetails['HotelDetails'][0]['HotelFacilities'] = array_values(array_map(function($facility) use ($translatedFacilities) {
+                        $hotelDetails['HotelDetails'][0]['HotelFacilities'] = array_values(array_map(function ($facility) use ($translatedFacilities) {
                             return $translatedFacilities[$facility] ?? $facility;
                         }, $facilities));
                     }
@@ -798,59 +754,59 @@ class HotelController extends Controller
                         // Filter rooms based on LOCAL bookings (Safety Layer)
                         // 1. Filter CONFIRMED: Normal bookings
                         // 2. Filter PENDING: Payment in progress
-                        if (!empty($availableRooms)) {
+                        if (! empty($availableRooms)) {
                             // Count bookings that should reduce availability (CONFIRMED + PENDING)
                             $reservedRoomCounts = \App\Models\HotelBooking::where('hotel_code', $id)
                                 ->whereIn('booking_status', [
                                     \App\Constants\BookingStatus::CONFIRMED,
-                                    \App\Constants\BookingStatus::PENDING
+                                    \App\Constants\BookingStatus::PENDING,
                                 ])
                                 ->where(function ($query) use ($checkIn, $checkOut) {
                                     $query->where('check_in', '<', $checkOut)
-                                          ->where('check_out', '>', $checkIn);
+                                        ->where('check_out', '>', $checkIn);
                                 })
                                 ->selectRaw('room_name, COUNT(*) as reserved_count')
                                 ->groupBy('room_name')
                                 ->pluck('reserved_count', 'room_name')
                                 ->toArray();
-                            
+
                             // Only filter if there are reserved books
-                            if (!empty($reservedRoomCounts)) {
+                            if (! empty($reservedRoomCounts)) {
                                 // Group rooms by name
                                 $roomsByName = [];
                                 foreach ($availableRooms as $room) {
                                     $roomName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
-                                    if (!isset($roomsByName[$roomName])) {
+                                    if (! isset($roomsByName[$roomName])) {
                                         $roomsByName[$roomName] = [];
                                     }
                                     $roomsByName[$roomName][] = $room;
                                 }
-                                
+
                                 // For each room type, reduce by the number Reserved
                                 $filteredRooms = [];
                                 foreach ($roomsByName as $roomName => $rooms) {
                                     $tboAvailableCount = count($rooms);
                                     $reservedCount = $reservedRoomCounts[$roomName] ?? 0;
                                     $actuallyAvailableCount = max(0, $tboAvailableCount - $reservedCount);
-                                    
+
                                     // Add only the actually available rooms
                                     for ($i = 0; $i < $actuallyAvailableCount; $i++) {
                                         if (isset($rooms[$i])) {
                                             $filteredRooms[] = $rooms[$i];
                                         }
                                     }
-                                    
+
                                     if ($reservedCount > 0) {
-                                        Log::info("Hotel details - Room availability adjusted (Confirmed+Pending)", [
+                                        Log::info('Hotel details - Room availability adjusted (Confirmed+Pending)', [
                                             'hotel' => $id,
                                             'room_type' => $roomName,
                                             'tbo_count' => $tboAvailableCount,
                                             'reserved_count' => $reservedCount,
-                                            'showing_count' => $actuallyAvailableCount
+                                            'showing_count' => $actuallyAvailableCount,
                                         ]);
                                     }
                                 }
-                                
+
                                 $availableRooms = $filteredRooms;
                             }
                         }
@@ -864,33 +820,33 @@ class HotelController extends Controller
             }
 
             // Translate Room Names if Arabic and rooms exist
-            if ($language === 'ar' && !empty($availableRooms)) {
+            if ($language === 'ar' && ! empty($availableRooms)) {
                 try {
-                    $translator = new \App\Services\HotelTranslationService();
+                    $translator = new \App\Services\HotelTranslationService;
                     // Extract unique room names to translate
                     $roomNames = [];
                     foreach ($availableRooms as $room) {
                         $name = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
-                        if (!empty($name)) {
+                        if (! empty($name)) {
                             $roomNames[] = $name;
                         }
                     }
                     $roomNames = array_unique($roomNames);
-                    
-                    if (!empty($roomNames)) {
+
+                    if (! empty($roomNames)) {
                         // Use persistent cache translation
                         $translatedNames = $translator->translateRoomNames($roomNames);
-                        
+
                         // Apply translations back to rooms
                         foreach ($availableRooms as &$room) {
-                             $originalName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
-                             if (isset($translatedNames[$originalName])) {
-                                 if (is_array($room['Name'])) {
-                                     $room['Name'][0] = $translatedNames[$originalName];
-                                 } else {
-                                     $room['Name'] = $translatedNames[$originalName];
-                                 }
-                             }
+                            $originalName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
+                            if (isset($translatedNames[$originalName])) {
+                                if (is_array($room['Name'])) {
+                                    $room['Name'][0] = $translatedNames[$originalName];
+                                } else {
+                                    $room['Name'] = $translatedNames[$originalName];
+                                }
+                            }
                         }
                         unset($room);
                     }
@@ -1026,7 +982,7 @@ class HotelController extends Controller
                 $currency = $request->input('currency', 'USD');
             }
 
-            // Do not generate payment data immediately. 
+            // Do not generate payment data immediately.
             // We want the user to go through the review process (either AJAX or separate page)
             // where the actual Booking record is created.
             $paymentData = null;
@@ -1101,11 +1057,11 @@ class HotelController extends Controller
             $altLanguage = $language === 'ar' ? 'en' : 'ar';
             $hotelDetailsAlt = null;
             try {
-                 $hotelDetailsAlt = \Illuminate\Support\Facades\Cache::remember("hotel_details_{$hotelId}_{$altLanguage}", 86400, function () use ($hotelId, $altLanguage) {
+                $hotelDetailsAlt = \Illuminate\Support\Facades\Cache::remember("hotel_details_{$hotelId}_{$altLanguage}", 86400, function () use ($hotelId, $altLanguage) {
                     return $this->hotelApi->getHotelDetails($hotelId, $altLanguage);
-                 });
+                });
             } catch (\Exception $e) {
-                 Log::warning('Failed to fetch alternate hotel details: '.$e->getMessage());
+                Log::warning('Failed to fetch alternate hotel details: '.$e->getMessage());
             }
 
             // Search for room details using booking_code
@@ -1147,7 +1103,7 @@ class HotelController extends Controller
                                         $foundRoom = $room;
                                         break 2;
                                     }
-                                    
+
                                     // Secondary match: Room Name (if session refreshed and code changed)
                                     $currentRoomName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
                                     if ($requestedRoomName && $currentRoomName === $requestedRoomName) {
@@ -1160,7 +1116,7 @@ class HotelController extends Controller
                         if ($foundRoom) {
                             $roomData = $foundRoom;
                             $roomData['Currency'] = $searchResponse['HotelResult'][0]['Currency'] ?? 'USD';
-                            
+
                             // Final safety check: ensure no local confirmed booking exists for this room/dates
                             $roomName = is_array($roomData['Name']) ? ($roomData['Name'][0] ?? '') : ($roomData['Name'] ?? '');
                             $isLocallyBooked = \App\Models\HotelBooking::where('hotel_code', $hotelId)
@@ -1168,10 +1124,10 @@ class HotelController extends Controller
                                 ->where('room_name', $roomName)
                                 ->where(function ($query) use ($checkIn, $checkOut) {
                                     $query->where('check_in', '<', $checkOut)
-                                          ->where('check_out', '>', $checkIn);
+                                        ->where('check_out', '>', $checkIn);
                                 })
                                 ->exists();
-                            
+
                             if ($isLocallyBooked) {
                                 throw new \Exception(__('This room is no longer available for the selected dates.'));
                             }
@@ -1193,8 +1149,8 @@ class HotelController extends Controller
                             Log::info('PreBook successful in review step', ['booking_code' => $bookingCode]);
                         } else {
                             $errorMsg = $preBookResponse['Status']['Description'] ?? 'Room no longer available';
-                            Log::warning('PreBook failed in review step: ' . $errorMsg);
-                            throw new \Exception(__('The selected room is no longer available: ') . $errorMsg);
+                            Log::warning('PreBook failed in review step: '.$errorMsg);
+                            throw new \Exception(__('The selected room is no longer available: ').$errorMsg);
                         }
                     }
                 } catch (\Exception $e) {
@@ -1293,7 +1249,7 @@ class HotelController extends Controller
 
             return redirect()->route('reservation', ['locale' => app()->getLocale()])
                 ->withInput()
-                ->with('error', __('Failed to load review page') . ': ' . $e->getMessage());
+                ->with('error', __('Failed to load review page').': '.$e->getMessage());
         }
     }
 
@@ -1527,19 +1483,21 @@ class HotelController extends Controller
         $names = [];
         foreach ($cities as $city) {
             $name = $city['CityName'] ?? $city['Name'] ?? '';
-            if (!empty($name)) {
+            if (! empty($name)) {
                 $names[] = trim($name);
             }
         }
 
         // Use the service to batch translate
         // This handles: Check Local DB -> Google Translate if missing -> Save Local DB
-        $translationService = new \App\Services\CityTranslationService();
+        $translationService = new \App\Services\CityTranslationService;
         $translatedNames = $translationService->translateBatch($names, 5); // Limit 5 API calls per request
 
         foreach ($cities as &$city) {
             $name = $city['CityName'] ?? $city['Name'] ?? '';
-            if (empty($name)) continue;
+            if (empty($name)) {
+                continue;
+            }
 
             $name = trim($name);
 
@@ -1547,11 +1505,13 @@ class HotelController extends Controller
             if (stripos($name, 'Al Lith') !== false) {
                 $city['CityName'] = 'الليث';
                 $city['Name'] = 'الليث';
+
                 continue;
             }
             if (stripos($name, 'Al Qunfudhah') !== false) {
                 $city['CityName'] = 'القنفذة';
                 $city['Name'] = 'القنفذة';
+
                 continue;
             }
 
@@ -1564,8 +1524,6 @@ class HotelController extends Controller
 
         return $cities;
     }
-
-
 
     public function bookingSuccess($reference)
     {

@@ -28,32 +28,14 @@
                     <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
                         <h3 class="text-xl font-bold text-gray-900 mb-6">{{ __('Filter Results') }}</h3>
 
-                        <!-- Country Selection -->
+                        <!-- Hotel Name Search -->
                         <div class="mb-6">
-                            <h4 class="font-semibold text-gray-900 mb-4">{{ __('Select Country') }}</h4>
+                            <h4 class="font-semibold text-gray-900 mb-4">{{ __('Search Hotel') }}</h4>
                             <div class="relative">
-                                <input type="text" id="countrySearchInput" autocomplete="off"
-                                    placeholder="{{ __('Select Country') }}"
+                                <input type="text" id="hotelNameFilter" placeholder="{{ __('Search for a hotel...') }}"
                                     class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-sm">
-                                <input type="hidden" id="countryFilter"
-                                    value="{{ isset($selectedCountryCode) ? $selectedCountryCode : '' }}">
-                                <div id="countryAutocomplete"
-                                    class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- City Selection -->
-                        <div class="mb-6">
-                            <h4 class="font-semibold text-gray-900 mb-4">{{ __('Select City') }}</h4>
-                            <div class="relative">
-                                <input type="text" id="citySearchInput" autocomplete="off"
-                                    placeholder="{{ __('Select City') }}"
-                                    class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 text-sm">
-                                <input type="hidden" id="cityFilter" value="{{ isset($cityCode) ? $cityCode : '' }}">
-                                <div id="cityAutocomplete"
-                                    class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden">
-                                </div>
+                                <i
+                                    class="fas fa-search absolute {{ app()->getLocale() === 'ar' ? 'left-3' : 'right-3' }} top-3 text-gray-400"></i>
                             </div>
                         </div>
 
@@ -189,7 +171,8 @@
                                 $facilitiesJson = json_encode($facilitiesLower);
                             @endphp
                             <div class="hotel-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300"
-                                data-rating="{{ $ratingNumber }}" data-facilities='{{ $facilitiesJson }}'>
+                                data-name="{{ strtolower($hotel['HotelName']) }}" data-rating="{{ $ratingNumber }}"
+                                data-facilities='{{ $facilitiesJson }}'>
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
                                     <!-- Hotel Image -->
                                     <div class="relative h-64 md:h-full max-h-[250px]">
@@ -304,9 +287,6 @@
         let filteredHotels = [];
         const isRTL = '{{ app()->getLocale() }}' === 'ar';
 
-        // Data Injection
-        const allCountries = @json($countries ?? []);
-        const allCities = @json($cities ?? []);
 
         // Hotel Filtering and Pagination Logic
         function applyFiltersAndPagination() {
@@ -318,12 +298,20 @@
             const selectedAmenities = Array.from(document.querySelectorAll('.filter-amenity:checked'))
                 .map(cb => cb.dataset.amenity);
 
+            // Get name filter
+            const nameSearch = document.getElementById('hotelNameFilter').value.toLowerCase();
+
             // Get all hotel cards
             const allHotelCards = Array.from(document.querySelectorAll('.hotel-card'));
 
             // Filter hotels
             filteredHotels = allHotelCards.filter(card => {
                 let show = true;
+
+                // Filter by name
+                if (nameSearch && !card.dataset.name.includes(nameSearch)) {
+                    show = false;
+                }
 
                 // Filter by rating
                 if (selectedRatings.length > 0) {
@@ -472,136 +460,19 @@
             if (countElement) countElement.textContent = filteredHotels.length + ' {{ __('hotels') }}';
         }
 
-        // -----------------------------------------------------------------------------
-        // SEARCHABLE FILTER LOGIC
-        // -----------------------------------------------------------------------------
-        function initSearchableFilter(inputEl, hiddenEl, listEl, data, onSelect) {
-            if (!inputEl || !hiddenEl || !listEl) return;
-
-            function showResults(keyword = "") {
-                listEl.innerHTML = "";
-                const lowerK = keyword.toLowerCase();
-                const results = keyword === "" ? data : data.filter(item =>
-                    item.name.toLowerCase().includes(lowerK)
-                );
-
-                if (results.length === 0) {
-                    listEl.classList.add("hidden");
-                    return;
-                }
-
-                listEl.classList.remove("hidden");
-                const seenCodes = new Set();
-
-                results.forEach(item => {
-                    if (seenCodes.has(item.code)) return;
-                    seenCodes.add(item.code);
-
-                    const div = document.createElement("div");
-                    div.className = "px-4 py-2 cursor-pointer hover:bg-gray-100 text-gray-900";
-                    div.textContent = item.name;
-
-                    div.addEventListener("click", () => {
-                        inputEl.value = item.name;
-                        hiddenEl.value = item.code;
-                        listEl.classList.add("hidden");
-                        if (onSelect) onSelect(item.code);
-                    });
-
-                    listEl.appendChild(div);
-                });
-            }
-
-            inputEl.addEventListener("focus", () => showResults(inputEl.value));
-            inputEl.addEventListener("input", () => showResults(inputEl.value));
-
-            // Set initial name if value exists
-            const initialCode = hiddenEl.value;
-            if (initialCode) {
-                const initialItem = data.find(d => d.code == initialCode);
-                if (initialItem) inputEl.value = initialItem.name;
-            }
-        }
-
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             applyFiltersAndPagination();
 
+            // Apply filter when name changes
+            const nameInput = document.getElementById('hotelNameFilter');
+            if (nameInput) {
+                nameInput.addEventListener('input', applyFiltersAndPagination);
+            }
+
             // Apply filters when checkboxes change
             document.querySelectorAll('.filter-rating, .filter-amenity').forEach(checkbox => {
                 checkbox.addEventListener('change', applyFiltersAndPagination);
-            });
-
-            // Prepare Data for Search
-            const countryData = allCountries.map(c => ({
-                name: isRTL ? (c.name_ar || c.name) : c.name,
-                code: c.code
-            }));
-
-            const cityData = allCities.map(c => ({
-                name: isRTL ? (c.name_ar || c.name) : c.name,
-                code: c.code
-            }));
-
-            // Init Country Search
-            initSearchableFilter(
-                document.getElementById('countrySearchInput'),
-                document.getElementById('countryFilter'),
-                document.getElementById('countryAutocomplete'),
-                countryData,
-                (countryCode) => {
-                    // Redirect logic
-                    const routeUrl = "{{ route('all.hotels', ['locale' => app()->getLocale()]) }}";
-                    const targetUrl = new URL(routeUrl, window.location.origin);
-                    targetUrl.searchParams.set('country', countryCode);
-                    window.location.href = targetUrl.toString();
-                }
-            );
-
-            // Init City Search
-            initSearchableFilter(
-                document.getElementById('citySearchInput'),
-                document.getElementById('cityFilter'),
-                document.getElementById('cityAutocomplete'),
-                cityData,
-                (cityCode) => {
-                    // Redirect Logic
-                    let routeUrl;
-                    if (cityCode === 'all') {
-                        routeUrl = "{{ route('all.hotels', ['locale' => app()->getLocale()]) }}";
-                    } else {
-                        routeUrl =
-                            "{{ route('city.hotels', ['cityCode' => ':code', 'locale' => app()->getLocale()]) }}"
-                            .replace(':code', cityCode);
-                    }
-                    const urlObj = new URL(routeUrl, window.location.origin);
-                    const currentParams = new URLSearchParams(window.location.search);
-                    currentParams.delete('page');
-                    for (const [key, value] of currentParams) {
-                        if (!urlObj.searchParams.has(key)) {
-                            urlObj.searchParams.set(key, value);
-                        }
-                    }
-                    window.location.href = urlObj.toString();
-                }
-            );
-
-            // Global click to close
-            document.addEventListener("click", function(e) {
-                const boxes = [
-                    document.getElementById("countryAutocomplete"),
-                    document.getElementById("cityAutocomplete")
-                ];
-                const inputs = [
-                    document.getElementById("countrySearchInput"),
-                    document.getElementById("citySearchInput")
-                ];
-                boxes.forEach((box, i) => {
-                    if (box && inputs[i] && !inputs[i].contains(e.target) && !box.contains(e
-                        .target)) {
-                        box.classList.add("hidden");
-                    }
-                });
             });
         });
     </script>

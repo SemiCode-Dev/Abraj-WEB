@@ -27,7 +27,6 @@ class HotelApiService
     private function sendRequest(string $endpoint, array $payload)
     {
         $url = rtrim($this->baseUrl, '/').'/'.$endpoint;
-
         if (config('app.debug')) {
             \Log::debug("TBO API Request to $endpoint", ['url' => $url, 'payload' => $payload]);
         }

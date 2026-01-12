@@ -53,7 +53,7 @@
                     </h4>
                     <div
                         class="flex {{ app()->getLocale() === 'ar' ? 'space-x-reverse space-x-4' : 'space-x-4' }} justify-center">
-                        <a href="#"
+                        <a href="https://web.facebook.com/profile.php?id=61577067520118"
                             class="w-10 h-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full flex items-center justify-center hover:bg-orange-500 hover:border-orange-500 hover:text-white text-gray-700 dark:text-gray-200 transition">
                             <i class="fab fa-facebook-f"></i>
                         </a>
@@ -61,7 +61,7 @@
                             class="w-10 h-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full flex items-center justify-center hover:bg-orange-500 hover:border-orange-500 hover:text-white text-gray-700 dark:text-gray-200 transition">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a href="#"
+                        <a href="https://www.instagram.com/abrajstay/"
                             class="w-10 h-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full flex items-center justify-center hover:bg-orange-500 hover:border-orange-500 hover:text-white text-gray-700 dark:text-gray-200 transition">
                             <i class="fab fa-instagram"></i>
                         </a>
