@@ -47,6 +47,10 @@ Route::group([
 
     // Home
     Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::get('/about', [HomeController::class, 'about'])->name('about');
+    Route::get('/privacy', [HomeController::class, 'privacy'])->name('privacy');
+    Route::get('/cookies', [HomeController::class, 'cookies'])->name('cookies');
+    Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
     Route::post('/aps/callback', [PaymentController::class, 'apsCallback'])->name('aps.callback');
 
     // Hotels

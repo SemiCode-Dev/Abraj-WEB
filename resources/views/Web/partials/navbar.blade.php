@@ -32,7 +32,7 @@
                     class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium text-base">{{ __('Car Rental') }}</a>
                 <a href="{{ route('visa') }}"
                     class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium text-base">{{ __('Visa Service') }}</a>
-                <a href="{{ route('home') }}#about"
+                <a href="{{ route('about') }}"
                     class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium text-base">{{ __('About Us') }}</a>
                 <a href="{{ route('contact') }}"
                     class="text-gray-700 dark:text-gray-200 hover:text-orange-500 transition font-medium text-base">{{ __('Contact Us') }}</a>
@@ -165,7 +165,7 @@
                     class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Car Rental') }}</a>
                 <a href="{{ route('visa') }}" onclick="closeMobileMenu()"
                     class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Visa Service') }}</a>
-                <a href="{{ route('home') }}#about" onclick="closeMobileMenu()"
+                <a href="{{ route('about') }}" onclick="closeMobileMenu()"
                     class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('About Us') }}</a>
                 <a href="{{ route('contact') }}" onclick="closeMobileMenu()"
                     class="block text-gray-700 dark:text-gray-200 hover:text-orange-500 font-medium py-2">{{ __('Contact Us') }}</a>

@@ -40,8 +40,9 @@
                     <li><a href="#" class="hover:text-orange-500 transition">{{ __('FAQ') }}</a></li>
                     <li><a href="{{ route('contact') }}"
                             class="hover:text-orange-500 transition">{{ __('Contact Us') }}</a></li>
-                    <li><a href="#" class="hover:text-orange-500 transition">{{ __('Privacy Policy') }}</a></li>
-                    <li><a href="#" class="hover:text-orange-500 transition">{{ __('Terms of Use') }}</a></li>
+                    <li><a href="{{ route('privacy') }}" class="hover:text-orange-500 transition">{{ __('Privacy Policy') }}</a></li>
+                    <li><a href="{{ route('terms') }}" class="hover:text-orange-500 transition">{{ __('Terms of Service') }}</a>
+                    </li>
                 </ul>
             </div>
 
@@ -56,7 +57,7 @@
                             class="w-10 h-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full flex items-center justify-center hover:bg-orange-500 hover:border-orange-500 hover:text-white text-gray-700 dark:text-gray-200 transition">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a href="#"
+                        <a href="https://x.com/AbrajStay"
                             class="w-10 h-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full flex items-center justify-center hover:bg-orange-500 hover:border-orange-500 hover:text-white text-gray-700 dark:text-gray-200 transition">
                             <i class="fab fa-twitter"></i>
                         </a>
@@ -64,9 +65,9 @@
                             class="w-10 h-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full flex items-center justify-center hover:bg-orange-500 hover:border-orange-500 hover:text-white text-gray-700 dark:text-gray-200 transition">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a href="#"
+                        <a href="https://www.linkedin.com/company/abraj-stay/"
                             class="w-10 h-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full flex items-center justify-center hover:bg-orange-500 hover:border-orange-500 hover:text-white text-gray-700 dark:text-gray-200 transition">
-                            <i class="fab fa-youtube"></i>
+                            <i class="fab fa-linkedin-in"></i>
                         </a>
                     </div>
                 </div>
@@ -117,6 +118,25 @@
                 class="flex items-center justify-center md:justify-end space-x-4 {{ app()->getLocale() === 'ar' ? 'space-x-reverse' : '' }} order-2 md:order-3">
                 <img src="{{ asset('images/footer/vat.png') }}" alt="VAT" class="h-16 w-auto">
                 <img src="{{ asset('images/footer/maroof.png') }}" alt="Maroof" class="h-20 w-auto">
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Privacy Links Bar -->
+    <div class="text-gray-600 dark:text-white py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div
+                class="flex flex-wrap items-center justify-center gap-y-2 gap-x-4 sm:gap-x-8 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                <a href="{{ route('about') }}" class="hover:text-orange-500 transition">{{ __('About Us') }}</a>
+                <span class="text-gray-300 dark:text-gray-700 hidden sm:inline">|</span>
+                <a href="{{ route('privacy') }}"
+                    class="hover:text-orange-500 transition">{{ __('Privacy Policy') }}</a>
+                <span class="text-gray-300 dark:text-gray-700 hidden sm:inline">|</span>
+                <a href="{{ route('terms') }}"
+                    class="hover:text-orange-500 transition">{{ __('Terms of Service') }}</a>
+                <span class="text-gray-300 dark:text-gray-700 hidden sm:inline">|</span>
+                <a href="{{ route('cookies') }}"
+                    class="hover:text-orange-500 transition">{{ __('Cookie Policy') }}</a>
             </div>
         </div>
     </div>

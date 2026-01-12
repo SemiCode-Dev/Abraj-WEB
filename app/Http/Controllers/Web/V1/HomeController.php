@@ -158,6 +158,26 @@ class HomeController extends Controller
         ]);
     }
 
+    public function about()
+    {
+        return view('Web.about');
+    }
+
+    public function privacy()
+    {
+        return view('Web.privacy');
+    }
+
+    public function cookies()
+    {
+        return view('Web.cookies');
+    }
+
+    public function terms()
+    {
+        return view('Web.terms');
+    }
+
     /**
      * Helper method to translate countries to Arabic manually
      */

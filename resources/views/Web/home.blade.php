@@ -631,10 +631,16 @@ $fallbackImages = [
     </section>
 
     <!-- Customer Reviews - Enhanced & Professional -->
-    <section
-        class="py-20 bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
-        <!-- Decorative Background Elements -->
-        <div class="absolute top-0 left-0 w-full h-full opacity-5">
+    <section class="py-24 relative overflow-hidden bg-slate-900 border-y border-white/5">
+        <!-- Background Image with Overlay -->
+        <div class="absolute inset-0 z-0">
+            <img src="{{ asset('images/testimonials-bg.png') }}" alt="Testimonials Background"
+                class="w-full h-full object-cover opacity-60">
+            <div class="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-transparent to-slate-900/40"></div>
+        </div>
+
+        <!-- Decorative Background Elements (Kept for depth) -->
+        <div class="absolute top-0 left-0 w-full h-full opacity-10">
             <div
                 class="absolute top-20 {{ app()->getLocale() === 'ar' ? 'left-20' : 'right-20' }} w-96 h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl">
             </div>
@@ -643,36 +649,37 @@ $fallbackImages = [
             </div>
         </div>
 
-        <div class="relative max-w-7xl mx-auto p-4 sm:px-6 lg:px-8">
+        <div class="relative z-10 max-w-7xl mx-auto p-4 sm:px-6 lg:px-8">
             <!-- Header Section -->
             <div class="text-center mb-16">
                 <div class="inline-block mb-4">
                     <span
-                        class="px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full text-sm font-semibold">
+                        class="px-4 py-2 bg-orange-500/20 backdrop-blur-md text-orange-400 rounded-full text-sm font-bold border border-orange-500/30">
                         {{ __('Testimonials') }}
                     </span>
                 </div>
-                <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
+                <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-4 drop-shadow-lg">
                     {{ __('What Our Customers Say') }}
                 </h2>
-                <p class="text-gray-600 dark:text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
+                <p class="text-slate-200 text-lg mb-8 max-w-2xl mx-auto drop-shadow-md">
                     {{ __('Real reviews from our distinguished customers') }}
                 </p>
 
                 <!-- Rating Badge -->
                 <div
-                    class="inline-flex items-center gap-3 bg-white dark:bg-gray-800 rounded-2xl px-6 py-4 shadow-lg border border-gray-100 dark:border-gray-700">
-                    <div class="flex text-yellow-500 text-2xl">
+                    class="inline-flex items-center gap-3 bg-white/10 backdrop-blur-xl rounded-3xl px-8 py-5 shadow-2xl border border-white/20">
+                    <div class="flex text-yellow-400 text-3xl">
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                     </div>
-                    <div class="h-8 w-px bg-gray-300 dark:bg-gray-600"></div>
+                    <div class="h-10 w-px bg-white/20"></div>
                     <div>
-                        <div class="text-2xl font-bold text-gray-900 dark:text-white">4.8</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('Based on') }} 2,458
+                        <div class="text-3xl font-bold text-white leading-none">4.8</div>
+                        <div class="text-xs text-slate-300 mt-1 uppercase tracking-wider font-semibold">
+                            {{ __('Based on') }} 2,458
                             {{ __('reviews') }}</div>
                     </div>
                 </div>
@@ -681,20 +688,20 @@ $fallbackImages = [
             <!-- Testimonials Slider Container -->
             <div class="relative">
                 <!-- Slider Wrapper -->
-                <div class="testimonials-slider-wrapper overflow-hidden">
+                <div class="testimonials-slider-wrapper overflow-hidden pb-12">
                     <div class="testimonials-slider-track flex gap-8 transition-transform duration-500 ease-in-out"
                         style="transform: translateX(0);">
                         <!-- Review 1 - Featured Style -->
                         <div
-                            class="group relative bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                            class="group relative bg-white/5 backdrop-blur-md rounded-[2.5rem] p-8 shadow-2xl border border-white/10 hover:bg-white/10 transition-all duration-300 transform hover:-translate-y-2">
                             <!-- Quote Icon -->
                             <div
-                                class="absolute top-6 {{ app()->getLocale() === 'ar' ? 'right-6' : 'left-6' }} text-orange-500/10 dark:text-orange-400/20 text-6xl font-serif">
+                                class="absolute top-6 {{ app()->getLocale() === 'ar' ? 'right-6' : 'left-6' }} text-orange-400/10 text-6xl font-serif">
                                 "
                             </div>
 
                             <!-- Rating Stars -->
-                            <div class="flex text-yellow-500 text-lg mb-4 relative z-10">
+                            <div class="flex text-yellow-400 text-lg mb-4 relative z-10">
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
@@ -703,47 +710,46 @@ $fallbackImages = [
                             </div>
 
                             <!-- Review Text -->
-                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6 relative z-10 text-lg">
+                            <p class="text-slate-100 leading-relaxed mb-6 relative z-10 text-lg font-medium">
                                 "{{ __('Review 1 Text') }}"
                             </p>
 
                             <!-- Customer Info -->
-                            <div
-                                class="flex items-center gap-4 pt-6 border-t border-gray-100 dark:border-gray-700 relative z-10">
+                            <div class="flex items-center gap-4 pt-6 border-t border-white/10 relative z-10">
                                 <div class="relative">
                                     <div
-                                        class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg transform group-hover:scale-110 transition duration-300">
+                                        class="w-16 h-16 bg-gradient-to-br from-blue-500/80 to-blue-600/80 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg transform group-hover:scale-110 transition duration-300 backdrop-blur-sm">
                                         أ
                                     </div>
                                     <div
-                                        class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center">
+                                        class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-slate-900 flex items-center justify-center">
                                         <i class="fas fa-check text-white text-xs"></i>
                                     </div>
                                 </div>
                                 <div class="flex-1">
-                                    <h4 class="font-bold text-gray-900 dark:text-white text-lg mb-1">أحمد محمد</h4>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">3 {{ __('days ago') }}</p>
+                                    <h4 class="font-bold text-white text-lg mb-1">أحمد محمد</h4>
+                                    <p class="text-sm text-slate-400">3 {{ __('days ago') }}</p>
                                 </div>
                             </div>
 
                             <!-- Verified Badge -->
                             <div
-                                class="absolute bottom-6 {{ app()->getLocale() === 'ar' ? 'left-6' : 'right-6' }} flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">
+                                class="absolute bottom-6 {{ app()->getLocale() === 'ar' ? 'left-6' : 'right-6' }} flex items-center gap-2 text-xs text-orange-400 font-bold tracking-wide">
                                 <i class="fas fa-check-circle"></i>
-                                <span>{{ __('Verified Booking') }}</span>
+                                <span class="uppercase">{{ __('Verified Booking') }}</span>
                             </div>
                         </div>
 
                         <!-- Review 2 - Modern Style -->
                         <div
-                            class="group relative bg-gradient-to-br from-white to-orange-50/50 dark:from-gray-800 dark:to-orange-900/20 rounded-3xl p-8 shadow-lg border-2 border-orange-100 dark:border-orange-900/30 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                            class="group relative bg-gradient-to-br from-white/10 to-transparent backdrop-blur-md rounded-[2.5rem] p-8 shadow-2xl border border-orange-500/10 hover:border-orange-500/30 transition-all duration-300 transform hover:-translate-y-2">
                             <!-- Decorative Corner -->
                             <div
                                 class="absolute top-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-24 h-24 bg-gradient-to-br from-orange-500/10 to-transparent rounded-bl-3xl {{ app()->getLocale() === 'ar' ? 'rounded-br-0 rounded-tr-3xl' : 'rounded-br-3xl rounded-tl-0' }}">
                             </div>
 
                             <!-- Rating Stars -->
-                            <div class="flex text-yellow-500 text-lg mb-4">
+                            <div class="flex text-yellow-400 text-lg mb-4">
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
@@ -752,27 +758,26 @@ $fallbackImages = [
                             </div>
 
                             <!-- Review Text -->
-                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6 text-lg">
+                            <p class="text-slate-100 leading-relaxed mb-6 text-lg font-medium">
                                 "{{ __('Review 2 Text') }}"
                             </p>
 
                             <!-- Customer Info -->
-                            <div class="flex items-center gap-4 pt-6 border-t border-orange-100 dark:border-orange-900/30">
+                            <div class="flex items-center gap-4 pt-6 border-t border-white/10">
                                 <div
-                                    class="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg transform group-hover:rotate-6 transition duration-300">
+                                    class="w-16 h-16 bg-gradient-to-br from-pink-500/80 to-pink-600/80 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg transform group-hover:rotate-6 transition duration-300 backdrop-blur-sm">
                                     س
                                 </div>
                                 <div class="flex-1">
-                                    <h4 class="font-bold text-gray-900 dark:text-white text-lg mb-1">سارة علي</h4>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('week ago') }}</p>
+                                    <h4 class="font-bold text-white text-lg mb-1">سارة علي</h4>
+                                    <p class="text-sm text-slate-400">{{ __('week ago') }}</p>
                                 </div>
                             </div>
 
                             <!-- Verified Badge -->
-                            <div
-                                class="mt-4 flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">
+                            <div class="mt-4 flex items-center gap-2 text-xs text-orange-400 font-bold tracking-wide">
                                 <i class="fas fa-check-circle"></i>
-                                <span>{{ __('Verified Booking') }}</span>
+                                <span class="uppercase">{{ __('Verified Booking') }}</span>
                             </div>
                         </div>
 
@@ -782,14 +787,14 @@ $fallbackImages = [
 
                 <!-- Navigation Arrows -->
                 <button
-                    class="testimonials-slider-prev absolute {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg hover:bg-orange-600 dark:hover:bg-orange-600 text-gray-700 dark:text-gray-300 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 -translate-x-1/2 {{ app()->getLocale() === 'ar' ? 'translate-x-1/2' : '' }}"
+                    class="testimonials-slider-prev absolute {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} top-1/2 -translate-y-1/2 z-20 bg-white/10 backdrop-blur-lg shadow-2xl hover:bg-orange-600 text-white p-4 rounded-full transition-all duration-300 border border-white/10 -translate-x-1/2 {{ app()->getLocale() === 'ar' ? 'translate-x-1/2' : '' }}"
                     aria-label="{{ __('Previous') }}" type="button">
-                    <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} text-xl"></i>
+                    <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} text-2xl"></i>
                 </button>
                 <button
-                    class="testimonials-slider-next absolute {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg hover:bg-orange-600 dark:hover:bg-orange-600 text-gray-700 dark:text-gray-300 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 translate-x-1/2 {{ app()->getLocale() === 'ar' ? '-translate-x-1/2' : '' }}"
+                    class="testimonials-slider-next absolute {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} top-1/2 -translate-y-1/2 z-20 bg-white/10 backdrop-blur-lg shadow-2xl hover:bg-orange-600 text-white p-4 rounded-full transition-all duration-300 border border-white/10 translate-x-1/2 {{ app()->getLocale() === 'ar' ? '-translate-x-1/2' : '' }}"
                     aria-label="{{ __('Next') }}" type="button">
-                    <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} text-xl"></i>
+                    <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} text-2xl"></i>
                 </button>
             </div>
         </div>
@@ -955,25 +960,31 @@ $fallbackImages = [
     </section>
 
     <!-- Book Your Trip Now Section -->
-    <section
-        class="py-20 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-4">
+    <section class="py-24 relative overflow-hidden text-white">
+        <!-- Background Image with Overlay -->
+        <div class="absolute inset-0 z-0">
+            <img src="{{ asset('images/booking-bg.png') }}" alt="Booking Background"
+                class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]"></div>
+        </div>
+
+        <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 drop-shadow-lg">
                 {{ __('Book Your Trip Now') }}
             </h2>
-            <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-10">
+            <p class="text-xl md:text-2xl text-slate-100 mb-10 drop-shadow-md">
                 {{ __('Start Your Journey With Us') }}
             </p>
 
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
                 <a href="{{ route('hotels.search') }}"
-                    class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 min-w-[200px]">
-                    <i class="fas fa-calendar-check"></i>
+                    class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-10 py-4 rounded-xl font-bold text-lg shadow-2xl hover:shadow-orange-500/40 transform hover:scale-105 transition-all duration-300 min-w-[220px]">
+                    <i class="fas fa-calendar-check text-xl"></i>
                     {{ __('Book Now') }}
                 </a>
                 <a href="{{ route('contact') }}"
-                    class="inline-flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-8 py-4 rounded-xl font-semibold text-lg border-2 border-gray-300 dark:border-gray-700 hover:border-orange-500 dark:hover:border-orange-500 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 min-w-[200px]">
-                    <i class="fas fa-envelope"></i>
+                    class="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md text-white px-10 py-4 rounded-xl font-bold text-lg border-2 border-white/30 hover:border-orange-500 hover:bg-white/20 shadow-2xl hover:shadow-white/10 transform hover:scale-105 transition-all duration-300 min-w-[220px]">
+                    <i class="fas fa-envelope text-xl"></i>
                     {{ __('Contact Us') }}
                 </a>
             </div>
