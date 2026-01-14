@@ -2,7 +2,7 @@
 <footer class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
             <!-- About -->
             <div>
                 <div class="mb-4">
@@ -25,11 +25,28 @@
                 <h4 class="font-semibold mb-4 text-center text-gray-900 dark:text-gray-100">{{ __('Quick Links') }}
                 </h4>
                 <ul class="space-y-2 text-sm text-gray-600 text-center">
-                    <li><a href="#" class="hover:text-orange-500 transition">{{ __('Book Hotel') }}</a></li>
-                    <li><a href="#" class="hover:text-orange-500 transition">{{ __('Special Offers') }}</a></li>
-                    <li><a href="#" class="hover:text-orange-500 transition">{{ __('Popular Destinations') }}</a>
+                    <li><a href="{{ route('all.hotels') }}"
+                            class="hover:text-orange-500 transition">{{ __('Book Hotel') }}</a></li>
+                    <li><a href="#offers" class="hover:text-orange-500 transition">{{ __('Special Offers') }}</a></li>
+                    <li><a href="#destinations"
+                            class="hover:text-orange-500 transition">{{ __('Popular Destinations') }}</a>
                     </li>
                     <li><a href="#" class="hover:text-orange-500 transition">{{ __('Travel Guide') }}</a></li>
+                </ul>
+            </div>
+
+            <!-- Polices -->
+            <div>
+                <h4 class="font-semibold mb-4 text-center text-gray-900 dark:text-gray-100">{{ __('Policies') }}</h4>
+                <ul class="space-y-2 text-sm text-gray-600 text-center">
+                    <li><a href="{{ route('about') }}"
+                            class="hover:text-orange-500 transition">{{ __('About Us') }}</a></li>
+                    <li><a href="{{ route('privacy') }}"
+                            class="hover:text-orange-500 transition">{{ __('Privacy Policy') }}</a></li>
+                    <li><a href="{{ route('terms') }}"
+                            class="hover:text-orange-500 transition">{{ __('Terms of Service') }}</a></li>
+                    <li><a href="{{ route('cookies') }}"
+                            class="hover:text-orange-500 transition">{{ __('Cookie Policy') }}</a></li>
                 </ul>
             </div>
 
@@ -40,9 +57,6 @@
                     <li><a href="#" class="hover:text-orange-500 transition">{{ __('FAQ') }}</a></li>
                     <li><a href="{{ route('contact') }}"
                             class="hover:text-orange-500 transition">{{ __('Contact Us') }}</a></li>
-                    <li><a href="{{ route('privacy') }}" class="hover:text-orange-500 transition">{{ __('Privacy Policy') }}</a></li>
-                    <li><a href="{{ route('terms') }}" class="hover:text-orange-500 transition">{{ __('Terms of Service') }}</a>
-                    </li>
                 </ul>
             </div>
 
@@ -122,22 +136,5 @@
         </div>
     </div>
 
-    <!-- Bottom Privacy Links Bar -->
-    <div class="text-gray-600 dark:text-white py-4">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div
-                class="flex flex-wrap items-center justify-center gap-y-2 gap-x-4 sm:gap-x-8 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                <a href="{{ route('about') }}" class="hover:text-orange-500 transition">{{ __('About Us') }}</a>
-                <span class="text-gray-300 dark:text-gray-700 hidden sm:inline">|</span>
-                <a href="{{ route('privacy') }}"
-                    class="hover:text-orange-500 transition">{{ __('Privacy Policy') }}</a>
-                <span class="text-gray-300 dark:text-gray-700 hidden sm:inline">|</span>
-                <a href="{{ route('terms') }}"
-                    class="hover:text-orange-500 transition">{{ __('Terms of Service') }}</a>
-                <span class="text-gray-300 dark:text-gray-700 hidden sm:inline">|</span>
-                <a href="{{ route('cookies') }}"
-                    class="hover:text-orange-500 transition">{{ __('Cookie Policy') }}</a>
-            </div>
-        </div>
     </div>
 </footer>

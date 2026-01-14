@@ -160,6 +160,7 @@
     "Support": "الدعم",
     "FAQ": "الأسئلة الشائعة",
     "Terms of Use": "شروط الاستخدام",
+    "Policies": "السياسات",
     "Follow Us": "تابعنا",
     "All rights reserved.": "جميع الحقوق محفوظة.",
     "Available Hotels": "الفنادق المتاحة",
@@ -472,7 +473,15 @@
     "Payment": "الدفع",
     "Confirmation": "تأكيد",
     "Adults": "بالغين",
+    "Adult": "بالغ",
     "Children": "أطفال",
+    "Child": "طفل",
+    "Rooms": "غرف",
+    "Add Room": "إضافة غرفة",
+    "Done": "تم",
+    "Rooms & Guests": "الغرف والضيوف",
+    "Please select check-in date": "يرجى اختيار تاريخ الوصول",
+    "Please select check-out date": "يرجى اختيار تاريخ المغادرة",
     "Passengers": "ركاب",
     "Package Inquiry": "استفسار عن باقة",
     "Transfer in": "نقل في",
@@ -701,5 +710,7 @@
     "For any questions regarding these Terms, please contact us at:": "لأي أسئلة بخصوص هذه الشروط، يرجى الاتصال بنا على:",
     "reservation@abrajstay.com": "reservation@abrajstay.com",
     "Thank you for choosing Abraj Stay!": "شكراً لاختياركم أبراج ستاي!",
-    "By using our website or services, you consent to the terms of this agreement. Please review this policy periodically for updates or changes.": "باستخدام موقعنا أو خدماتنا، فإنك توافق على شروط هذه الاتفاقية. يرجى مراجعة هذه السياسة بشكل دوري للاطلاع على التحديثات أو التغييرات."
+    "By using our website or services, you consent to the terms of this agreement. Please review this policy periodically for updates or changes.": "باستخدام موقعنا أو خدماتنا، فإنك توافق على شروط هذه الاتفاقية. يرجى مراجعة هذه السياسة بشكل دوري للاطلاع على التحديثات أو التغييرات.",
+    "Remove": "إزالة",
+    "Child Ages": "أعمار الأطفال"
 }

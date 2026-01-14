@@ -248,9 +248,13 @@
                                         <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                                             <div>
                                                 <div class="flex items-baseline">
-                                                    <span class="text-3xl font-extrabold text-orange-600"></span>
+                                                    <span class="text-3xl font-extrabold text-orange-600">
+                                                        {{ $hotel['MinPrice'] ?? ($hotel['StartPrice'] ?? '') }}
+                                                    </span>
                                                     <span
-                                                        class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}"></span>
+                                                        class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">
+                                                        {{ $hotel['Currency'] ?? 'SAR' }}
+                                                    </span>
                                                 </div>
                                                 {{-- <div class="text-xs text-gray-400">/ {{ __('per night') }} • {{ __('including taxes') }}</div> --}}
                                             </div>

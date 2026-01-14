@@ -149,7 +149,7 @@
                     <!-- Row 1: Country, City, Adults -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Country Select -->
-                        <div class="relative">
+                        <div class="relative z-[110]">
                             <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                                 <i
                                     class="fas fa-globe text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
@@ -158,7 +158,7 @@
                             <input type="text" id="countrySearchInput" autocomplete="off"
                                 placeholder="{{ __('Select Country') }}"
                                 value="{{ app()->getLocale() === 'ar' ? 'المملكة العربية السعودية' : 'Saudi Arabia' }}"
-                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg force-input-text bg-white">
+                                class="w-full px-4 py-5 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-xl force-input-text bg-white">
                             <input type="hidden" id="countrySelect" name="country_code" value="SA">
                             <div id="countryAutocomplete"
                                 class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
@@ -170,7 +170,7 @@
                         </div>
 
                         <!-- City Select -->
-                        <div class="relative">
+                        <div class="relative z-[110]">
                             <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                                 <i
                                     class="fas fa-map-marker-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
@@ -178,7 +178,7 @@
                             </label>
                             <input type="text" id="citySelect" autocomplete="off"
                                 placeholder="{{ __('Select City') }}"
-                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-lg force-input-text bg-white"
+                                class="w-full px-4 py-5 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-xl force-input-text bg-white"
                                 disabled>
                             <input type="hidden" name="destination" id="destinationCode">
                             <div id="cityAutocomplete"
@@ -190,77 +190,410 @@
                             </div>
                         </div>
 
-                        <!-- Adults -->
-                        <div class="relative">
+                        <!-- Rooms & Guests (Replaces Adults/Children) -->
+                        <div class="relative md:col-span-1 z-[110]">
                             <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                                 <i
-                                    class="fas fa-user text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Adults') }}
+                                    class="fas fa-users text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                {{ __('Rooms & Guests') }}
                             </label>
-                            <select name="adults"
-                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white">
-                                <option value="1">{{ app()->getLocale() === 'ar' ? '1 بالغ' : '1 Adult' }}</option>
-                                <option value="2" selected>2 {{ __('Adults') }}</option>
-                                <option value="3">3 {{ __('Adults') }}</option>
-                                <option value="4">4 {{ __('Adults') }}</option>
-                                <option value="5">5+ {{ __('Adults') }}</option>
-                            </select>
-                            <div
-                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
-                                <i class="fas fa-chevron-down"></i>
+
+                            <!-- Trigger Button -->
+                            <div id="guestsSelectorTrigger"
+                                class="w-full px-4 py-5 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl cursor-pointer bg-white flex items-center justify-between select-none text-gray-900 font-medium text-xl">
+                                <span id="guestsSummary">1 {{ __('Room') }}, 2 {{ __('Adults') }}, 0
+                                    {{ __('Children') }}</span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </div>
+
+                            <!-- Dropdown Content -->
+                            <div id="guestsDropdown"
+                                class="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl hidden p-6 min-w-[450px]">
+                                <!-- Rooms Container -->
+                                <div id="roomsContainer"
+                                    class="space-y-4 max-h-60 overflow-y-auto custom-scrollbar mb-4 pl-[25px]">
+                                    <!-- Room 1 (Default) -->
+                                    <div class="room-item border-b border-gray-100 dark:border-gray-700 pb-4 last:border-0"
+                                        data-index="0">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <h4 class="font-bold text-sm text-gray-900 dark:text-white">
+                                                {{ __('Room') }} 1</h4>
+                                            <button type="button"
+                                                class="remove-room-btn text-red-500 text-xs hidden hover:text-red-700">
+                                                {{ __('Remove') }}
+                                            </button>
+                                        </div>
+
+                                        <div class="flex gap-4">
+                                            <!-- Adults -->
+                                            <div class="flex-1">
+                                                <label
+                                                    class="block text-xs text-gray-500 mb-1">{{ __('Adults') }}</label>
+                                                <div
+                                                    class="flex items-center border border-gray-200 dark:border-gray-600 rounded-lg">
+                                                    <button type="button"
+                                                        class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg decrease-adults"
+                                                        disabled>-</button>
+                                                    <span
+                                                        class="flex-1 text-center text-sm font-bold text-gray-900 dark:text-white adults-count">1</span>
+                                                    <button type="button"
+                                                        class="w-8 h-8 flex items-center justify-center text-orange-500 hover:bg-orange-50 dark:hover:bg-gray-700 rounded-r-lg increase-adults">+</button>
+                                                </div>
+                                            </div>
+                                            <!-- Children -->
+                                            <div class="flex-1">
+                                                <label
+                                                    class="block text-xs text-gray-500 mb-1">{{ __('Children') }}</label>
+                                                <div
+                                                    class="flex items-center border border-gray-200 dark:border-gray-600 rounded-lg">
+                                                    <button type="button"
+                                                        class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg decrease-children"
+                                                        disabled>-</button>
+                                                    <span
+                                                        class="flex-1 text-center text-sm font-bold text-gray-900 dark:text-white children-count">0</span>
+                                                    <button type="button"
+                                                        class="w-8 h-8 flex items-center justify-center text-orange-500 hover:bg-orange-50 dark:hover:bg-gray-700 rounded-r-lg increase-children">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div
+                                    class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-700">
+                                    <button type="button" id="addRoomBtn"
+                                        class="text-orange-600 text-sm font-bold hover:text-orange-700 flex items-center">
+                                        <i class="fas fa-plus {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                        {{ __('Add Room') }}
+                                    </button>
+                                    <button type="button" id="doneBtn"
+                                        class="bg-orange-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-orange-700 transition">
+                                        {{ __('Done') }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Hidden Inputs Container -->
+                            <div id="hiddenGuestInputs">
+                                <input type="hidden" name="PaxRooms[0][Adults]" value="1" class="pax-adults">
+                                <input type="hidden" name="PaxRooms[0][Children]" value="0" class="pax-children">
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Row 2: Children, CheckIn, CheckOut, Search Button -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <!-- Children -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-child text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Children') }}
-                            </label>
-                            <select name="children"
-                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg appearance-none bg-white">
-                                <option value="" disabled selected>{{ __('Select number of children') }}</option>
-                                <option value="1">{{ app()->getLocale() === 'ar' ? '1 طفل' : '1 Child' }}</option>
-                                <option value="2">2 {{ __('Children') }}</option>
-                                <option value="3">3 {{ __('Children') }}</option>
-                                <option value="4">4+ {{ __('Children') }}</option>
-                            </select>
-                            <div
-                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
-                                <i class="fas fa-chevron-down"></i>
+                        <!-- Check-in & Check-out Container (Merged logic for Range Picker) -->
+                        <div class="relative md:col-span-2 z-[100]" id="dateRangeContainer">
+                            <div class="grid grid-cols-2 gap-6">
+                                <!-- Check-in -->
+                                <div class="relative">
+                                    <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                        <i
+                                            class="fas fa-calendar-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                        {{ __('Check In') }}
+                                    </label>
+                                    <div class="relative">
+                                        <input type="text" id="checkInDisplay" readonly
+                                            placeholder="{{ __('Check In') }}"
+                                            class="w-full px-4 py-5 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-xl font-medium cursor-pointer bg-white">
+                                        <!-- Hidden input for form submission (Y-m-d format) -->
+                                        <input type="hidden" name="CheckIn" id="checkInInput" required>
+                                    </div>
+                                </div>
+
+                                <!-- Check-out -->
+                                <div class="relative">
+                                    <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                        <i
+                                            class="fas fa-calendar-check text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                        {{ __('Check Out') }}
+                                    </label>
+                                    <div class="relative">
+                                        <input type="text" id="checkOutDisplay" readonly
+                                            placeholder="{{ __('Check Out') }}"
+                                            class="w-full px-4 py-5 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-xl font-medium cursor-pointer bg-white">
+                                        <!-- Hidden input for form submission (Y-m-d format) -->
+                                        <input type="hidden" name="CheckOut" id="checkOutInput" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Manual Modal Container -->
+                            <div id="calendarModal"
+                                class="absolute left-1/2 -translate-x-1/2 z-[100] hidden top-full -mt-[240px]">
+                                <div class="bg-white rounded-3xl shadow-2xl p-6 border border-gray-100 w-[900px]">
+                                    <div id="calendarAnchor"></div>
+                                    <div class="p-3 border-t border-gray-100 flex justify-end">
+                                        <button type="button" id="closeCalendar"
+                                            class="bg-orange-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-600 transition">
+                                            {{ __('Done') }}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Check-in -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-calendar-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Check In') }}
-                            </label>
-                            <input type="date" name="CheckIn" required
-                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
-                        </div>
+                        <!-- Flatpickr Styling & Logic -->
+                        @push('styles')
+                            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+                            <style>
+                                /* Custom Flatpickr Styling to match Radisson/User Request */
+                                .flatpickr-calendar {
+                                    border-radius: 16px;
+                                    box-shadow: none !important;
+                                    border: none !important;
+                                    font-family: inherit;
+                                    padding: 0;
+                                    background: white;
+                                    position: relative !important;
+                                    top: 0 !important;
+                                    left: 0 !important;
+                                    width: auto !important;
+                                    display: block !important;
+                                }
 
-                        <!-- Check-out -->
-                        <div class="relative">
-                            <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
-                                <i
-                                    class="fas fa-calendar-check text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                {{ __('Check Out') }}
-                            </label>
-                            <input type="date" name="CheckOut" required
-                                class="w-full px-4 py-4 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 text-lg">
-                        </div>
+                                .flatpickr-months {
+                                    display: flex !important;
+                                    justify-content: center !important;
+                                    gap: 150px !important;
+                                    /* User requested gap */
+                                    padding: 0 10px;
+                                    position: relative;
+                                }
+
+                                .flatpickr-days {
+                                    display: flex !important;
+                                    justify-content: center !important;
+                                    gap: 150px !important;
+                                    /* User requested gap */
+                                    width: 100% !important;
+                                }
+
+                                .dayContainer {
+                                    width: 350px !important;
+                                    min-width: 350px !important;
+                                    max-width: 350px !important;
+                                    overflow: visible !important;
+                                }
+
+                                .flatpickr-month {
+                                    width: 350px !important;
+                                }
+
+                                .flatpickr-weekdays {
+                                    display: flex !important;
+                                    justify-content: center !important;
+                                    gap: 150px !important;
+                                    /* Match days gap */
+                                    width: 100% !important;
+                                }
+
+                                .flatpickr-weekdaycontainer {
+                                    width: 350px !important;
+                                    display: flex !important;
+                                }
+
+                                .flatpickr-month {
+                                    background: transparent;
+                                    color: #111827;
+                                    fill: #111827;
+                                    height: 50px;
+                                }
+
+                                .flatpickr-current-month {
+                                    font-size: 1.1rem;
+                                    font-weight: 700;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    padding: 0;
+                                }
+
+                                .flatpickr-weekday {
+                                    font-weight: 500;
+                                    color: #9ca3af;
+                                    font-size: 0.85rem;
+                                }
+
+
+
+                                .flatpickr-day {
+                                    border-radius: 50% !important;
+                                    height: 42px;
+                                    line-height: 42px;
+                                    width: 14.2857%;
+                                    max-width: none;
+                                    font-weight: 500;
+                                    border: 2px solid transparent !important;
+                                    margin: 2px 0;
+                                }
+
+                                /* Range middle styling */
+                                .flatpickr-day.inRange {
+                                    background: #fff7ed !important;
+                                    border-color: #fff7ed !important;
+                                    border-radius: 0 !important;
+                                    box-shadow: none !important;
+                                    color: #ea580c !important;
+                                }
+
+                                /* Circle for start/end */
+                                .flatpickr-day.selected,
+                                .flatpickr-day.startRange,
+                                .flatpickr-day.endRange {
+                                    background: #ea580c !important;
+                                    border-color: #ea580c !important;
+                                    color: white !important;
+                                    border-radius: 50% !important;
+                                    z-index: 2;
+                                }
+
+                                .flatpickr-calendar.rangeMode {
+                                    width: 100% !important;
+                                    /* Let container control width */
+                                }
+
+                                .flatpickr-calendar .flatpickr-innerContainer {
+                                    margin-top: 10px;
+                                }
+
+                                [dir="rtl"] .flatpickr-calendar {
+                                    direction: rtl;
+                                }
+
+                                /* Visible Disabled Dates */
+                                .flatpickr-day.flatpickr-disabled,
+                                .flatpickr-day.flatpickr-disabled:hover {
+                                    color: #cbd5e1 !important;
+                                    /* Gray-300 */
+                                    opacity: 1 !important;
+                                    cursor: not-allowed;
+                                }
+
+                                @media (max-width: 768px) {
+                                    #calendarModal {
+                                        min-width: 320px !important;
+                                        width: 95vw;
+                                        padding: 10px;
+                                    }
+
+                                    .flatpickr-calendar.rangeMode {
+                                        width: 100% !important;
+                                        flex-direction: column !important;
+                                    }
+
+                                    .flatpickr-months {
+                                        flex-direction: column;
+                                    }
+                                }
+                            </style>
+                        @endpush
+
+                        @push('scripts')
+                            <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+                            @if (app()->getLocale() === 'ar')
+                                <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
+                            @endif
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const checkInDisplay = document.getElementById('checkInDisplay');
+                                    const checkOutDisplay = document.getElementById('checkOutDisplay');
+                                    const checkInInput = document.getElementById('checkInInput');
+                                    const checkOutInput = document.getElementById('checkOutInput');
+
+                                    const isRTL = document.documentElement.dir === 'rtl';
+                                    const locale = "{{ app()->getLocale() }}";
+
+                                    // Common config
+                                    // Common config
+                                    const config = {
+                                        mode: "range",
+                                        minDate: "today",
+                                        inline: true, // Always visible in its container
+                                        appendTo: document.getElementById('calendarAnchor'),
+                                        dateFormat: "Y-m-d", // Format for hidden inputs
+                                        showMonths: 2,
+                                        locale: {
+                                            ...flatpickr.l10ns[locale],
+                                            firstDayOfWeek: 6 // Force Saturday start
+                                        },
+                                        disableMobile: true,
+                                        onClose: function(selectedDates, dateStr, instance) {
+                                            // If only one date selected (start date), clear end date visual
+                                            if (selectedDates.length === 1) {
+                                                // Keep visual inputs generic or prompt?
+                                                // Usually better to let them pick range.
+                                            }
+                                        },
+                                        onChange: function(selectedDates, dateStr, instance) {
+                                            if (selectedDates.length > 0) {
+                                                // Update Check-In
+                                                const startDate = selectedDates[0];
+                                                checkInInput.value = instance.formatDate(startDate, "Y-m-d");
+                                                checkInDisplay.value = instance.formatDate(startDate, isRTL ? "l j F Y" :
+                                                    "D, M j, Y"); // Friendly format
+                                            }
+
+                                            if (selectedDates.length === 2) {
+                                                // Update Check-Out
+                                                const endDate = selectedDates[1];
+                                                checkOutInput.value = instance.formatDate(endDate, "Y-m-d");
+                                                checkOutDisplay.value = instance.formatDate(endDate, isRTL ? "l j F Y" :
+                                                    "D, M j, Y"); // Friendly format
+                                            } else {
+                                                checkOutInput.value = '';
+                                                checkOutDisplay.value = '';
+                                            }
+                                        }
+                                    };
+
+                                    // Initialize on the container or first input, but let both trigger it
+                                    const fp = flatpickr(checkInDisplay, config);
+
+                                    const calendarModal = document.getElementById('calendarModal');
+                                    const closeCalendarBtn = document.getElementById('closeCalendar');
+                                    const dateRangeContainer = document.getElementById('dateRangeContainer');
+
+                                    function toggleCalendar(show = true) {
+                                        if (show) {
+                                            calendarModal.classList.remove('hidden');
+                                            // Raise z-index to float over top row
+                                            dateRangeContainer.style.zIndex = '150';
+                                        } else {
+                                            calendarModal.classList.add('hidden');
+                                            // Reset z-index so top row dropdowns can float over us
+                                            dateRangeContainer.style.zIndex = '100';
+                                        }
+                                    }
+
+                                    checkInDisplay.addEventListener('click', (e) => {
+                                        e.stopPropagation();
+                                        toggleCalendar(true);
+                                    });
+
+                                    checkOutDisplay.addEventListener('click', (e) => {
+                                        e.stopPropagation();
+                                        toggleCalendar(true);
+                                    });
+
+                                    closeCalendarBtn.addEventListener('click', () => toggleCalendar(false));
+
+                                    // Close on click outside
+                                    document.addEventListener('click', function(event) {
+                                        const isClickInside = calendarModal.contains(event.target) ||
+                                            checkInDisplay.contains(event.target) ||
+                                            checkOutDisplay.contains(event.target);
+
+                                        if (!isClickInside) {
+                                            toggleCalendar(false);
+                                        }
+                                    });
+                                });
+                            </script>
+                        @endpush
 
                         <!-- Search Button -->
-                        <div class="flex items-end">
+                        <div class="flex items-end relative z-10">
                             <button type="submit" id="searchBtn"
-                                class="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-[1.02] shadow-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-white">
+                                class="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-5 rounded-xl font-bold text-xl hover:from-orange-600 hover:to-orange-700 transition transform hover:scale-[1.02] shadow-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-white">
                                 <i class="fas fa-search {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
                                 <span class="btn-text">{{ __('Search') }}</span>
                             </button>
@@ -1617,12 +1950,12 @@ $fallbackImages = [
             };
 
             if (checkInInput && !checkInInput.value) {
-                checkInInput.value = formatDate(today);
-                checkInInput.min = formatDate(today);
+                // checkInInput.value = formatDate(today);
+                checkInInput.min = formatDate(today); // Keep min date constraint
             }
             if (checkOutInput && !checkOutInput.value) {
-                checkOutInput.value = formatDate(nextWeek);
-                checkOutInput.min = formatDate(today);
+                // checkOutInput.value = formatDate(nextWeek);
+                checkOutInput.min = formatDate(today); // Keep min date constraint
             }
 
             if (checkInInput && checkOutInput) {
@@ -1700,6 +2033,8 @@ $fallbackImages = [
             // Helper to initialize country/city logic
             function initCitySearch(countryEl, cityEl, cityBoxEl, codeEl, hotelEl = null, initialCountryCode =
                 null) {
+                if (!countryEl || !cityEl || !cityBoxEl) return;
+
                 let filteredCitiesLocal = [];
 
                 function loadCitiesForCountry(countryCode) {
@@ -1841,54 +2176,321 @@ $fallbackImages = [
                 allCountries
             );
 
-            // Initialize Hero Form City
-            initCitySearch(
-                document.getElementById("heroCountrySelect"),
-                document.getElementById("heroCitySelect"),
-                document.getElementById("heroCityAutocomplete"),
-                document.getElementById("heroDestinationCode")
-            );
 
 
+
+
+            // -----------------------------------------------------------------------------
+            // ROOM SELECTOR LOGIC
+            // -----------------------------------------------------------------------------
+            const guestsTrigger = document.getElementById('guestsSelectorTrigger');
+            const guestsDropdown = document.getElementById('guestsDropdown');
+            const roomsContainer = document.getElementById('roomsContainer');
+            const addRoomBtn = document.getElementById('addRoomBtn');
+            const doneBtn = document.getElementById('doneBtn');
+            const hiddenInputsContainer = document.getElementById('hiddenGuestInputs');
+            const guestsSummary = document.getElementById('guestsSummary');
+
+            if (guestsTrigger && roomsContainer) {
+                let rooms = [{
+                    adults: 1,
+                    children: 0,
+                    childrenAges: []
+                }];
+
+                // Toggle Dropdown
+                guestsTrigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    guestsDropdown.classList.toggle('hidden');
+                });
+
+                // Prevent closing when clicking inside dropdown
+                guestsDropdown.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+
+                // Close when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!guestsTrigger.contains(e.target) && !guestsDropdown.contains(e.target)) {
+                        guestsDropdown.classList.add('hidden');
+                    }
+                });
+
+                doneBtn.addEventListener('click', () => {
+                    guestsDropdown.classList.add('hidden');
+                });
+
+                // Render Rooms
+                function renderRooms() {
+                    roomsContainer.innerHTML = '';
+                    hiddenInputsContainer.innerHTML = '';
+
+                    let totalAdults = 0;
+                    let totalChildren = 0;
+
+                    rooms.forEach((room, index) => {
+                        totalAdults += room.adults;
+                        totalChildren += room.children;
+
+                        // Create UI
+                        const roomEl = document.createElement('div');
+                        roomEl.className =
+                            'room-item border-b border-gray-100 dark:border-gray-700 pb-4 last:border-0 mb-4';
+
+                        let childAgesHtml = '';
+                        if (room.children > 0) {
+                            childAgesHtml += `<div class="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">{{ __('Child Ages') }}</label>
+                                <div class="grid grid-cols-3 gap-2">`;
+
+                            room.childrenAges.forEach((age, ageIndex) => {
+                                let options = '';
+                                for (let i = 0; i <= 17; i++) {
+                                    options +=
+                                        `<option value="${i}" ${age == i ? 'selected' : ''}>${i}</option>`;
+                                }
+                                childAgesHtml += `
+                                    <div class="flex flex-col">
+                                        <label class="text-[10px] text-gray-500 mb-0.5">{{ __('Child') }} ${ageIndex + 1}</label>
+                                        <select class="child-age-select w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm border border-gray-200 dark:border-gray-600 rounded-md focus:ring-orange-500 focus:border-orange-500 p-1" 
+                                            data-room-index="${index}" data-age-index="${ageIndex}">
+                                            ${options}
+                                        </select>
+                                    </div>
+                                `;
+                            });
+
+                            childAgesHtml += `</div></div>`;
+                        }
+
+                        roomEl.innerHTML = `
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">{{ __('Room') }} ${index + 1}</h4>
+                                ${index > 0 ? `<button type="button" class="remove-room-btn text-red-500 text-xs hover:text-red-700" data-index="${index}">{{ __('Remove') }}</button>` : ''}
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="flex-1">
+                                    <label class="block text-xs text-gray-500 mb-1">{{ __('Adults') }}</label>
+                                    <div class="flex items-center border border-gray-200 dark:border-gray-600 rounded-lg">
+                                        <button type="button" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg decrease-adults" data-index="${index}">-</button>
+                                        <span class="flex-1 text-center text-sm font-bold text-gray-900 dark:text-white">${room.adults}</span>
+                                        <button type="button" class="w-8 h-8 flex items-center justify-center text-orange-500 hover:bg-orange-50 dark:hover:bg-gray-700 rounded-r-lg increase-adults" data-index="${index}">+</button>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-xs text-gray-500 mb-1">{{ __('Children') }}</label>
+                                    <div class="flex items-center border border-gray-200 dark:border-gray-600 rounded-lg">
+                                        <button type="button" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg decrease-children" data-index="${index}">-</button>
+                                        <span class="flex-1 text-center text-sm font-bold text-gray-900 dark:text-white">${room.children}</span>
+                                        <button type="button" class="w-8 h-8 flex items-center justify-center text-orange-500 hover:bg-orange-50 dark:hover:bg-gray-700 rounded-r-lg increase-children" data-index="${index}">+</button>
+                                    </div>
+                                    <span class="text-[10px] text-gray-400 block mt-1 {{ app()->getLocale() == 'ar' ? 'text-right' : 'text-left' }}">
+                                        {{ app()->getLocale() == 'ar' ? 'من 0 إلى 17 سنة' : 'From 0 to 17 years' }}
+                                    </span>
+                                </div>
+                            </div>
+                            ${childAgesHtml}
+                        `;
+                        roomsContainer.appendChild(roomEl);
+
+                        // Create Hidden Inputs
+                        // PaxRooms[index][Adults]
+                        const adultsInput = document.createElement('input');
+                        adultsInput.type = 'hidden';
+                        adultsInput.name = `PaxRooms[${index}][Adults]`;
+                        adultsInput.value = room.adults;
+                        hiddenInputsContainer.appendChild(adultsInput);
+
+                        const childrenInput = document.createElement('input');
+                        childrenInput.type = 'hidden';
+                        childrenInput.name = `PaxRooms[${index}][Children]`;
+                        childrenInput.value = room.children;
+                        hiddenInputsContainer.appendChild(childrenInput);
+
+                        // Child Ages Hidden Inputs
+                        room.childrenAges.forEach((age, ageIndex) => {
+                            const ageInput = document.createElement('input');
+                            ageInput.type = 'hidden';
+                            ageInput.name = `PaxRooms[${index}][ChildrenAges][]`;
+                            ageInput.value = age;
+                            hiddenInputsContainer.appendChild(ageInput);
+                        });
+                    });
+
+                    // Update Summary
+                    let summaryParts = [];
+
+                    const roomLabel = rooms.length === 1 ? "{{ __('Room') }}" : "{{ __('Rooms') }}";
+                    const adultLabel = totalAdults === 1 ? "{{ __('Adult') }}" : "{{ __('Adults') }}";
+                    const childLabel = totalChildren === 1 ? "{{ __('Child') }}" : "{{ __('Children') }}";
+
+                    summaryParts.push(`${rooms.length} ${roomLabel}`);
+                    summaryParts.push(`${totalAdults} ${adultLabel}`);
+
+                    if (totalChildren > 0) {
+                        summaryParts.push(`${totalChildren} ${childLabel}`);
+                    }
+                    guestsSummary.textContent = summaryParts.join(', ');
+                }
+
+                // Event Delegation for Buttons
+                roomsContainer.addEventListener('click', (e) => {
+                    const target = e.target;
+                    const index = parseInt(target.getAttribute('data-index'));
+
+                    if (target.classList.contains('increase-adults')) {
+                        if (rooms[index].adults < 10) {
+                            rooms[index].adults++;
+                            renderRooms();
+                        }
+                    } else if (target.classList.contains('decrease-adults')) {
+                        if (rooms[index].adults > 1) {
+                            rooms[index].adults--;
+                            renderRooms();
+                        }
+                    } else if (target.classList.contains('increase-children')) {
+                        if (rooms[index].children < 6) {
+                            rooms[index].children++;
+                            // Add default age 0 for new child
+                            rooms[index].childrenAges.push(0);
+                            renderRooms();
+                        }
+                    } else if (target.classList.contains('decrease-children')) {
+                        if (rooms[index].children > 0) {
+                            rooms[index].children--;
+                            // Remove last age
+                            rooms[index].childrenAges.pop();
+                            renderRooms();
+                        }
+                    } else if (target.classList.contains('remove-room-btn')) {
+                        rooms.splice(index, 1);
+                        renderRooms();
+                    }
+                });
+
+                // Event Delegation for Child Age Selects
+                roomsContainer.addEventListener('change', (e) => {
+                    if (e.target.classList.contains('child-age-select')) {
+                        const roomIndex = parseInt(e.target.getAttribute('data-room-index'));
+                        const ageIndex = parseInt(e.target.getAttribute('data-age-index'));
+                        const newAge = parseInt(e.target.value);
+
+                        rooms[roomIndex].childrenAges[ageIndex] = newAge;
+
+                        // Update hidden inputs WITHOUT re-rendering everything to avoid focus loss (though re-render matches current flow)
+                        // For simplicity and guaranteed sync, we can re-render OR just update the hidden input. 
+                        // Since renderRooms clears hidden inputs, we must re-render or carefully update.
+                        // Let's re-render to keep it simple and consistent with the state-driven approach.
+                        // Focus might be lost, but for a dropdown selection it's usually acceptable.
+                        renderRooms();
+                    }
+                });
+
+                // Add Room
+                addRoomBtn.addEventListener('click', () => {
+                    if (rooms.length < 5) {
+                        rooms.push({
+                            adults: 1,
+                            children: 0,
+                            childrenAges: []
+                        });
+                        renderRooms();
+                    }
+                });
+
+                // Initial Render
+                renderRooms();
+            }
+
+            // Main Form Submission
+            // Main Form Submission
             // Main Form Submission
             document.getElementById("searchForm").addEventListener("submit", function(e) {
                 e.preventDefault();
 
+                const countrySelect = document.getElementById("countrySelect");
+                const countrySearchInput = document.getElementById("countrySearchInput");
+                const citySelect = document.getElementById("citySelect");
                 const cityCode = document.getElementById("destinationCode").value;
-                const checkIn = this.querySelector('input[name="CheckIn"]').value;
-                const checkOut = this.querySelector('input[name="CheckOut"]').value;
-                const adults = this.querySelector('select[name="adults"]').value;
-                const children = this.querySelector('select[name="children"]').value;
+                const checkInInput = this.querySelector('input[name="CheckIn"]');
+                const checkOutInput = this.querySelector('input[name="CheckOut"]');
+                const checkInDisplay = document.getElementById("checkInDisplay");
+                const checkOutDisplay = document.getElementById("checkOutDisplay");
 
-                if (!cityCode) {
-                    // Falls back to Country selection?? 
-                    // Actually, if only Country is selected, we might want to go to all hotels in country?
-                    // But current logic favors City.
-                    // If no city, let's check if Country is selected
-                    const countrySelect = document.getElementById("countrySelect");
-                    if (countrySelect && countrySelect.value) {
-                        // Redirect to All Hotels with Country Filter
-                        const baseUrl = "{{ route('all.hotels') }}";
-                        window.location.href = baseUrl +
-                            `?country=${countrySelect.value}&check_in=${checkIn}&check_out=${checkOut}&adults=${adults}&children=${children}`;
-                        return;
-                    }
+                const checkIn = checkInInput.value;
+                const checkOut = checkOutInput.value;
 
-                    showToast("{{ __('Please select a destination') }}", "error");
-                    return;
+                // Reset Errors (Remove red borders)
+                [countrySearchInput, citySelect, checkInDisplay, checkOutDisplay].forEach(el => {
+                    if (el) el.classList.remove("border-red-500");
+                });
+
+                let hasError = false;
+
+                // Validate Country
+                if (!countrySelect || !countrySelect.value) {
+                    showToast(
+                        "{{ app()->getLocale() === 'ar' ? 'الرجاء اختيار الدولة' : __('Please select a country') }}",
+                        "error");
+                    if (countrySearchInput) countrySearchInput.classList.add("border-red-500");
+                    hasError = true;
                 }
 
-                if (!checkIn || !checkOut) {
-                    showToast("{{ __('Please select dates') }}", "error");
-                    return;
+                // Validate City
+                if (!hasError && !cityCode) {
+                    showToast(
+                        "{{ app()->getLocale() === 'ar' ? 'الرجاء اختيار المدينة' : __('Please select a city') }}",
+                        "error");
+                    if (citySelect) citySelect.classList.add("border-red-500");
+                    hasError = true;
                 }
+
+                // Validate CheckIn
+                if (!hasError && !checkIn) {
+                    showToast(
+                        "{{ app()->getLocale() === 'ar' ? 'الرجاء اختيار تاريخ الوصول' : __('Please select check-in date') }}",
+                        "error");
+                    if (checkInDisplay) checkInDisplay.classList.add("border-red-500");
+                    hasError = true;
+                }
+
+                // Validate CheckOut
+                if (!hasError && !checkOut) {
+                    showToast(
+                        "{{ app()->getLocale() === 'ar' ? 'الرجاء اختيار تاريخ المغادرة' : __('Please select check-out date') }}",
+                        "error");
+                    if (checkOutDisplay) checkOutDisplay.classList.add("border-red-500");
+                    hasError = true;
+                }
+
+                if (hasError) return;
 
                 // Redirect to City Hotels with Availability Params
                 let baseUrl = "{{ route('city.hotels', ['cityCode' => ':code']) }}";
-                baseUrl = baseUrl.replace(':code', cityCode);
+                this.action = baseUrl.replace(':code', cityCode);
 
-                window.location.href = baseUrl +
-                    `?CheckIn=${checkIn}&CheckOut=${checkOut}&adults=${adults}&children=${children}`;
+                this.submit();
+
+                // Add listeners to remove red border on interaction
+                if (countrySearchInput) {
+                    countrySearchInput.addEventListener('input', () => countrySearchInput.classList.remove(
+                        "border-red-500"));
+                }
+                if (citySelect) {
+                    citySelect.addEventListener('input', () => citySelect.classList.remove(
+                        "border-red-500"));
+                    citySelect.addEventListener('change', () => citySelect.classList.remove(
+                        "border-red-500"));
+                }
+                // Removing border for dates is handled in the flatpickr onChange or general click
+                if (checkInDisplay) {
+                    checkInDisplay.addEventListener('click', () => checkInDisplay.classList.remove(
+                        "border-red-500"));
+                }
+                if (checkOutDisplay) {
+                    checkOutDisplay.addEventListener('click', () => checkOutDisplay.classList.remove(
+                        "border-red-500"));
+                }
             });
 
             // Hero Form Submission
@@ -1907,22 +2509,33 @@ $fallbackImages = [
 
             // Global click to close autocompletes
             document.addEventListener("click", function(e) {
-                const boxes = [
-                    document.getElementById("cityAutocomplete"),
-                    document.getElementById("countryAutocomplete"),
-                    document.getElementById("heroCityAutocomplete"),
-                    document.getElementById("heroCountryAutocomplete")
+                const pairs = [{
+                        input: "countrySearchInput",
+                        box: "countryAutocomplete"
+                    },
+                    {
+                        input: "citySelect",
+                        box: "cityAutocomplete"
+                    },
+                    {
+                        input: "heroCountrySearchInput",
+                        box: "heroCountryAutocomplete"
+                    },
+                    {
+                        input: "heroDestinationCode",
+                        box: "heroCityAutocomplete"
+                    }
                 ];
-                const inputs = [
-                    document.getElementById("citySelect"),
-                    document.getElementById("countrySearchInput"),
-                    document.getElementById("heroCitySelect"),
-                    document.getElementById("heroCountrySearchInput")
-                ];
-                boxes.forEach((box, i) => {
-                    if (box && inputs[i] && !inputs[i].contains(e.target) && !box.contains(e
-                            .target)) {
-                        box.classList.add("hidden");
+
+                pairs.forEach(pair => {
+                    const inputEl = document.getElementById(pair.input);
+                    const boxEl = document.getElementById(pair.box);
+
+                    if (inputEl && boxEl) {
+                        // If click is NOT on input AND NOT on box, close it
+                        if (!inputEl.contains(e.target) && !boxEl.contains(e.target)) {
+                            boxEl.classList.add("hidden");
+                        }
                     }
                 });
             });
