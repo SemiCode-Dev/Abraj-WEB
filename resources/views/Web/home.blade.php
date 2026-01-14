@@ -208,7 +208,7 @@
 
                             <!-- Dropdown Content -->
                             <div id="guestsDropdown"
-                                class="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl hidden p-6 min-w-[450px]">
+                                class="absolute z-50 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl hidden p-6 w-full md:w-auto md:min-w-[450px] left-0 md:left-auto right-0 md:right-0 rtl:md:left-0 rtl:right-auto">
                                 <!-- Rooms Container -->
                                 <div id="roomsContainer"
                                     class="space-y-4 max-h-60 overflow-y-auto custom-scrollbar mb-4 pl-[25px]">
@@ -283,7 +283,7 @@
 
                         <!-- Check-in & Check-out Container (Merged logic for Range Picker) -->
                         <div class="relative md:col-span-2 z-[100]" id="dateRangeContainer">
-                            <div class="grid grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                 <!-- Check-in -->
                                 <div class="relative">
                                     <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
@@ -318,8 +318,9 @@
                             </div>
                             <!-- Manual Modal Container -->
                             <div id="calendarModal"
-                                class="absolute left-1/2 -translate-x-1/2 z-[100] hidden top-full -mt-[240px]">
-                                <div class="bg-white rounded-3xl shadow-2xl p-6 border border-gray-100 w-[900px]">
+                                class="absolute left-1/2 -translate-x-1/2 z-[100] hidden top-full -mt-[240px] w-full md:w-auto px-4 md:px-0">
+                                <div
+                                    class="bg-white rounded-3xl shadow-2xl p-6 border border-gray-100 w-full md:w-[900px] max-w-full overflow-hidden">
                                     <div id="calendarAnchor"></div>
                                     <div class="p-3 border-t border-gray-100 flex justify-end">
                                         <button type="button" id="closeCalendar"
@@ -346,49 +347,89 @@
                                     position: relative !important;
                                     top: 0 !important;
                                     left: 0 !important;
-                                    width: auto !important;
+                                    width: 100% !important;
                                     display: block !important;
                                 }
 
-                                .flatpickr-months {
-                                    display: flex !important;
-                                    justify-content: center !important;
-                                    gap: 150px !important;
-                                    /* User requested gap */
-                                    padding: 0 10px;
-                                    position: relative;
+                                /* Desktop-specific styles for large gap */
+                                @media (min-width: 768px) {
+                                    .flatpickr-calendar {
+                                        width: auto !important;
+                                    }
+
+                                    .flatpickr-months {
+                                        display: flex !important;
+                                        justify-content: center !important;
+                                        gap: 150px !important;
+                                        /* User requested gap */
+                                        padding: 0 10px;
+                                        position: relative;
+                                    }
+
+                                    .flatpickr-days {
+                                        display: flex !important;
+                                        justify-content: center !important;
+                                        gap: 150px !important;
+                                        width: 100% !important;
+                                    }
+
+                                    .dayContainer {
+                                        width: 350px !important;
+                                        min-width: 350px !important;
+                                        max-width: 350px !important;
+                                        overflow: visible !important;
+                                    }
+
+                                    .flatpickr-month {
+                                        width: 350px !important;
+                                    }
+
+                                    .flatpickr-weekdays {
+                                        display: flex !important;
+                                        justify-content: center !important;
+                                        gap: 150px !important;
+                                        width: 100% !important;
+                                    }
+
+                                    .flatpickr-weekdaycontainer {
+                                        width: 350px !important;
+                                        display: flex !important;
+                                    }
                                 }
 
-                                .flatpickr-days {
-                                    display: flex !important;
-                                    justify-content: center !important;
-                                    gap: 150px !important;
-                                    /* User requested gap */
-                                    width: 100% !important;
-                                }
+                                /* Mobile styles implicitly handled by removing fixed widths above,
+                                                                   but we ensure correct stacking */
+                                @media (max-width: 767px) {
+                                    .flatpickr-months .flatpickr-month {
+                                        width: 100% !important;
+                                    }
 
-                                .dayContainer {
-                                    width: 350px !important;
-                                    min-width: 350px !important;
-                                    max-width: 350px !important;
-                                    overflow: visible !important;
-                                }
+                                    .flatpickr-days {
+                                        width: 100% !important;
+                                    }
 
-                                .flatpickr-month {
-                                    width: 350px !important;
-                                }
+                                    .dayContainer {
+                                        max-width: 100% !important;
+                                        width: 100% !important;
+                                        min-width: auto !important;
+                                    }
 
-                                .flatpickr-weekdays {
-                                    display: flex !important;
-                                    justify-content: center !important;
-                                    gap: 150px !important;
-                                    /* Match days gap */
-                                    width: 100% !important;
-                                }
+                                    .flatpickr-rContainer {
+                                        width: 100% !important;
+                                    }
 
-                                .flatpickr-weekdaycontainer {
-                                    width: 350px !important;
-                                    display: flex !important;
+                                    .flatpickr-innerContainer {
+                                        width: 100% !important;
+                                        display: block !important;
+                                    }
+
+                                    .flatpickr-weekdays {
+                                        width: 100% !important;
+                                    }
+
+                                    .flatpickr-weekdaycontainer {
+                                        width: 100% !important;
+                                    }
                                 }
 
                                 .flatpickr-month {
@@ -481,7 +522,7 @@
                                     }
 
                                     .flatpickr-months {
-                                        flex-direction: column;
+                                        /* Removed flex-direction: column to prevent Header-Header-Body-Body issue */
                                     }
                                 }
                             </style>
@@ -510,7 +551,7 @@
                                         inline: true, // Always visible in its container
                                         appendTo: document.getElementById('calendarAnchor'),
                                         dateFormat: "Y-m-d", // Format for hidden inputs
-                                        showMonths: 2,
+                                        showMonths: window.innerWidth < 768 ? 1 : 2,
                                         locale: {
                                             ...flatpickr.l10ns[locale],
                                             firstDayOfWeek: 6 // Force Saturday start
@@ -547,6 +588,15 @@
 
                                     // Initialize on the container or first input, but let both trigger it
                                     const fp = flatpickr(checkInDisplay, config);
+
+                                    // Handle window resize for responsiveness
+                                    window.addEventListener('resize', () => {
+                                        const newShowMonths = window.innerWidth < 768 ? 1 : 2;
+                                        if (fp.config.showMonths !== newShowMonths) {
+                                            fp.set('showMonths', newShowMonths);
+                                            // Redraw is handled by set usually, but we can force update if needed
+                                        }
+                                    });
 
                                     const calendarModal = document.getElementById('calendarModal');
                                     const closeCalendarBtn = document.getElementById('closeCalendar');
