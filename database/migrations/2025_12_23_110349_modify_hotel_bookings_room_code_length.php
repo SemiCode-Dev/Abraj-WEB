@@ -12,6 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('hotel_bookings', function (Blueprint $table) {
+            $table->dropIndex(['room_code']);
+        });
+
+        Schema::table('hotel_bookings', function (Blueprint $table) {
             $table->text('room_code')->change();
         });
     }
@@ -23,6 +27,10 @@ return new class extends Migration
     {
         Schema::table('hotel_bookings', function (Blueprint $table) {
             $table->string('room_code')->change();
+        });
+
+        Schema::table('hotel_bookings', function (Blueprint $table) {
+            $table->index('room_code');
         });
     }
 };
