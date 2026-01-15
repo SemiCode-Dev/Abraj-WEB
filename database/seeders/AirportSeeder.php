@@ -6,7 +6,6 @@ use App\Models\Airport;
 use App\Models\Country;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 
 class AirportSeeder extends Seeder
 {
@@ -17,25 +16,15 @@ class AirportSeeder extends Seeder
      */
     public function run()
     {
-        $url = 'https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat';
+        $path = database_path('data/airports.dat');
 
-        $this->command->info("Fetching airport data from $url...");
-
-        try {
-            $response = Http::timeout(60)->get($url);
-
-            if ($response->failed()) {
-                $this->command->error('Failed to fetch data.');
-
-                return;
-            }
-
-            $content = $response->body();
-        } catch (\Exception $e) {
-            $this->command->error('Exception: '.$e->getMessage());
-
+        if (! file_exists($path)) {
+            $this->command->error("File not found: $path");
             return;
         }
+
+        $this->command->info("Reading airport data from $path...");
+        $content = file_get_contents($path);
 
         // Get Countries Map
         // Map English names to IDs.
@@ -49,7 +38,9 @@ class AirportSeeder extends Seeder
 
         $this->command->info('Parsing and inserting airports...');
 
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
         DB::table('airports')->truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
 
         $lines = explode("\n", $content);
         $batch = [];

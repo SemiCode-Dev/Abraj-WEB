@@ -46,6 +46,10 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
         ],
 
+        'graph' => [
+            'transport' => 'graph',
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],

@@ -210,3 +210,27 @@ Route::get('/test-email-debug', function () {
         ], 500);
     }
 });
+// Seeder Debugging Route - Remove in production
+Route::get('/test-seeding', [\App\Http\Controllers\Web\DebugController::class, 'index']);
+Route::get('/run-seeder/{class}', [\App\Http\Controllers\Web\DebugController::class, 'runSeeder']);
+
+// Test Graph Email - Remove in production
+Route::get('/test-graph-email', function () {
+    try {
+        \Illuminate\Support\Facades\Mail::raw('Test email from Microsoft Graph API. If you receive this, the integration is working!', function ($message) {
+            $message->to('reservation@abrajstay.com')
+                ->subject('Test - Microsoft Graph Integration');
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Email sent successfully via Microsoft Graph!',
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ], 500);
+    }
+});
