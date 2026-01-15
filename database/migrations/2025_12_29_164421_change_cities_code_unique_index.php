@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -20,8 +21,10 @@ return new class extends Migration
             // If the index doesn't exist, we can ignore the error and proceed
         }
 
-        // Truncate to remove contaminated data
+        // Disable foreign key checks, truncate, then re-enable
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('cities')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         Schema::table('cities', function (Blueprint $table) {
             // Add composite unique index
