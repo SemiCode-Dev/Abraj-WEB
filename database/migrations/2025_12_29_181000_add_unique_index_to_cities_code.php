@@ -13,7 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Truncate table to remove potential duplicates before adding unique index
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('cities')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         Schema::table('cities', function (Blueprint $table) {
             // 2. Add unique index to 'code' to ensure upsert works correctly
