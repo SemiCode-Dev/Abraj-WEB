@@ -712,5 +712,8 @@
     "Thank you for choosing Abraj Stay!": "شكراً لاختياركم أبراج ستاي!",
     "By using our website or services, you consent to the terms of this agreement. Please review this policy periodically for updates or changes.": "باستخدام موقعنا أو خدماتنا، فإنك توافق على شروط هذه الاتفاقية. يرجى مراجعة هذه السياسة بشكل دوري للاطلاع على التحديثات أو التغييرات.",
     "Remove": "إزالة",
-    "Child Ages": "أعمار الأطفال"
+    "Child Ages": "أعمار الأطفال",
+    "validation.phone_invalid": "رقم الهاتف غير صحيح.",
+    "validation.phone_invalid_length": "طول رقم الهاتف غير صحيح.",
+    "validation.phone_invalid_format": "تنسيق رقم الهاتف غير صحيح. يرجى استخدام التنسيق الدولي (مثال: +966501234567)."
 }

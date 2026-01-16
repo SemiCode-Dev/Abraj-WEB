@@ -398,7 +398,7 @@
                                 }
 
                                 /* Mobile styles implicitly handled by removing fixed widths above,
-                                                                   but we ensure correct stacking */
+                                                                           but we ensure correct stacking */
                                 @media (max-width: 767px) {
                                     .flatpickr-months .flatpickr-month {
                                         width: 100% !important;
@@ -2295,7 +2295,7 @@ $fallbackImages = [
 
                             room.childrenAges.forEach((age, ageIndex) => {
                                 let options = '';
-                                for (let i = 0; i <= 17; i++) {
+                                for (let i = 0; i <= 12; i++) {
                                     options +=
                                         `<option value="${i}" ${age == i ? 'selected' : ''}>${i}</option>`;
                                 }
@@ -2335,7 +2335,7 @@ $fallbackImages = [
                                         <button type="button" class="w-8 h-8 flex items-center justify-center text-orange-500 hover:bg-orange-50 dark:hover:bg-gray-700 rounded-r-lg increase-children" data-index="${index}">+</button>
                                     </div>
                                     <span class="text-[10px] text-gray-400 block mt-1 {{ app()->getLocale() == 'ar' ? 'text-right' : 'text-left' }}">
-                                        {{ app()->getLocale() == 'ar' ? 'من 0 إلى 17 سنة' : 'From 0 to 17 years' }}
+                                        {{ app()->getLocale() == 'ar' ? 'من 0 إلى 12 سنة' : 'From 0 to 12 years' }}
                                     </span>
                                 </div>
                             </div>
