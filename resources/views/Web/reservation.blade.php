@@ -68,6 +68,20 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Reservation Form -->
                 <div class="lg:col-span-2 space-y-6">
+                    @if ($errors->any())
+                        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-xl animate-pulse">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>
+                                <div class="text-red-700 font-bold">{{ __('Please correct the following errors:') }}</div>
+                            </div>
+                            <ul class="mt-2 list-disc list-inside text-sm text-red-600">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <!-- Booking Summary Card -->
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-l-4 border-orange-600">
                         <div class="flex items-center gap-3 mb-6">
@@ -285,24 +299,24 @@
                             action="{{ route('reservation.review', ['locale' => app()->getLocale()]) }}"
                             style="display: none;">
                             @csrf
-                            <input type="hidden" name="hotel_id" value="{{ request('hotel_id') }}">
-                            <input type="hidden" name="booking_code" value="{{ request('booking_code') }}">
-                            <input type="hidden" name="check_in" value="{{ request('check_in') }}">
-                            <input type="hidden" name="check_out" value="{{ request('check_out') }}">
-                            <input type="hidden" name="guests" value="{{ request('guests', 1) }}">
+                            <input type="hidden" name="hotel_id" value="{{ $hotelId }}">
+                            <input type="hidden" name="booking_code" value="{{ $bookingCode }}">
+                            <input type="hidden" name="check_in" value="{{ $checkIn }}">
+                            <input type="hidden" name="check_out" value="{{ $checkOut }}">
+                            <input type="hidden" name="guests" value="{{ $guests }}">
                             <input type="hidden" name="total_fare"
                                 value="{{ isset($totalFare) ? $totalFare : request('total_fare', 0) }}">
                             <input type="hidden" name="currency"
                                 value="{{ isset($currency) ? $currency : request('currency', 'USD') }}">
                             <input type="hidden" name="room_name" value="{{ request('room_name') }}">
                             <input type="hidden" name="inclusion" value="{{ request('inclusion') }}">
-                            <input type="hidden" id="reviewFormName" name="name" value="">
-                            <input type="hidden" id="reviewFormEmail" name="email" value="">
-                            <input type="hidden" id="reviewFormPhone" name="phone" value="">
+                            <input type="hidden" id="reviewFormName" name="name" value="{{ old('name') }}">
+                            <input type="hidden" id="reviewFormEmail" name="email" value="{{ old('email') }}">
+                            <input type="hidden" id="reviewFormPhone" name="phone" value="{{ old('phone') }}">
                             <input type="hidden" id="reviewFormPhoneCountryCode" name="phone_country_code"
-                                value="">
-                            <input type="hidden" id="reviewFormNotes" name="notes" value="">
-                            <input type="hidden" id="reviewFormTerms" name="terms" value="0">
+                                value="{{ old('phone_country_code') }}">
+                            <input type="hidden" id="reviewFormNotes" name="notes" value="{{ old('notes') }}">
+                            <input type="hidden" id="reviewFormTerms" name="terms" value="1">
                         </form>
                     </div>
 

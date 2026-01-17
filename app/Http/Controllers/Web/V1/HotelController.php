@@ -954,14 +954,45 @@ class HotelController extends Controller
     public function reservation(Request $request)
     {
         try {
-            $hotelId = $request->input('hotel_id');
-            $bookingCode = $request->input('booking_code');
-            $checkIn = $request->input('check_in');
-            $checkOut = $request->input('check_out');
-            $guests = $request->input('guests', 1);
+            $hotelId = $request->input('hotel_id') ?? session('_old_input.hotel_id');
+            $bookingCode = $request->input('booking_code') ?? session('_old_input.booking_code');
+            $checkIn = $request->input('check_in') ?? session('_old_input.check_in');
+            $checkOut = $request->input('check_out') ?? session('_old_input.check_out');
+            $guests = $request->input('guests', session('_old_input.guests', 1));
 
-            if (empty($hotelId) || empty($checkIn) || empty($checkOut)) {
-                return redirect()->route('hotel.details', ['locale' => app()->getLocale(), 'id' => $hotelId ?? 1])
+            // More robust validation - check for null, empty string, or missing values
+            $hasHotelId = !empty($hotelId) && $hotelId !== '';
+            $hasCheckIn = !empty($checkIn) && $checkIn !== '';
+            $hasCheckOut = !empty($checkOut) && $checkOut !== '';
+            $hasBookingCode = !empty($bookingCode) && $bookingCode !== '';
+
+            // Log the validation for debugging
+            Log::info('Reservation validation', [
+                'hotel_id' => $hotelId,
+                'booking_code' => $bookingCode,
+                'check_in' => $checkIn,
+                'check_out' => $checkOut,
+                'has_hotel_id' => $hasHotelId,
+                'has_check_in' => $hasCheckIn,
+                'has_check_out' => $hasCheckOut,
+                'has_booking_code' => $hasBookingCode,
+            ]);
+
+            // Only redirect if critical data is missing
+            if (!$hasHotelId || !$hasCheckIn || !$hasCheckOut) {
+                Log::warning('Reservation validation failed - missing required data', [
+                    'hotel_id' => $hotelId,
+                    'check_in' => $checkIn,
+                    'check_out' => $checkOut
+                ]);
+                
+                // If hotelId is still missing, we can't show details, go to home or all hotels
+                if (!$hasHotelId) {
+                    return redirect()->route('all.hotels', ['locale' => app()->getLocale()])
+                        ->with('error', __('Please select a hotel first'));
+                }
+
+                return redirect()->route('hotel.details', ['locale' => app()->getLocale(), 'id' => $hotelId])
                     ->with('error', __('Please select dates and room'));
             }
 
@@ -1021,14 +1052,14 @@ class HotelController extends Controller
                 }
             }
 
-            // If room data not found from API, use URL parameters as fallback
+            // If room data not found from API, use URL parameters or session as fallback
             if (! $roomData) {
                 $roomData = [
                     'BookingCode' => $bookingCode,
-                    'Name' => [$request->input('room_name', 'Room')],
-                    'TotalFare' => (float) $request->input('total_fare', 0),
-                    'Currency' => $request->input('currency', 'USD'),
-                    'Inclusion' => $request->input('inclusion', ''),
+                    'Name' => [$request->input('room_name') ?? session('_old_input.room_name', 'Room')],
+                    'TotalFare' => (float) ($request->input('total_fare') ?? session('_old_input.total_fare', 0)),
+                    'Currency' => $request->input('currency') ?? session('_old_input.currency', 'USD'),
+                    'Inclusion' => $request->input('inclusion') ?? session('_old_input.inclusion', ''),
                     'TotalTax' => 0,
                 ];
             }
