@@ -24,14 +24,20 @@ jobs:
           command_timeout: 30m
           script: |
             cd /var/www/abrajstay-web
+            
+            php artisan optimize:clear
+            
             git pull origin main
+            
             composer install --no-interaction
             npm ci
             npm run build
+            
             php artisan migrate --force
+            
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
-            php artisan optimize
+            
             sudo systemctl reload php8.3-fpm || sudo systemctl reload php-fpm || true
             sudo systemctl reload nginx
