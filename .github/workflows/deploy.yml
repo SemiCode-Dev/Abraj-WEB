@@ -1,9 +1,9 @@
 name: Deploy to Production
 
-#on:
-#  push:
-#    branches:
-#      - main
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -44,9 +44,10 @@ jobs:
           script: |
             cd /var/www/abrajstay-web
             git pull origin main
-            composer install --no-dev --optimize-autoloader --no-interaction
+            composer install
             npm ci
             npm run build
+            php artisan db:seed
             php artisan migrate --force
             php artisan config:cache
             php artisan route:cache
