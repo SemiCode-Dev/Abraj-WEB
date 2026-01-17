@@ -31,7 +31,7 @@
     @include('Web.partials.footer')
 
     <!-- WhatsApp CTA Button - Bottom Left -->
-    <a href="https://wa.me/966500000000?text={{ app()->getLocale() === 'ar' ? 'مرحباً، أريد الاستفسار عن حجز فندق' : 'Hello, I would like to inquire about hotel booking' }}"
+    <a href="https://wa.me/966533991801?text={{ app()->getLocale() === 'ar' ? 'مرحباً، أريد الاستفسار عن حجز فندق' : 'Hello, I would like to inquire about hotel booking' }}"
         target="_blank"
         class="fixed {{ app()->getLocale() === 'ar' ? 'bottom-6 left-6' : 'bottom-6 right-6' }} z-50 bg-green-500 hover:bg-green-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 group">
         <i class="fab fa-whatsapp text-xl"></i>
