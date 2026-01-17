@@ -23,6 +23,9 @@ jobs:
           timeout: 60s
           command_timeout: 30m
           script: |
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            
             cd /var/www/abrajstay-web
             
             php artisan optimize:clear
@@ -36,7 +39,6 @@ jobs:
             php artisan migrate --force
             
             php artisan config:cache
-            php artisan route:cache
             php artisan view:cache
             
             sudo systemctl reload php8.3-fpm || sudo systemctl reload php-fpm || true
