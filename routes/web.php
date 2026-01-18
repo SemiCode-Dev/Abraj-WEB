@@ -171,9 +171,8 @@ Route::prefix(LaravelLocalization::setLocale().'/admin')->name('admin.')->middle
             return view('Admin.reports');
         })->name('reports');
 
-        Route::get('/settings', function () {
-            return view('Admin.settings');
-        })->name('settings');
+        Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings');
+        Route::post('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
     });
 });
 

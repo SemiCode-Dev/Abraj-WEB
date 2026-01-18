@@ -167,6 +167,29 @@ class HotelController extends Controller
                 }
             }
 
+            // Apply commission to room prices in search results
+            if (isset($response['HotelResult']) && is_array($response['HotelResult'])) {
+                foreach ($response['HotelResult'] as &$hotel) {
+                    if (isset($hotel['Rooms']) && is_array($hotel['Rooms'])) {
+                        foreach ($hotel['Rooms'] as &$room) {
+                            // Apply commission to TotalFare
+                            if (isset($room['TotalFare'])) {
+                                $room['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['TotalFare']);
+                            }
+                            // Also apply to nested Price properties for robustness
+                            if (isset($room['Price']['PublishedPrice'])) {
+                                $room['Price']['PublishedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['PublishedPrice']);
+                            }
+                            if (isset($room['Price']['OfferedPrice'])) {
+                                $room['Price']['OfferedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['OfferedPrice']);
+                            }
+                        }
+                        unset($room);
+                    }
+                }
+                unset($hotel);
+            }
+
             // Log response for debugging
             Log::info('Hotel search response', [
                 'status_code' => $response['Status']['Code'] ?? 'unknown',
@@ -440,7 +463,8 @@ class HotelController extends Controller
                                     $filteredByAvailability = [];
                                     foreach ($allLightweightHotels as $h) {
                                         if (isset($availabilityMap[$h['HotelCode']])) {
-                                            $h['MinPrice'] = $availabilityMap[$h['HotelCode']]['price'];
+                                            $basePrice = (float) $availabilityMap[$h['HotelCode']]['price'];
+                                            $h['MinPrice'] = \App\Helpers\CommissionHelper::applyCommission($basePrice);
                                             $h['Currency'] = $availabilityMap[$h['HotelCode']]['currency'];
                                             $filteredByAvailability[] = $h;
                                         }
@@ -705,6 +729,16 @@ class HotelController extends Controller
                     $translator = new \App\Services\HotelTranslationService;
                     $hotels = $translator->translateHotels($hotels);
                 }
+
+                // Apply commission to hotel prices
+                foreach ($hotels as &$hotel) {
+                    if (isset($hotel['MinPrice'])) {
+                        $hotel['MinPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $hotel['MinPrice']);
+                    } elseif (isset($hotel['StartPrice'])) {
+                        $hotel['StartPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $hotel['StartPrice']);
+                    }
+                }
+                unset($hotel);
             }
 
             return view('Web.hotels', [
@@ -924,6 +958,20 @@ class HotelController extends Controller
                 }
             }
 
+            // Apply commission to room prices
+            if (! empty($availableRooms)) {
+                foreach ($availableRooms as &$room) {
+                    if (isset($room['TotalFare'])) {
+                        $room['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['TotalFare']);
+                    }
+                    // Robustness: also apply to nested Price properties if they exist, e.g., if TotalFare is missing or as well
+                    if (isset($room['Price']['PublishedPrice'])) {
+                        $room['Price']['PublishedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['PublishedPrice']);
+                    }
+                }
+                unset($room); // Break reference
+            }
+
             // Log response for debugging
             // Log::info('Hotel details response', [
             //     'hotel_id' => $id,
@@ -1081,6 +1129,9 @@ class HotelController extends Controller
                 $totalFare = (float) $request->input('total_fare');
                 $currency = $request->input('currency', 'USD');
             }
+
+            // Apply commission to total fare
+            $totalFare = \App\Helpers\CommissionHelper::applyCommission($totalFare);
 
             // Do not generate payment data immediately.
             // We want the user to go through the review process (either AJAX or separate page)
@@ -1279,10 +1330,14 @@ class HotelController extends Controller
             $totalFare = 0;
             $currency = 'USD';
 
+            // Extract price from room data
             if ($roomData && isset($roomData['TotalFare']) && $roomData['TotalFare'] > 0) {
                 $totalFare = (float) $roomData['TotalFare'];
                 $currency = $roomData['Currency'] ?? 'USD';
-            } elseif ($request->input('total_fare')) {
+            }
+
+            // Fallback to request input if totalFare is still 0
+            if ($totalFare == 0 && $request->input('total_fare')) {
                 $totalFare = (float) $request->input('total_fare');
                 $currency = $request->input('currency', 'USD');
             }
@@ -1293,6 +1348,9 @@ class HotelController extends Controller
 
             $hotelNameAr = $language === 'ar' ? $currentName : $altName;
             $hotelNameEn = $language === 'en' ? $currentName : $altName;
+
+            // Apply commission to total fare
+            $totalFare = \App\Helpers\CommissionHelper::applyCommission($totalFare);
 
             // Prepare data for booking creation
             $bookingData = [
