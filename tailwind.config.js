@@ -6,6 +6,10 @@ export default {
     "./resources/**/*.js",
     "./resources/**/*.vue",
   ],
+  safelist: [
+    'z-[110]',
+    'z-[100]',
+  ],
   theme: {
     extend: {
       fontFamily: {

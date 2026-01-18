@@ -2,6 +2,206 @@
 
 @section('title', __('Hotel Details') . ' - ' . __('Book Hotels - Best Offers and Services'))
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        /* Custom Flatpickr Styling to match Radisson/User Request */
+        .flatpickr-calendar {
+            border-radius: 16px;
+            box-shadow: none !important;
+            border: none !important;
+            font-family: inherit;
+            padding: 0;
+            background: white;
+            position: relative !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            display: block !important;
+        }
+
+        /* Desktop-specific styles for large gap */
+        @media (min-width: 768px) {
+            .flatpickr-calendar {
+                width: auto !important;
+            }
+
+            .flatpickr-months {
+                display: flex !important;
+                justify-content: center !important;
+                gap: 150px !important;
+                padding: 0 10px;
+                position: relative;
+            }
+
+            .flatpickr-days {
+                display: flex !important;
+                justify-content: center !important;
+                gap: 150px !important;
+                width: 100% !important;
+            }
+
+            .dayContainer {
+                width: 350px !important;
+                min-width: 350px !important;
+                max-width: 350px !important;
+                overflow: visible !important;
+            }
+
+            .flatpickr-month {
+                width: 350px !important;
+            }
+
+            .flatpickr-weekdays {
+                display: flex !important;
+                justify-content: center !important;
+                gap: 150px !important;
+                width: 100% !important;
+            }
+
+            .flatpickr-weekdaycontainer {
+                width: 350px !important;
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .flatpickr-months .flatpickr-month {
+                width: 100% !important;
+            }
+
+            .flatpickr-days {
+                width: 100% !important;
+            }
+
+            .dayContainer {
+                max-width: 100% !important;
+                width: 100% !important;
+                min-width: auto !important;
+            }
+
+            .flatpickr-rContainer {
+                width: 100% !important;
+            }
+
+            .flatpickr-innerContainer {
+                width: 100% !important;
+                display: block !important;
+            }
+
+            .flatpickr-weekdays {
+                width: 100% !important;
+            }
+
+            .flatpickr-weekdaycontainer {
+                width: 100% !important;
+            }
+        }
+
+        .flatpickr-month {
+            background: transparent;
+            color: #111827;
+            fill: #111827;
+            height: 50px;
+        }
+
+        .flatpickr-current-month {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .flatpickr-weekday {
+            font-weight: 500;
+            color: #9ca3af;
+            font-size: 0.85rem;
+        }
+
+        .flatpickr-day {
+            border-radius: 50% !important;
+            height: 42px;
+            line-height: 42px;
+            width: 14.2857%;
+            max-width: none;
+            font-weight: 500;
+            border: 2px solid transparent !important;
+            margin: 2px 0;
+        }
+
+        .flatpickr-day.inRange {
+            background: #fff7ed !important;
+            border-color: #fff7ed !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            color: #ea580c !important;
+        }
+
+        .flatpickr-day.selected,
+        .flatpickr-day.startRange,
+        .flatpickr-day.endRange {
+            background: #ea580c !important;
+            border-color: #ea580c !important;
+            color: white !important;
+            border-radius: 50% !important;
+            z-index: 2;
+        }
+
+        .flatpickr-calendar.rangeMode {
+            width: 100% !important;
+        }
+
+        .flatpickr-calendar .flatpickr-innerContainer {
+            margin-top: 10px;
+        }
+
+        [dir="rtl"] .flatpickr-calendar {
+            direction: rtl;
+        }
+
+        .flatpickr-day.flatpickr-disabled,
+        .flatpickr-day.flatpickr-disabled:hover {
+            color: #cbd5e1 !important;
+            opacity: 1 !important;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            #calendarModal {
+                min-width: 320px !important;
+                width: 95vw;
+                padding: 10px;
+            }
+
+            .flatpickr-calendar.rangeMode {
+                width: 100% !important;
+                flex-direction: column !important;
+            }
+        }
+
+        /* Scrollbar hide utility */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #ea580c;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #d9480f;
+        }
+    </style>
+@endpush
+
 @section('content')
     <!-- Hotel Header -->
     <section class="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white py-12">
@@ -267,56 +467,113 @@
                     <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
                         <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ __('Select Dates to View Availability') }}
                         </h2>
+
                         <form id="availabilityForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-semibold mb-2">
-                                    <i
-                                        class="fas fa-calendar-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Check In') }}
-                                </label>
-                                <input type="date" id="checkInDate" name="check_in"
-                                    value="{{ request('check_in') ?: '' }}" required
-                                    class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
+                            <!-- Check-in & Check-out Container -->
+                            <div class="relative md:col-span-2 z-[100]" id="dateRangeContainer">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <!-- Check-in -->
+                                    <div class="relative">
+                                        <label
+                                            class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                            <i
+                                                class="fas fa-calendar-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                            {{ __('Check In') }}
+                                        </label>
+                                        <div class="relative">
+                                            <input type="text" id="checkInDisplay" readonly
+                                                placeholder="{{ __('Check In') }}"
+                                                class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 font-medium cursor-pointer bg-white">
+                                            <input type="hidden" name="check_in" id="checkInInput"
+                                                value="{{ request('check_in') }}">
+                                        </div>
+                                    </div>
+
+                                    <!-- Check-out -->
+                                    <div class="relative">
+                                        <label
+                                            class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                            <i
+                                                class="fas fa-calendar-check text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                            {{ __('Check Out') }}
+                                        </label>
+                                        <div class="relative">
+                                            <input type="text" id="checkOutDisplay" readonly
+                                                placeholder="{{ __('Check Out') }}"
+                                                class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 font-medium cursor-pointer bg-white">
+                                            <input type="hidden" name="check_out" id="checkOutInput"
+                                                value="{{ request('check_out') }}">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Manual Calendar Modal -->
+                                <div id="calendarModal"
+                                    class="absolute left-1/2 -translate-x-1/2 z-[100] hidden top-full mt-2 w-full md:w-auto">
+                                    <div
+                                        class="bg-white rounded-3xl shadow-2xl p-6 border border-gray-100 w-full md:w-[850px] max-w-full overflow-hidden">
+                                        <div id="calendarAnchor"></div>
+                                        <div class="p-3 border-t border-gray-100 flex justify-end">
+                                            <button type="button" id="closeCalendar"
+                                                class="bg-orange-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-600 transition">
+                                                {{ __('Done') }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-semibold mb-2">
-                                    <i
-                                        class="fas fa-calendar-check text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Check Out') }}
-                                </label>
-                                <input type="date" id="checkOutDate" name="check_out"
-                                    value="{{ request('check_out') ?: '' }}" required
-                                    class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-semibold mb-2">
+
+                            <!-- Rooms & Guests -->
+                            <div class="relative z-[110]">
+                                <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                                     <i
                                         class="fas fa-users text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Guests') }}
+                                    {{ __('Rooms & Guests') }}
                                 </label>
-                                <select id="guestsSelect" name="guests"
-                                    class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
-                                    <option value="1" {{ request('guests') == '1' ? 'selected' : '' }}>1
-                                        {{ __('Guest') }}</option>
-                                    <option value="2" {{ request('guests', '2') == '2' ? 'selected' : '' }}>2
-                                        {{ __('Guests') }}</option>
-                                    <option value="3" {{ request('guests') == '3' ? 'selected' : '' }}>3
-                                        {{ __('Guests') }}</option>
-                                    <option value="4" {{ request('guests') == '4' ? 'selected' : '' }}>4
-                                        {{ __('Guests') }}</option>
-                                    <option value="5" {{ request('guests') == '5' ? 'selected' : '' }}>5+
-                                        {{ __('Guests') }}</option>
-                                </select>
+
+                                <div id="guestsSelectorTrigger"
+                                    class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl cursor-pointer bg-white flex items-center justify-between select-none text-gray-900 font-medium">
+                                    <span id="guestsSummary" class="truncate text-sm">1 {{ __('Room') }}, 2
+                                        {{ __('Adults') }}</span>
+                                    <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                                </div>
+
+                                <div id="guestsDropdown"
+                                    class="absolute z-50 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl hidden p-6 w-full md:w-[400px] right-0">
+                                    <div id="roomsContainer"
+                                        class="space-y-4 max-h-60 overflow-y-auto custom-scrollbar mb-4 pl-[5px]">
+                                        <!-- Rooms will be rendered here by JS -->
+                                    </div>
+
+                                    <div
+                                        class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-700">
+                                        <button type="button" id="addRoomBtn"
+                                            class="text-orange-600 text-sm font-bold hover:text-orange-700 flex items-center">
+                                            <i
+                                                class="fas fa-plus {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                            {{ __('Add Room') }}
+                                        </button>
+                                        <button type="button" id="doneBtn"
+                                            class="bg-orange-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-orange-700 transition">
+                                            {{ __('Done') }}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="hiddenGuestInputs">
+                                    <!-- Hidden inputs will be rendered here by JS -->
+                                </div>
                             </div>
+
                             <div class="flex items-end">
                                 <button type="button" id="checkAvailabilityBtn"
-                                    class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition shadow-lg">
+                                    class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3.5 rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition shadow-lg text-sm">
                                     <i class="fas fa-search {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
                                     {{ __('Check Availability') }}
                                 </button>
                             </div>
                         </form>
-                        <div id="availabilityMessage" class="hidden text-sm text-gray-600"></div>
+                        <div id="availabilityMessage" class="hidden mt-2 p-3 rounded-lg text-sm"></div>
                     </div>
 
                     <!-- Extra Features Selection -->
@@ -681,6 +938,10 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    @if (app()->getLocale() === 'ar')
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
+    @endif
     <script>
         // Hotel Images Gallery - Get images from API or use defaults
         @php
@@ -752,10 +1013,19 @@
             }
         });
 
-        // Set default dates and minimum dates
-        const today = new Date();
-        const nextMonth = new Date(today);
-        nextMonth.setDate(nextMonth.getDate() + 1);
+        // -----------------------------------------------------------------------------
+        // DATE RANGE PICKER (FLATPICKR)
+        // -----------------------------------------------------------------------------
+        const checkInDisplay = document.getElementById('checkInDisplay');
+        const checkOutDisplay = document.getElementById('checkOutDisplay');
+        const checkInInput = document.getElementById('checkInInput');
+        const checkOutInput = document.getElementById('checkOutInput');
+        const calendarModal = document.getElementById('calendarModal');
+        const closeCalendarBtn = document.getElementById('closeCalendar');
+        const dateRangeContainer = document.getElementById('dateRangeContainer');
+
+        const isRTL = document.documentElement.dir === 'rtl';
+        const localeTag = "{{ app()->getLocale() }}";
 
         const formatDate = (date) => {
             const year = date.getFullYear();
@@ -764,560 +1034,416 @@
             return `${year}-${month}-${day}`;
         };
 
-        const todayStr = formatDate(today);
-        const nextMonthStr = formatDate(nextMonth);
-
-        const checkInInput = document.getElementById('checkInDate');
-        const checkOutInput = document.getElementById('checkOutDate');
-        const guestsSelect = document.getElementById('guestsSelect');
-
-        // Set default dates if not in URL or if empty string
-        if (checkInInput && (!checkInInput.value || checkInInput.value.trim() === '')) {
-            checkInInput.value = todayStr;
-        }
-        if (checkOutInput && (!checkOutInput.value || checkOutInput.value.trim() === '')) {
-            // Set check-out to at least one day after check-in
-            const checkInDate = checkInInput?.value || todayStr;
-            const nextDay = new Date(checkInDate);
-            nextDay.setDate(nextDay.getDate() + 1);
-            checkOutInput.value = formatDate(nextDay);
-        }
-
-        // Set minimum dates
-        if (checkInInput) {
-            checkInInput.setAttribute('min', todayStr);
-        }
-        if (checkOutInput) {
-            checkOutInput.setAttribute('min', todayStr);
-        }
-
-        // Update check-out minimum date when check-in changes
-        if (checkInInput) {
-            checkInInput.addEventListener('change', function() {
-                const checkInDate = this.value;
-                if (checkOutInput && checkInDate) {
-                    const nextDay = new Date(checkInDate);
-                    nextDay.setDate(nextDay.getDate() + 1);
-                    checkOutInput.setAttribute('min', formatDate(nextDay));
-                    if (checkOutInput.value && checkOutInput.value <= checkInDate) {
-                        checkOutInput.value = formatDate(nextDay);
-                    }
+        const config = {
+            mode: "range",
+            minDate: "today",
+            inline: true,
+            appendTo: document.getElementById('calendarAnchor'),
+            dateFormat: "Y-m-d",
+            showMonths: window.innerWidth < 768 ? 1 : 2,
+            locale: localeTag === 'ar' ? flatpickr.l10ns.ar : flatpickr.l10ns.default,
+            disableMobile: true,
+            defaultDate: [checkInInput.value, checkOutInput.value].filter(v => v),
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length > 0) {
+                    const startDate = selectedDates[0];
+                    checkInInput.value = instance.formatDate(startDate, "Y-m-d");
+                    checkInDisplay.value = instance.formatDate(startDate, isRTL ? "l j F Y" : "D, M j, Y");
                 }
-            });
+                if (selectedDates.length === 2) {
+                    const endDate = selectedDates[1];
+                    checkOutInput.value = instance.formatDate(endDate, "Y-m-d");
+                    checkOutDisplay.value = instance.formatDate(endDate, isRTL ? "l j F Y" : "D, M j, Y");
+                } else {
+                    checkOutInput.value = '';
+                    checkOutDisplay.value = '';
+                }
+            }
+        };
+
+        const fp = flatpickr(checkInDisplay, config);
+
+        // Pre-fill display inputs if we have initial values
+        if (checkInInput.value) {
+            const d = new Date(checkInInput.value);
+            checkInDisplay.value = fp.formatDate(d, isRTL ? "l j F Y" : "D, M j, Y");
+        }
+        if (checkOutInput.value) {
+            const d = new Date(checkOutInput.value);
+            checkOutDisplay.value = fp.formatDate(d, isRTL ? "l j F Y" : "D, M j, Y");
         }
 
-        // Function to search for rooms
+        window.addEventListener('resize', () => {
+            const newShowMonths = window.innerWidth < 768 ? 1 : 2;
+            if (fp.config.showMonths !== newShowMonths) {
+                fp.set('showMonths', newShowMonths);
+            }
+        });
+
+        function toggleCalendar(show = true) {
+            if (show) {
+                calendarModal.classList.remove('hidden');
+                dateRangeContainer.style.zIndex = '150';
+            } else {
+                calendarModal.classList.add('hidden');
+                dateRangeContainer.style.zIndex = '100';
+            }
+        }
+
+        checkInDisplay.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleCalendar(true);
+        });
+        checkOutDisplay.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleCalendar(true);
+        });
+        closeCalendarBtn.addEventListener('click', () => toggleCalendar(false));
+
+        document.addEventListener('click', (e) => {
+            if (!calendarModal.contains(e.target) && !checkInDisplay.contains(e.target) && !checkOutDisplay
+                .contains(e.target)) {
+                toggleCalendar(false);
+            }
+        });
+
+        // -----------------------------------------------------------------------------
+        // MULTI-ROOM GUEST SELECTOR
+        // -----------------------------------------------------------------------------
+        const guestsTrigger = document.getElementById('guestsSelectorTrigger');
+        const guestsDropdown = document.getElementById('guestsDropdown');
+        const guestsRoomsContainer = document.getElementById('roomsContainer');
+        const addRoomBtn = document.getElementById('addRoomBtn');
+        const doneBtn = document.getElementById('doneBtn');
+        const hiddenInputsContainer = document.getElementById('hiddenGuestInputs');
+        const guestsSummary = document.getElementById('guestsSummary');
+
+        let rooms = [{
+            adults: 2,
+            children: 0,
+            childrenAges: []
+        }];
+
+        function renderRooms() {
+            guestsRoomsContainer.innerHTML = '';
+            hiddenInputsContainer.innerHTML = '';
+            let totalAdults = 0;
+            let totalChildren = 0;
+
+            rooms.forEach((room, index) => {
+                totalAdults += room.adults;
+                totalChildren += room.children;
+
+                const roomEl = document.createElement('div');
+                roomEl.className =
+                    'room-item border-b border-gray-100 dark:border-gray-700 pb-4 last:border-0 mb-4';
+
+                let childAgesHtml = '';
+                if (room.children > 0) {
+                    childAgesHtml += `<div class="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">{{ __('Child Ages') }}</label>
+                        <div class="grid grid-cols-3 gap-2">`;
+                    room.childrenAges.forEach((age, ageIndex) => {
+                        let options = '';
+                        for (let i = 0; i <= 12; i++) {
+                            options += `<option value="${i}" ${age == i ? 'selected' : ''}>${i}</option>`;
+                        }
+                        childAgesHtml += `
+                            <div class="flex flex-col">
+                                <label class="text-[10px] text-gray-500 mb-0.5">{{ __('Child') }} ${ageIndex + 1}</label>
+                                <select class="child-age-select w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs border border-gray-200 dark:border-gray-600 rounded-md p-1" 
+                                    data-room-index="${index}" data-age-index="${ageIndex}">${options}</select>
+                            </div>`;
+                    });
+                    childAgesHtml += `</div></div>`;
+                }
+
+                roomEl.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white">{{ __('Room') }} ${index + 1}</h4>
+                        ${index > 0 ? `<button type="button" class="remove-room-btn text-red-500 text-xs hover:text-red-700" data-index="${index}">{{ __('Remove') }}</button>` : ''}
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1">{{ __('Adults') }}</label>
+                            <div class="flex items-center border border-gray-200 dark:border-gray-600 rounded-lg">
+                                <button type="button" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-l-lg decrease-adults" data-index="${index}">-</button>
+                                <span class="flex-1 text-center text-sm font-bold text-gray-900 dark:text-white">${room.adults}</span>
+                                <button type="button" class="w-8 h-8 flex items-center justify-center text-orange-500 hover:bg-orange-50 rounded-r-lg increase-adults" data-index="${index}">+</button>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1">{{ __('Children') }}</label>
+                            <div class="flex items-center border border-gray-200 dark:border-gray-600 rounded-lg">
+                                <button type="button" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-l-lg decrease-children" data-index="${index}">-</button>
+                                <span class="flex-1 text-center text-sm font-bold text-gray-900 dark:text-white">${room.children}</span>
+                                <button type="button" class="w-8 h-8 flex items-center justify-center text-orange-500 hover:bg-orange-50 rounded-r-lg increase-children" data-index="${index}">+</button>
+                            </div>
+                            <span class="text-[10px] text-gray-400 block mt-1 {{ app()->getLocale() == 'ar' ? 'text-right' : 'text-left' }}">
+                                {{ app()->getLocale() == 'ar' ? 'من 0 إلى 12 سنة' : 'From 0 to 12 years' }}
+                            </span>
+                        </div>
+                    </div>
+                    ${childAgesHtml}`;
+                guestsRoomsContainer.appendChild(roomEl);
+
+                // Add to hidden inputs
+                hiddenInputsContainer.innerHTML +=
+                    `<input type="hidden" name="PaxRooms[${index}][Adults]" value="${room.adults}">`;
+                hiddenInputsContainer.innerHTML +=
+                    `<input type="hidden" name="PaxRooms[${index}][Children]" value="${room.children}">`;
+                room.childrenAges.forEach(age => {
+                    hiddenInputsContainer.innerHTML +=
+                        `<input type="hidden" name="PaxRooms[${index}][ChildrenAges][]" value="${age}">`;
+                });
+            });
+
+            // Update Summary
+            const roomTxt = rooms.length === 1 ? "{{ __('Room') }}" : "{{ __('Rooms') }}";
+            const adultTxt = totalAdults === 1 ? "{{ __('Adult') }}" : "{{ __('Adults') }}";
+            const childTxt = totalChildren === 1 ? "{{ __('Child') }}" : "{{ __('Children') }}";
+
+            let summary = `${rooms.length} ${roomTxt}, ${totalAdults} ${adultTxt}`;
+            if (totalChildren > 0) summary += `, ${totalChildren} ${childTxt}`;
+            guestsSummary.textContent = summary;
+        }
+
+        guestsTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            guestsDropdown.classList.toggle('hidden');
+        });
+        guestsDropdown.addEventListener('click', (e) => e.stopPropagation());
+        document.addEventListener('click', () => guestsDropdown.classList.add('hidden'));
+        doneBtn.addEventListener('click', () => guestsDropdown.classList.add('hidden'));
+
+        addRoomBtn.addEventListener('click', () => {
+            if (rooms.length < 5) {
+                rooms.push({
+                    adults: 1,
+                    children: 0,
+                    childrenAges: []
+                });
+                renderRooms();
+            }
+        });
+
+        guestsRoomsContainer.addEventListener('click', (e) => {
+            const index = parseInt(e.target.dataset.index);
+            if (isNaN(index)) return;
+            if (e.target.classList.contains('increase-adults') && rooms[index].adults < 10) rooms[index].adults++;
+            else if (e.target.classList.contains('decrease-adults') && rooms[index].adults > 1) rooms[index]
+                .adults--;
+            else if (e.target.classList.contains('increase-children') && rooms[index].children < 6) {
+                rooms[index].children++;
+                rooms[index].childrenAges.push(0);
+            } else if (e.target.classList.contains('decrease-children') && rooms[index].children > 0) {
+                rooms[index].children--;
+                rooms[index].childrenAges.pop();
+            } else if (e.target.classList.contains('remove-room-btn')) rooms.splice(index, 1);
+            renderRooms();
+        });
+
+        guestsRoomsContainer.addEventListener('change', (e) => {
+            if (e.target.classList.contains('child-age-select')) {
+                const ri = parseInt(e.target.dataset.roomIndex);
+                const ai = parseInt(e.target.dataset.ageIndex);
+                rooms[ri].childrenAges[ai] = parseInt(e.target.value);
+            }
+        });
+
+        renderRooms();
+
+        // -----------------------------------------------------------------------------
+        // SEARCH LOGIC
+        // -----------------------------------------------------------------------------
         async function searchRooms() {
-            // Get values and handle empty strings properly
-            let checkIn = checkInInput?.value?.trim() || '';
-            let checkOut = checkOutInput?.value?.trim() || '';
-            const guests = guestsSelect?.value || '2';
+            const checkIn = checkInInput.value;
+            const checkOut = checkOutInput.value;
 
-            // Use defaults if empty
-            if (!checkIn) {
-                checkIn = todayStr;
-                if (checkInInput) checkInInput.value = checkIn;
-            }
-            if (!checkOut) {
-                const nextDay = new Date(checkIn);
-                nextDay.setDate(nextDay.getDate() + 1);
-                checkOut = formatDate(nextDay);
-                if (checkOutInput) checkOutInput.value = checkOut;
-            }
-
-            const roomsContainer = document.getElementById('roomsContainer');
             const roomsList = document.getElementById('roomsList');
             const noRoomsMessage = document.getElementById('noRoomsMessage');
             const availabilityMessage = document.getElementById('availabilityMessage');
             const checkAvailabilityBtn = document.getElementById('checkAvailabilityBtn');
 
-            // Validate dates are not empty (shouldn't happen after above, but double-check)
             if (!checkIn || !checkOut) {
-                if (availabilityMessage) {
-                    availabilityMessage.textContent = '{{ __('Please select check-in and check-out dates') }}';
-                    availabilityMessage.className = 'text-sm text-red-600';
-                    availabilityMessage.classList.remove('hidden');
-                }
+                availabilityMessage.textContent = '{{ __('Please select check-in and check-out dates') }}';
+                availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-red-50 text-red-600';
+                availabilityMessage.classList.remove('hidden');
                 return;
             }
 
-            // Validate check-out is after check-in
-            if (checkOut <= checkIn) {
-                // Auto-adjust check-out to be one day after check-in
-                const checkInDate = new Date(checkIn);
-                checkInDate.setDate(checkInDate.getDate() + 1);
-                checkOut = formatDate(checkInDate);
-                if (checkOutInput) checkOutInput.value = checkOut;
-            }
+            // Update URL
+            const url = new URL(window.location.href);
+            url.searchParams.set('check_in', checkIn);
+            url.searchParams.set('check_out', checkOut);
+            let totalGuests = rooms.reduce((acc, r) => acc + r.adults + r.children, 0);
+            url.searchParams.set('guests', totalGuests);
+            window.history.replaceState({}, '', url);
 
-            // Update URL immediately with selected parameters
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('check_in', checkIn);
-            currentUrl.searchParams.set('check_out', checkOut);
-            currentUrl.searchParams.set('guests', guests);
-            window.history.replaceState({}, '', currentUrl);
-
-            // Show loading
+            // UI Feedback
             if (checkAvailabilityBtn) {
                 checkAvailabilityBtn.disabled = true;
-                checkAvailabilityBtn.innerHTML =
-                    '<i class="fas fa-spinner fa-spin {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('Loading...') }}';
+                checkAvailabilityBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>{{ __('Loading...') }}';
             }
             if (roomsList) roomsList.innerHTML = '';
             if (noRoomsMessage) noRoomsMessage.classList.add('hidden');
-            if (availabilityMessage) {
-                availabilityMessage.textContent = '{{ __('Searching for available rooms...') }}';
-                availabilityMessage.className = 'text-sm text-blue-600';
-                availabilityMessage.classList.remove('hidden');
-            }
+            availabilityMessage.textContent = '{{ __('Searching for availability...') }}';
+            availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-blue-50 text-blue-600';
+            availabilityMessage.classList.remove('hidden');
 
-            // Prepare search data - ensure dates are in correct format (YYYY-MM-DD)
             const searchData = {
                 CheckIn: checkIn,
                 CheckOut: checkOut,
                 HotelCodes: '{{ $hotelId }}',
-                GuestNationality: 'AE',
-                PaxRooms: [{
-                    Adults: parseInt(guests) || 1,
-                    Children: 0,
-                    ChildrenAges: []
-                }],
-                ResponseTime: 18,
-                IsDetailedResponse: true,
-                Filters: {
-                    Refundable: false,
-                    NoOfRooms: 0,
-                    MealType: 'All'
-                }
+                GuestNationality: 'SA',
+                PaxRooms: rooms.map(r => ({
+                    Adults: r.adults,
+                    Children: r.children,
+                    ChildrenAges: r.childrenAges
+                }))
             };
 
-            // Log search data for debugging
-            console.log('Searching for rooms with data:', searchData);
-
             try {
-                // Call search API
                 const response = await fetch("{{ route('hotel.search') }}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute(
-                            'content') || '{{ csrf_token() }}'
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify(searchData)
                 });
 
-                // Check if response is ok
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({
-                        error: 'Network error'
-                    }));
-                    throw new Error(errorData.Status?.Description || errorData.error ||
-                        `HTTP error! status: ${response.status}`);
-                }
-
                 const data = await response.json();
 
-                // Log response for debugging
-                console.log('API Response:', data);
-
-                // Mock Data for Fallback
-                const mockData = {
-                    "Hotels": [{
-                        "HotelCode": "{{ $hotelId }}",
-                        "HotelName": "International Luxury Hotel",
-                        "Rooms": [{
-                                "RoomName": "{{ __('Deluxe Room') }}",
-                                "RoomDescription": "{{ __('Room Description 1') }}",
-                                "Rate": 400,
-                                "Currency": "SAR",
-                                "ImageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            },
-                            {
-                                "RoomName": "{{ __('Superior Room') }}",
-                                "RoomDescription": "{{ __('Room Description 2') }}",
-                                "Rate": 500,
-                                "Currency": "SAR",
-                                "ImageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            },
-                            {
-                                "RoomName": "{{ __('Luxury Room') }}",
-                                "RoomDescription": "{{ __('Room Description 3') }}",
-                                "Rate": 600,
-                                "Currency": "SAR",
-                                "ImageUrl": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                            }
-                        ]
-                    }]
-                };
-
-                if (data.Status && data.Status.Code !== 200) {
-                    console.warn("API returned error/no rooms (Code " + data.Status.Code + ")");
-                    // Show no rooms message instead of mock data
-                    if (availabilityMessage) {
-                        availabilityMessage.textContent = '{{ __('No rooms available for selected dates') }}';
-                        availabilityMessage.className = 'text-sm text-gray-600';
-                        availabilityMessage.classList.remove('hidden');
-                    }
-                    if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
-                    if (roomsList) roomsList.classList.add('hidden');
-                    return;
+                if (!response.ok || (data.Status && data.Status.Code !== 200)) {
+                    throw new Error('No availability found');
                 }
 
-                // Handle error response
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                // Check if response has Hotels or HotelResult array
-                const hasHotels = (data.Hotels && Array.isArray(data.Hotels)) || (data.HotelResult && Array.isArray(data
-                    .HotelResult));
-                if (!hasHotels) {
-                    console.warn('No Hotels or HotelResult array in response:', data);
-                    if (availabilityMessage) {
-                        availabilityMessage.textContent = '{{ __('No rooms available for selected dates') }}';
-                        availabilityMessage.className = 'text-sm text-gray-600';
-                        availabilityMessage.classList.remove('hidden');
-                    }
-                    if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
-                    if (roomsList) roomsList.classList.add('hidden');
-                    return;
-                }
-
-                // Display rooms from API response
-                displayRooms(data, checkIn, checkOut, guests);
-
+                displayRooms(data, checkIn, checkOut, totalGuests);
             } catch (err) {
-                console.error("Error searching rooms:", err);
-
-                // Show error message instead of mock data
-                if (availabilityMessage) {
-                    availabilityMessage.textContent = '{{ __('No rooms available for selected dates') }}';
-                    availabilityMessage.className = 'text-sm text-gray-600';
-                    availabilityMessage.classList.remove('hidden');
-                }
+                console.error(err);
+                availabilityMessage.textContent = '{{ __('No rooms available for these dates.') }}';
+                availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-gray-100 text-gray-600';
                 if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
                 if (roomsList) roomsList.classList.add('hidden');
             } finally {
                 if (checkAvailabilityBtn) {
                     checkAvailabilityBtn.disabled = false;
                     checkAvailabilityBtn.innerHTML =
-                        '<i class="fas fa-search {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('Check Availability') }}';
+                        '<i class="fas fa-search mr-2"></i>{{ __('Check Availability') }}';
                 }
             }
         }
 
-        // Function to display rooms from API response
         function displayRooms(data, checkIn, checkOut, guests) {
             const roomsList = document.getElementById('roomsList');
             const noRoomsMessage = document.getElementById('noRoomsMessage');
             const availabilityMessage = document.getElementById('availabilityMessage');
 
-            console.log('Displaying rooms from data:', data);
-
-            // Get hotels from response - handle different response structures
-            let hotels = [];
-            if (data.HotelResult && Array.isArray(data.HotelResult)) {
-                // New API structure: HotelResult array
-                hotels = data.HotelResult;
-            } else if (data.Hotels && Array.isArray(data.Hotels)) {
-                // Old API structure: Hotels array
-                hotels = data.Hotels;
-            } else if (data.hotels && Array.isArray(data.hotels)) {
-                hotels = data.hotels;
-            } else if (Array.isArray(data)) {
-                hotels = data;
-            }
-
+            let hotels = data.HotelResult || data.Hotels || [];
             let allRooms = [];
-
-            // Extract rooms from all hotels
             hotels.forEach(hotel => {
-                const hotelCode = hotel.HotelCode || hotel.HotelID;
-                const hotelName = hotel.HotelName || '';
-                const currency = hotel.Currency || 'USD';
-
-                console.log('Processing hotel:', hotelCode, hotelName);
-
-                // Handle different room structures
-                let rooms = [];
-                if (hotel.Rooms && Array.isArray(hotel.Rooms)) {
-                    rooms = hotel.Rooms;
-                } else if (hotel.rooms && Array.isArray(hotel.rooms)) {
-                    rooms = hotel.rooms;
-                } else if (hotel.RoomDetails && Array.isArray(hotel.RoomDetails)) {
-                    rooms = hotel.RoomDetails;
-                }
-
-                if (rooms.length > 0) {
-                    console.log(`Found ${rooms.length} rooms in hotel ${hotelCode}`);
-                    rooms.forEach(room => {
-                        allRooms.push({
-                            ...room,
-                            HotelCode: hotelCode,
-                            HotelName: hotelName,
-                            Currency: currency // Add currency from hotel level
-                        });
-                    });
-                } else {
-                    console.warn(`No rooms found in hotel ${hotelCode}`, hotel);
-                }
+                if (hotel.Rooms) hotel.Rooms.forEach(room => allRooms.push({
+                    ...room,
+                    Currency: hotel.Currency || 'SAR'
+                }));
             });
 
-            console.log(`Total rooms found: ${allRooms.length}`);
-
             if (allRooms.length === 0) {
-                console.warn('No rooms found in response');
                 if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
                 if (roomsList) roomsList.classList.add('hidden');
-                if (availabilityMessage) {
-                    availabilityMessage.textContent = '{{ __('No rooms available for selected dates') }}';
-                    availabilityMessage.className = 'text-sm text-gray-600';
-                    availabilityMessage.classList.remove('hidden');
-                }
+                availabilityMessage.textContent = '{{ __('No rooms available.') }}';
+                availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-gray-100 text-gray-600';
                 return;
             }
 
-            // Clear existing rooms and show rooms list
-            if (roomsList) {
-                roomsList.innerHTML = '';
-                roomsList.classList.remove('hidden');
-                console.log('Rooms list is now visible');
-            }
+            roomsList.innerHTML = '';
+            roomsList.classList.remove('hidden');
             if (noRoomsMessage) noRoomsMessage.classList.add('hidden');
 
-            // Display rooms
-            console.log(`Adding ${allRooms.length} rooms to the list`);
             allRooms.forEach((room, index) => {
-                const roomCard = createRoomCard(room, index, checkIn, checkOut, guests);
-                if (roomsList && roomCard) {
-                    roomsList.appendChild(roomCard);
-                    // Get room name for logging
-                    let roomNameForLog = 'Unknown';
-                    if (room.Name && Array.isArray(room.Name) && room.Name.length > 0) {
-                        roomNameForLog = room.Name[0];
-                    } else if (room.Name && typeof room.Name === 'string') {
-                        roomNameForLog = room.Name;
-                    } else if (room.RoomTypeName) {
-                        roomNameForLog = room.RoomTypeName;
-                    } else if (room.RoomName) {
-                        roomNameForLog = room.RoomName;
-                    }
-                    console.log(`Added room ${index + 1}:`, roomNameForLog);
-                }
+                const card = createRoomCard(room, index, checkIn, checkOut, guests);
+                if (card) roomsList.appendChild(card);
             });
 
-            // Verify rooms were added
-            if (roomsList) {
-                const addedRooms = roomsList.children.length;
-                console.log(`Total rooms in DOM: ${addedRooms}`);
-                if (addedRooms === 0) {
-                    console.error('No rooms were added to the DOM!');
-                }
-            }
+            availabilityMessage.textContent = `{{ __('Found') }} ${allRooms.length} {{ __('Available Rooms') }}`;
+            availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-green-50 text-green-600';
 
-            // Calculate nights
-            const checkInDate = new Date(checkIn);
-            const checkOutDate = new Date(checkOut);
-            const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
-
-            if (availabilityMessage) {
-                availabilityMessage.textContent = `{{ __('Found') }} ${allRooms.length} {{ __('Available Rooms') }}`;
-                availabilityMessage.className = 'text-sm text-green-600';
-                availabilityMessage.classList.remove('hidden');
-            }
-
-            // Update booking summary sidebar
+            // Update summary
+            const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (86400000));
             updateBookingSummary(checkIn, checkOut, guests, nights);
         }
 
-        // Function to create room card
         function createRoomCard(room, index, checkIn, checkOut, guests) {
-            try {
-                const div = document.createElement('div');
-                div.className = 'border-2 border-gray-200 rounded-2xl p-6 hover:border-orange-500 transition';
+            const div = document.createElement('div');
+            div.className =
+                'border-2 border-gray-100 rounded-2xl p-6 hover:border-orange-500 transition shadow-sm bg-white mb-6';
 
-                // Handle room name - could be array or string
-                let roomName = `{{ __('Room') }} ${index + 1}`;
-                if (room.Name && Array.isArray(room.Name) && room.Name.length > 0) {
-                    roomName = room.Name[0];
-                } else if (room.Name && typeof room.Name === 'string') {
-                    roomName = room.Name;
-                } else if (room.RoomTypeName) {
-                    roomName = room.RoomTypeName;
-                } else if (room.RoomName) {
-                    roomName = room.RoomName;
-                } else if (room.RoomType) {
-                    roomName = room.RoomType;
-                }
+            const roomName = room.Name?.[0] || room.Name || room.RoomName || `{{ __('Room') }} ${index+1}`;
+            const price = parseFloat(room.TotalFare || room.Rate?.Amount || room.Price?.Amount || 0);
+            const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (86400000));
+            const perNight = nights > 0 ? (price / nights).toFixed(2) : price.toFixed(2);
+            const currency = room.Currency || 'SAR';
 
-                // Handle room description/inclusion
-                const roomDescription = room.RoomDescription || room.Description || '';
-                const inclusion = room.Inclusion || '';
-                const mealType = room.MealType || '';
-
-                // Handle price - prioritize TotalFare, then calculate from DayRates
-                let price = 0;
-                if (room.TotalFare !== undefined && room.TotalFare !== null) {
-                    price = parseFloat(room.TotalFare) || 0;
-                } else if (room.Rate) {
-                    price = typeof room.Rate === 'object' ? (room.Rate.Amount || room.Rate.TotalAmount || 0) : parseFloat(
-                        room.Rate) || 0;
-                } else if (room.Price) {
-                    price = typeof room.Price === 'object' ? (room.Price.Amount || room.Price.TotalAmount || 0) :
-                        parseFloat(room.Price) || 0;
-                } else if (room.Amount) {
-                    price = parseFloat(room.Amount) || 0;
-                } else if (room.DayRates && Array.isArray(room.DayRates) && room.DayRates.length > 0) {
-                    // Calculate total from DayRates
-                    const dayRates = room.DayRates[0];
-                    if (Array.isArray(dayRates)) {
-                        price = dayRates.reduce((sum, day) => {
-                            return sum + (parseFloat(day.BasePrice) || 0);
-                        }, 0);
-                    }
-                }
-
-                // Calculate per night price
-                const checkInDate = new Date(checkIn);
-                const checkOutDate = new Date(checkOut);
-                const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
-                const pricePerNight = nights > 0 ? (price / nights).toFixed(2) : price.toFixed(2);
-
-                const currency = room.Currency || 'USD';
-                const imageUrl = room.ImageUrl || room.Image ||
-                    'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
-
-                console.log(`Creating room card ${index + 1}:`, {
-                    roomName,
-                    price,
-                    pricePerNight,
-                    currency,
-                    nights,
-                    bookingCode: room.BookingCode
-                });
-
-                // Build room features/info
-                let roomInfo = [];
-                if (inclusion) {
-                    roomInfo.push(
-                        `<span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg"><i class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> ${inclusion}</span>`
-                    );
-                }
-                if (mealType) {
-                    const mealTypeText = mealType.replace('_', ' ').replace(/([A-Z])/g, ' $1').trim();
-                    roomInfo.push(
-                        `<span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg"><i class="fas fa-coffee {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> ${mealTypeText}</span>`
-                    );
-                }
-                if (room.IsRefundable) {
-                    roomInfo.push(
-                        `<span class="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg"><i class="fas fa-shield-alt {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> {{ __('Refundable') }}</span>`
-                    );
-                }
-                if (room.RoomPromotion && Array.isArray(room.RoomPromotion) && room.RoomPromotion.length > 0) {
-                    roomInfo.push(
-                        `<span class="px-2 py-1 bg-orange-50 text-orange-700 text-xs rounded-lg"><i class="fas fa-tag {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i> ${room.RoomPromotion[0]}</span>`
-                    );
-                }
-
-                // Build reservation URL with all required data
-                const bookingCode = room.BookingCode || '';
-                const totalFare = price.toFixed(2); // Use total price, not per night
-                const reservationUrl =
-                    `{{ route('reservation') }}?hotel_id={{ $hotelId }}&check_in=${checkIn}&check_out=${checkOut}&guests=${guests}&booking_code=${encodeURIComponent(bookingCode)}&total_fare=${totalFare}&currency=${currency}&room_name=${encodeURIComponent(roomName)}&inclusion=${encodeURIComponent(inclusion)}`;
-
-                div.innerHTML = `
+            div.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="relative h-48 md:h-full min-h-[200px]">
-                        <img src="${imageUrl}" alt="${roomName}" class="w-full h-full object-cover rounded-xl">
+                    <div class="h-48 md:h-full">
+                        <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=400" class="w-full h-full object-cover rounded-xl shadow-inner">
                     </div>
-                    <div class="md:col-span-2">
-                        <h3 class="text-xl font-bold text-gray-900 mb-2">${roomName}</h3>
-                        ${roomDescription ? `<p class="text-gray-600 text-sm mb-3">${roomDescription}</p>` : ''}
-                        ${roomInfo.length > 0 ? `<div class="flex flex-wrap gap-2 mb-3">${roomInfo.join('')}</div>` : ''}
-                        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <div class="md:col-span-2 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">${roomName}</h3>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg">${room.MealType || 'Room Only'}</span>
+                                ${room.IsRefundable ? '<span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg">{{ __('Refundable') }}</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                             <div>
                                 <div class="flex items-baseline">
-                                    <span class="text-3xl font-extrabold text-orange-600">${pricePerNight}</span>
-                                    <span class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">${currency}</span>
+                                    <span class="text-3xl font-extrabold text-orange-600">${perNight}</span>
+                                    <span class="text-gray-500 text-sm ml-2">${currency}</span>
                                 </div>
                                 <div class="text-xs text-gray-400">{{ __('per night') }}</div>
-                                ${nights > 1 ? `<div class="text-xs text-gray-500 mt-1">{{ __('Total') }}: ${totalFare} ${currency} {{ __('for') }} ${nights} {{ __('nights') }}</div>` : ''}
+                                ${nights > 1 ? `<div class="text-xs text-gray-500 mt-1">{{ __('Total') }}: ${price.toFixed(2)} ${currency}</div>` : ''}
                             </div>
-                            <a href="${reservationUrl}" 
-                               class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
+                            <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&check_in=${checkIn}&check_out=${checkOut}&guests=${guests}&booking_code=${encodeURIComponent(room.BookingCode || '')}&total_fare=${price}&currency=${currency}&room_name=${encodeURIComponent(roomName)}" 
+                               class="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-700 transition shadow-lg">
                                 {{ __('Book Now') }}
                             </a>
                         </div>
                     </div>
-                </div>
-            `;
-
-                return div;
-            } catch (error) {
-                console.error('Error creating room card:', error, room);
-                return null;
-            }
+                </div>`;
+            return div;
         }
 
-        // Check availability button
-        document.getElementById('checkAvailabilityBtn')?.addEventListener('click', function() {
-            searchRooms();
-        });
-
-        // Update booking summary sidebar
         function updateBookingSummary(checkIn, checkOut, guests, nights) {
-            // This will be called to update the sidebar if needed
-            // For now, we'll just update the URL parameters
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('check_in', checkIn);
-            currentUrl.searchParams.set('check_out', checkOut);
-            currentUrl.searchParams.set('guests', guests);
-            window.history.replaceState({}, '', currentUrl);
+            // Placeholder if needed to update sidebar
         }
 
-        // Auto-search rooms on page load only if we have valid dates
-        document.addEventListener('DOMContentLoaded', function() {
-            // Hide default rooms immediately
-            const roomsList = document.getElementById('roomsList');
-            if (roomsList) {
-                roomsList.classList.add('hidden');
-                roomsList.innerHTML = ''; // Clear default content
-            }
+        document.getElementById('checkAvailabilityBtn')?.addEventListener('click', searchRooms);
 
-            // Wait a bit for dates to be set and inputs to be ready
-            setTimeout(() => {
-                // Only auto-search if we have valid dates (not empty strings)
-                const hasValidDates = checkInInput?.value?.trim() && checkOutInput?.value?.trim();
-                if (hasValidDates || (!checkInInput?.value && !checkOutInput?.value)) {
-                    // Either we have valid dates from URL, or no dates at all (will use defaults)
-                    searchRooms();
-                }
-            }, 500);
+        document.addEventListener('DOMContentLoaded', () => {
+            const hasDates = checkInInput.value && checkOutInput.value;
+            if (hasDates) setTimeout(searchRooms, 500);
 
-            // Facilities Show More/Less functionality
+            // Facilities toggle
             const showMoreBtn = document.getElementById('showMoreFacilities');
             const showLessBtn = document.getElementById('showLessFacilities');
             const facilityItems = document.querySelectorAll('.facility-item');
-
-            if (showMoreBtn && showLessBtn) {
-                showMoreBtn.addEventListener('click', function() {
-                    facilityItems.forEach(item => {
-                        item.classList.remove('hidden');
-                    });
+            if (showMoreBtn) {
+                showMoreBtn.onclick = () => {
+                    facilityItems.forEach(i => i.classList.remove('hidden'));
                     showMoreBtn.classList.add('hidden');
                     showLessBtn.classList.remove('hidden');
-                });
-
-                showLessBtn.addEventListener('click', function() {
-                    facilityItems.forEach((item, index) => {
-                        if (index >= 10) {
-                            item.classList.add('hidden');
-                        }
+                };
+                showLessBtn.onclick = () => {
+                    facilityItems.forEach((i, idx) => {
+                        if (idx >= 10) i.classList.add('hidden');
                     });
-                    showMoreBtn.classList.remove('hidden');
                     showLessBtn.classList.add('hidden');
-                });
+                    showMoreBtn.classList.remove('hidden');
+                };
             }
         });
     </script>

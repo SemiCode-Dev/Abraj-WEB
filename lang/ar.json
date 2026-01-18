@@ -716,5 +716,9 @@
     "Please select dates and room": "يرجى اختيار التواريخ والغرفة",
     "validation.phone_invalid": "رقم الهاتف غير صحيح.",
     "validation.phone_invalid_length": "طول رقم الهاتف غير صحيح.",
-    "validation.phone_invalid_format": "تنسيق رقم الهاتف غير صحيح. يرجى استخدام التنسيق الدولي (مثال: +966501234567)."
+    "validation.phone_invalid_format": "تنسيق رقم الهاتف غير صحيح. يرجى استخدام التنسيق الدولي (مثال: +966501234567).",
+    "No rooms available for these dates.": "لا توجد غرف متاحة للتواريخ المختارة",
+    "Searching for availability...": "جاري البحث عن التوفر...",
+    "No rooms available.": "لا توجد غرف متاحة.",
+    "for": "لـ"
 }
