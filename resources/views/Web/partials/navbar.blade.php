@@ -1,5 +1,5 @@
 <!-- Navigation -->
-<nav class="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50">
+<nav class="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-[1000]">
     <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-20 md:h-28">
             <!-- Logo -->

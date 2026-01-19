@@ -470,7 +470,7 @@
 
                         <form id="availabilityForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                             <!-- Check-in & Check-out Container -->
-                            <div class="relative md:col-span-2 z-[100]" id="dateRangeContainer">
+                            <div class="relative md:col-span-2 z-[10]" id="dateRangeContainer">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <!-- Check-in -->
                                     <div class="relative">
@@ -509,7 +509,7 @@
 
                                 <!-- Manual Calendar Modal -->
                                 <div id="calendarModal"
-                                    class="absolute left-1/2 -translate-x-1/2 z-[100] hidden top-full mt-2 w-full md:w-auto">
+                                    class="absolute left-1/2 -translate-x-1/2 z-[40] hidden top-full mt-2 w-screen max-w-[90vw] md:w-auto">
                                     <div
                                         class="bg-white rounded-3xl shadow-2xl p-6 border border-gray-100 w-full md:w-[850px] max-w-full overflow-hidden">
                                         <div id="calendarAnchor"></div>
@@ -524,7 +524,7 @@
                             </div>
 
                             <!-- Rooms & Guests -->
-                            <div class="relative z-[110]">
+                            <div class="relative z-[20]">
                                 <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                                     <i
                                         class="fas fa-users text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
@@ -539,7 +539,7 @@
                                 </div>
 
                                 <div id="guestsDropdown"
-                                    class="absolute z-50 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl hidden p-6 w-full md:w-[400px] right-0">
+                                    class="absolute z-50 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl hidden p-6 w-[320px] md:w-[400px] {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }}">
                                     <div id="roomsContainer"
                                         class="space-y-4 max-h-60 overflow-y-auto custom-scrollbar mb-4 pl-[5px]">
                                         <!-- Rooms will be rendered here by JS -->
