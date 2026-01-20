@@ -106,11 +106,11 @@
 
                 <div
                     class="flex items-center justify-center space-x-6 {{ app()->getLocale() === 'ar' ? 'space-x-reverse' : '' }} mt-6">
-                    <img src="{{ asset('images/footer/visa.png') }}" alt="Visa"
+                    <img src="{{ asset('images/footer/visa.png') }}" alt="Visa" loading="lazy"
                         class="h-10 w-auto transition duration-300">
-                    <img src="{{ asset('images/footer/mastercard.png') }}" alt="Mastercard"
+                    <img src="{{ asset('images/footer/mastercard.png') }}" alt="Mastercard" loading="lazy"
                         class="h-12 w-auto transition duration-300">
-                    <img src="{{ asset('images/footer/apple-pay.png') }}" alt="Apple Pay"
+                    <img src="{{ asset('images/footer/apple-pay.png') }}" alt="Apple Pay" loading="lazy"
                         class="h-12 w-auto transition duration-300 dark:invert">
                 </div>
             </div>

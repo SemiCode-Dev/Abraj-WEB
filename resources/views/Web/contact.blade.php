@@ -95,7 +95,7 @@
                                 </div>
                                 <div class="{{ app()->getLocale() === 'ar' ? 'mr-4' : 'ml-4' }}">
                                     <h4 class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Call Us') }}</h4>
-                                    <a href="tel:+966123456789"
+                                    <a href="tel:+96692001715728"
                                         class="text-gray-600 dark:text-gray-400 hover:text-orange-600 transition">
                                         15728 9200 966+
                                     </a>
@@ -127,7 +127,7 @@
                                     <h4 class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Find Us') }}</h4>
                                     <p class="text-gray-600 dark:text-gray-400 text-sm">
                                         {{ __('Riyadh') }}, {{ __('Saudi Arabia') }}<br>
-                                        King Fahd Road, Building 123
+                                        2914 Spring Towers, Prince Mohammed Ibn Salman Ibn Abdulaziz Rd
                                     </p>
                                 </div>
                             </div>

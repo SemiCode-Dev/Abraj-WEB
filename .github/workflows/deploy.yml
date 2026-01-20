@@ -40,6 +40,8 @@ jobs:
             
             php artisan config:cache
             php artisan view:cache
+
+            php artisan optimize:clear
             
             sudo systemctl reload php8.3-fpm || sudo systemctl reload php-fpm || true
             sudo systemctl reload nginx
