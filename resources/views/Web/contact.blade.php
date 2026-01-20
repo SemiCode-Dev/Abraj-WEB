@@ -97,7 +97,7 @@
                                     <h4 class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Call Us') }}</h4>
                                     <a href="tel:+96692001715728"
                                         class="text-gray-600 dark:text-gray-400 hover:text-orange-600 transition">
-                                        15728 9200 966+
+                                        +966 92 001 715728
                                     </a>
                                 </div>
                             </div>
