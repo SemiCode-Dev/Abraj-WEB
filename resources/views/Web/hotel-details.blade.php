@@ -1309,6 +1309,17 @@
                 }
             });
 
+            // Serialize PaxRooms for the link
+            let paxParams = '';
+            rooms.forEach((r, rIdx) => {
+                paxParams += `&PaxRooms[${rIdx}][Adults]=${r.adults}&PaxRooms[${rIdx}][Children]=${r.children}`;
+                if (r.childrenAges && r.childrenAges.length > 0) {
+                    r.childrenAges.forEach((age, aIdx) => {
+                        paxParams += `&PaxRooms[${rIdx}][ChildrenAges][${aIdx}]=${age}`;
+                    });
+                }
+            });
+
             div.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="h-48 md:h-full">

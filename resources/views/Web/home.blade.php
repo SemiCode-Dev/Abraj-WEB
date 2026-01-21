@@ -2145,7 +2145,7 @@
                                 childAgesHtml += `
                                     <div class="flex flex-col">
                                         <label class="text-[10px] text-gray-500 mb-0.5">{{ __('Child') }} ${ageIndex + 1}</label>
-                                        <select class="child-age-select w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm border border-gray-200 dark:border-gray-600 rounded-md focus:ring-orange-500 focus:border-orange-500 p-1" 
+                                        <select class="child-age-select w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm border border-gray-200 dark:border-gray-600 rounded-md focus:ring-orange-500 focus:border-orange-500 p-1"
                                             data-room-index="${index}" data-age-index="${ageIndex}">
                                             ${options}
                                         </select>
@@ -2271,7 +2271,7 @@
                         rooms[roomIndex].childrenAges[ageIndex] = newAge;
 
                         // Update hidden inputs WITHOUT re-rendering everything to avoid focus loss (though re-render matches current flow)
-                        // For simplicity and guaranteed sync, we can re-render OR just update the hidden input. 
+                        // For simplicity and guaranteed sync, we can re-render OR just update the hidden input.
                         // Since renderRooms clears hidden inputs, we must re-render or carefully update.
                         // Let's re-render to keep it simple and consistent with the state-driven approach.
                         // Focus might be lost, but for a dropdown selection it's usually acceptable.

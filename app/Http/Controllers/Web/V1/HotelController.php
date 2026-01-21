@@ -94,7 +94,7 @@ class HotelController extends Controller
 
             // Use AvailabilityService (single source of truth)
             $availabilityService = app(\App\Services\Hotel\AvailabilityService::class);
-            
+
                 $availability = $availabilityService->checkAvailability(
                     $hotelCodes,
                     $checkIn,
@@ -117,7 +117,7 @@ class HotelController extends Controller
             // Since AvailabilityService might combine rooms from multiple hotels, we group them back
             $hotelResults = [];
             $roomsByHotel = [];
-            
+
             foreach ($availability->rooms as $room) {
                 // Determine hotel code (usually passed in BookingCode or TBO response)
                 // In search results, TBO rooms usually have a HotelCode or we can infer it
@@ -365,10 +365,10 @@ class HotelController extends Controller
                         // Filter by availability using AvailabilityService (City Search)
                         try {
                             $availabilityService = app(\App\Services\Hotel\AvailabilityService::class);
-                            
+
                             // 1. Get all codes from our city hotels list
                             $hotelCodes = array_column($allLightweightHotels, 'HotelCode');
-                            
+
                             if (!empty($hotelCodes)) {
                                 // 2. Fetch available hotels using BATCH call
                                 $availableHotelsMap = $availabilityService->checkBatchAvailability(
@@ -384,7 +384,7 @@ class HotelController extends Controller
                                 $filteredByAvailability = [];
                                 foreach ($allLightweightHotels as $hotel) {
                                     $hotelCode = (string)$hotel['HotelCode'];
-                                    
+
                                     if (isset($availableHotelsMap[$hotelCode])) {
                                         $result = $availableHotelsMap[$hotelCode];
                                         if ($result->isAvailable() && $result->minPrice > 0) {
@@ -799,7 +799,7 @@ class HotelController extends Controller
             $perPage = 12;
             $totalHotels = count($hotels);
             $totalPages = (int) ceil($totalHotels / $perPage);
-            
+
             return view('Web.hotels', [
                 'hotels' => $hotels,
                 'allHotelsJson' => json_encode($hotels),
@@ -912,7 +912,7 @@ class HotelController extends Controller
 
             // Use AvailabilityService (single source of truth)
             $availabilityService = app(\App\Services\Hotel\AvailabilityService::class);
-            
+
             $availabilityResults = $availabilityService->checkBatchAvailability(
                 $hotelIds,
                 $checkIn,
@@ -1044,7 +1044,7 @@ class HotelController extends Controller
                 try {
                     // Use AvailabilityService (single source of truth)
                     $availabilityService = app(\App\Services\Hotel\AvailabilityService::class);
-                    
+
                     $availability = $availabilityService->checkAvailability(
                         $id,
                         $checkIn,
@@ -1052,11 +1052,11 @@ class HotelController extends Controller
                         $paxRooms,
                         $request->input('GuestNationality', 'SA')
                     );
-                    
+
                     // Extract available rooms
                     $availableRooms = $availability->rooms;
                     $currency = $availability->currency;
-                    
+
                     Log::info("Hotel details - Availability check complete", [
                         'hotel_id' => $id,
                         'status' => $availability->status,
@@ -1104,7 +1104,6 @@ class HotelController extends Controller
                     Log::warning('Failed to translate room names: '.$e->getMessage());
                 }
             }
-
 
 
             // Log response for debugging
@@ -1445,7 +1444,6 @@ class HotelController extends Controller
                             // CRITICAL: Apply commission to roomData ONLY ONCE after the search loop finishes
                             // We use PublishedPrice as the base if available, otherwise TotalFare
                             $basePrice = (float) ($foundRoom['Price']['PublishedPrice'] ?? $foundRoom['TotalFare'] ?? 0);
-
                             $roomData = $foundRoom;
                             $roomData['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission($basePrice);
                             $roomData['Currency'] = $searchResponse['HotelResult'][0]['Currency'] ?? 'USD';
@@ -1479,7 +1477,6 @@ class HotelController extends Controller
                                 $bookingCode = $preBookResponse['BookingCode'];
                                 $roomData['BookingCode'] = $bookingCode;
                             }
-
                             // TBO returns the BASE price in PreBook. We apply commission to it.
                             if (isset($preBookResponse['HotelResult'][0]['Rooms'][0]['TotalFare'])) {
                                 $basePrice = (float) $preBookResponse['HotelResult'][0]['Rooms'][0]['TotalFare'];

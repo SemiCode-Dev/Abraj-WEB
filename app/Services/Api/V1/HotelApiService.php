@@ -31,8 +31,8 @@ class HotelApiService
             \Log::debug("TBO API Request to $endpoint", ['url' => $url, 'payload' => $payload]);
         }
 
-        $response = Http::timeout(50) 
-            ->retry(1, 200) 
+        $response = Http::timeout(50)
+            ->retry(1, 200)
             ->withBasicAuth($this->username, $this->password)
             ->withHeaders([
                 'Content-Type' => 'application/json',
@@ -91,16 +91,16 @@ class HotelApiService
         if (config('app.debug')) {
             \Log::debug('TBO API Search Request', $payload);
         }
-        
+
         $response = $this->sendRequest('Search', $payload);
-        
+
         if (config('app.debug')) {
             \Log::debug('TBO API Search Response', [
                 'status_code' => $response['Status']['Code'] ?? 'unknown',
                 'hotels_count' => count($response['Hotels'] ?? $response['HotelResult'] ?? []),
             ]);
         }
-        
+
         return $response;
     }
 
@@ -204,7 +204,7 @@ class HotelApiService
     {
         $allHotels = [];
         // Chunk city codes to avoid overwhelming the API or exceeding connection limits
-        $chunks = array_chunk($cityCodes, 10); 
+        $chunks = array_chunk($cityCodes, 10);
 
         foreach ($chunks as $chunk) {
             try {
@@ -273,7 +273,7 @@ class HotelApiService
                 $cityHotels = [];
                 $page = 1;
                 // Use passed maxPages for control
-                $maxPagesToFetch = $maxPages; 
+                $maxPagesToFetch = $maxPages;
 
                 do {
                     $response = $detailed
@@ -405,7 +405,7 @@ class HotelApiService
         // Log the booking request for audit
         \Illuminate\Support\Facades\Log::info('TBO Book API Request', ['data' => $data]);
 
-        /* 
+        /*
            Payload structure based on Postman collection:
            {
              "BookingCode": "...",
