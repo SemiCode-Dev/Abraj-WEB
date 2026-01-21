@@ -249,14 +249,12 @@
                                     </p>
                                 </div>
 
-                               
                                 <button type="submit"
                                     class="w-full py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-semibold">
                                     Update Commission
                                 </button>
                             </form>
                         </div>
-                       
                     </div>
                 </div>
 
