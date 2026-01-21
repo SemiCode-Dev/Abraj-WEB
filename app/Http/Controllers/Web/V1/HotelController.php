@@ -666,14 +666,14 @@ class HotelController extends Controller
     {
         try {
             $request = request();
-            // Increase execution time for this request to 300s for large dataset fetching
-            set_time_limit(300);
+            // Standard execution time is enough for partial load
+            set_time_limit(120);
 
-            // OPTIMIZED CITY FETCHING: 80 cities for safe performance
+            // OPTIMIZED CITY FETCHING: Fetch more cities but process them incrementally
             $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
                 ->orderBy('hotels_count', 'desc')
-                ->limit(80)
+                ->limit(400) // Increase limit as we will load them in batches
                 ->pluck('code')
                 ->toArray();
 
@@ -681,56 +681,59 @@ class HotelController extends Controller
                 $allCityCodes = City::whereNotNull('code')->limit(30)->pluck('code')->toArray();
             }
 
+            // Split into Initial Batch and Remaining
+            // User requested ~500 hotels initially.
+            // Assuming avg 10-15 hotels per city, 40 cities * 15 = 600.
+            // We'll also increase max hotels per city in the API call below.
+            $initialBatchSize = 40; 
+            $initialCityCodes = array_slice($allCityCodes, 0, $initialBatchSize);
+            $remainingCityCodes = array_slice($allCityCodes, $initialBatchSize);
+
             $language = app()->getLocale();
             $hotels = [];
 
-            if (! empty($allCityCodes)) {
-                // Version V60 for 80-city result set
-                $cacheKey = 'all_hotels_global_v60_'.$language.'_'.count($allCityCodes);
+            if (! empty($initialCityCodes)) {
+                // Cache key for the initial batch
+                $cacheKey = 'hotels_initial_batch_v2_' . $language . '_' . md5(json_encode($initialCityCodes));
                 $hotels = Cache::get($cacheKey);
 
                 if (! $hotels) {
                     try {
                         $apiLang = $language === 'ar' ? 'ar' : 'en';
 
-                        // Use default maxPages=1 to ENABLE concurrency (getHotelsConcurrent)
-                        // This fetches cities in parallel chunks for maximum speed
+                        // Fetch initial batch
                         $response = $this->hotelApi->getHotelsFromMultipleCities(
-                            $allCityCodes,
+                            $initialCityCodes,
                             true,
-                            20, // More hotels per city for a bigger list
+                            30, // Increased from 20 to 30 to get more hotels
                             $apiLang
                         );
 
                         $hotels = $response['Hotels'] ?? [];
 
-                        Log::info('Global Hotel Fetch Result:', [
+                        Log::info('Initial Hotel Fetch Result:', [
                             'hotels_found' => count($hotels),
                             'cities_processed' => $response['CitiesProcessed'] ?? 0,
-                            'status' => $response['Status']['Code'] ?? 'no_status',
                         ]);
 
                         if (! is_array($hotels)) {
                             $hotels = json_decode(json_encode($hotels), true);
                         }
 
-                        // Only cache if we actually got results!
                         if (! empty($hotels)) {
-                            \Illuminate\Support\Facades\Cache::put($cacheKey, $hotels, 86400); // 24 hours
+                            Cache::put($cacheKey, $hotels, 86400); // 24 hours
                         } else {
-                            // If empty, cache for a very short time (e.g., 1 minute) to avoid hammering API if it's down,
-                            // but allow quick recovery.
-                            \Illuminate\Support\Facades\Cache::put($cacheKey, [], 60);
+                            Cache::put($cacheKey, [], 60);
                         }
 
                     } catch (\Exception $e) {
-                        Log::error('Failed to fetch all hotels from API: '.$e->getMessage());
+                        Log::error('Failed to fetch initial hotels from API: '.$e->getMessage());
                         $hotels = [];
                     }
                 }
 
                 // Apply robust Hotel Name Translation if Arabic
-                if ($language === 'ar') {
+                if ($language === 'ar' && !empty($hotels)) {
                     $translator = new \App\Services\HotelTranslationService;
                     $hotels = $translator->translateHotels($hotels);
                 }
@@ -747,8 +750,9 @@ class HotelController extends Controller
             }
 
             return view('Web.hotels', [
-                'hotels' => $hotels, // All hotels loaded at once
-                'allHotelsJson' => json_encode($hotels), // For JavaScript access
+                'hotels' => $hotels, 
+                'allHotelsJson' => json_encode($hotels), 
+                'remainingCityCodes' => array_values($remainingCityCodes), // Pass remaining codes to view
                 'cities' => [],
                 'countries' => [],
                 'selectedCountryCode' => 'ALL',
@@ -762,10 +766,65 @@ class HotelController extends Controller
             return view('Web.hotels', [
                 'hotels' => [],
                 'allHotelsJson' => '[]',
+                'remainingCityCodes' => [],
                 'cities' => $cities,
                 'countries' => $countries,
                 'selectedCountryCode' => 'SA',
             ]);
+        }
+    }
+
+    public function loadMoreHotels(Request $request)
+    {
+        try {
+            $cityCodes = $request->input('cityCodes', []);
+            if (empty($cityCodes) || !is_array($cityCodes)) {
+                return response()->json(['hotels' => []]);
+            }
+
+            $language = app()->getLocale();
+            $apiLang = $language === 'ar' ? 'ar' : 'en';
+            
+            // Cache key for this specific batch of cities
+            $cacheKey = 'hotels_batch_' . $language . '_' . md5(json_encode($cityCodes));
+            
+            $hotels = Cache::remember($cacheKey, 86400, function () use ($cityCodes, $apiLang) {
+                $response = $this->hotelApi->getHotelsFromMultipleCities(
+                    $cityCodes,
+                    true,
+                    20,
+                    $apiLang,
+                    1 // Max 1 page for speed
+                );
+                
+                $result = $response['Hotels'] ?? [];
+                if (!is_array($result)) {
+                    $result = json_decode(json_encode($result), true);
+                }
+                return $result;
+            });
+
+            // Translation
+            if ($language === 'ar' && !empty($hotels)) {
+                 $translator = new \App\Services\HotelTranslationService;
+                 $hotels = $translator->translateHotels($hotels);
+            }
+
+            // Commission
+            foreach ($hotels as &$hotel) {
+                if (isset($hotel['MinPrice'])) {
+                    $hotel['MinPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $hotel['MinPrice']);
+                } elseif (isset($hotel['StartPrice'])) {
+                    $hotel['StartPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $hotel['StartPrice']);
+                }
+            }
+            unset($hotel);
+
+            return response()->json(['hotels' => $hotels]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to load more hotels: ' . $e->getMessage());
+             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
