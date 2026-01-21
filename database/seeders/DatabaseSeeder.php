@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
             PackageSeeder::class,
             NationalitySeeder::class,
             SettingsSeeder::class,
-            AirportsSeeder::class,
+            AirportSeeder::class,
         ]);
     }
 }
