@@ -249,55 +249,14 @@
                                     </p>
                                 </div>
 
-                                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-6">
-                                    <h4 class="text-sm font-bold text-blue-900 dark:text-blue-300 mb-2 flex items-center">
-                                        <i class="fas fa-calculator mr-2"></i>Live Example
-                                    </h4>
-                                    <div class="space-y-2 text-sm">
-                                        <div class="flex justify-between text-blue-800 dark:text-blue-400">
-                                            <span>Base Price</span>
-                                            <span class="font-mono">1,000.00 SAR</span>
-                                        </div>
-                                        <div class="flex justify-between text-blue-800 dark:text-blue-400">
-                                            <span>Commission (<span
-                                                    id="exampleCommission">{{ \App\Models\Setting::get('commission_percentage', 0) }}</span>%)</span>
-                                            <span class="font-mono"
-                                                id="exampleCommissionAmount">{{ number_format(1000 * (\App\Models\Setting::get('commission_percentage', 0) / 100), 2) }}
-                                                SAR</span>
-                                        </div>
-                                        <div
-                                            class="border-t border-blue-200 dark:border-blue-800 pt-2 flex justify-between font-bold text-blue-900 dark:text-blue-300">
-                                            <span>Final User Price</span>
-                                            <span class="font-mono"
-                                                id="exampleFinalPrice">{{ number_format(1000 * (1 + \App\Models\Setting::get('commission_percentage', 0) / 100), 2) }}
-                                                SAR</span>
-                                        </div>
-                                    </div>
-                                </div>
+                               
                                 <button type="submit"
                                     class="w-full py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-semibold">
                                     Update Commission
                                 </button>
                             </form>
                         </div>
-                        <div
-                            class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Commission Policy</h3>
-                            <ul class="space-y-3 text-sm text-gray-600 dark:text-gray-400">
-                                <li class="flex items-start">
-                                    <i class="fas fa-info-circle mt-1 mr-2 text-orange-600"></i>
-                                    The commission is applied to the total room price including taxes provided by TBO.
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-info-circle mt-1 mr-2 text-orange-600"></i>
-                                    Users see the final price inclusive of this commission.
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-info-circle mt-1 mr-2 text-orange-600"></i>
-                                    Discount codes are applied to the price AFTER the commission has been added.
-                                </li>
-                            </ul>
-                        </div>
+                       
                     </div>
                 </div>
 
