@@ -310,6 +310,20 @@
 
 @push('scripts')
     <script>
+        // Common map for translating rating strings to numbers
+        const ratingMap = {
+            'FiveStar': 5,
+            'FourStar': 4,
+            'ThreeStar': 3,
+            'TwoStar': 2,
+            'OneStar': 1,
+            '5': 5,
+            '4': 4,
+            '3': 3,
+            '2': 2,
+            '1': 1
+        };
+
         // Pagination Configuration
         const HOTELS_PER_PAGE = 12;
         let currentPage = 1;
@@ -606,15 +620,9 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (data.hotels && data.hotels.length > 0) {
-                        // Filter out duplicates from the new batch before appending to filteredHotels
-                        const existingIds = new Set(filteredHotels.map(card => card.dataset.id));
-                        const uniqueNewHotels = data.hotels.filter(h => !existingIds.has(String(h.HotelCode)));
-
-                        if (uniqueNewHotels.length > 0) {
-                            appendHotels(uniqueNewHotels);
-                            // Re-run filters but KEEP current page
-                            applyFiltersAndPagination(null, true);
-                        }
+                        appendHotels(data.hotels);
+                        // Re-run filters but KEEP current page
+                        applyFiltersAndPagination(null, true);
 
                         if (status) {
                             status.textContent = `{{ __('Loaded') }} ${data.hotels.length} {{ __('more hotels') }}`;
@@ -673,19 +681,6 @@
         function createHotelCardInner(hotel) {
             const isAr = '{{ app()->getLocale() }}' === 'ar';
 
-            // Helper for rating
-            const ratingMap = {
-                'FiveStar': 5,
-                'FourStar': 4,
-                'ThreeStar': 3,
-                'TwoStar': 2,
-                'OneStar': 1,
-                '5': 5,
-                '4': 4,
-                '3': 3,
-                '2': 2,
-                '1': 1
-            };
             const rawRating = hotel.HotelRating || 5;
             const ratingNumber = ratingMap[rawRating] || (parseInt(rawRating) || 5);
 
