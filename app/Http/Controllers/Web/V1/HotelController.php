@@ -989,10 +989,9 @@ class HotelController extends Controller
                         'ChildrenAges' => [],
                     ],
                 ];
+
             }
 
-            // Ensure correct structure for API with strict validation (same as getCityHotels)
-            if (is_array($paxRooms)) {
                 $cleanedPaxRooms = [];
                 foreach ($paxRooms as $room) {
                     $adults = filter_var($room['Adults'] ?? 1, FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
@@ -1161,17 +1160,10 @@ class HotelController extends Controller
                     $children = filter_var($room['Children'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['default' => 0, 'min_range' => 0]]);
                     $childrenAges = $room['ChildrenAges'] ?? [];
                     if (!is_array($childrenAges)) $childrenAges = [];
-                    $childrenAges = array_map(fn($age) => max(0, min(12, (int)$age)), $childrenAges);
                     if ($children > count($childrenAges)) {
                         for ($i = count($childrenAges); $i < $children; $i++) $childrenAges[] = 0;
                     } elseif ($children < count($childrenAges)) {
                         $childrenAges = array_slice($childrenAges, 0, $children);
-                    }
-                    $cleanedPaxRooms[] = ['Adults' => $adults, 'Children' => $children, 'ChildrenAges' => $childrenAges];
-                }
-                $paxRooms = $cleanedPaxRooms;
-            }
-
             // Sync guests count for display
             $guests = 0;
             foreach ($paxRooms as $room) {
