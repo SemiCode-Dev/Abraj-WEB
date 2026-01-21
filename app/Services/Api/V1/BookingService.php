@@ -70,6 +70,9 @@ class BookingService
                 'check_in' => $data['check_in'],
                 'check_out' => $data['check_out'],
                 'total_price' => $totalPrice,
+                'original_price' => $data['original_price'] ?? $totalPrice,
+                'discount_amount' => $data['discount_amount'] ?? 0,
+                'discount_code_id' => $data['discount_code_id'] ?? null,
                 'currency' => $data['currency'] ?? 'USD',
                 'guest_name' => $data['guest_name'],
                 'guest_email' => $data['guest_email'],
@@ -200,6 +203,19 @@ class BookingService
                     Log::info("Search cache cleared after booking confirmation for {$booking->booking_reference}");
                     
                     Log::info("Booking CONFIRMED for {$booking->booking_reference}");
+
+                    // 5. Mark Discount Code as Used
+                    if ($booking->discount_code_id) {
+                        $discountCode = \App\Models\DiscountCode::find($booking->discount_code_id);
+                        if ($discountCode) {
+                            $discountCode->update([
+                                'is_used' => true,
+                                'used_at' => now(),
+                            ]);
+                            Log::info("Discount code {$discountCode->code} marked as used for booking {$booking->booking_reference}");
+                        }
+                    }
+
                     return true;
                 } else {
                     // TBO Rejection

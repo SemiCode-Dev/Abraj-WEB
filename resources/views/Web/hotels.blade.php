@@ -155,18 +155,28 @@
                     <div class="space-y-6">
                         @foreach ($hotels as $hotel)
                             @php
-                                // Extract rating number from HotelRating (e.g., "FiveStar" => 5)
+                                // Extract rating number from HotelRating (can be "FiveStar" or 5)
                                 $ratingMap = [
                                     'FiveStar' => 5,
                                     'FourStar' => 4,
                                     'ThreeStar' => 3,
                                     'TwoStar' => 2,
                                     'OneStar' => 1,
+                                    '5' => 5,
+                                    '4' => 4,
+                                    '3' => 3,
+                                    '2' => 2,
+                                    '1' => 1,
                                 ];
-                                $ratingNumber = $ratingMap[$hotel['HotelRating']] ?? 0;
+                                $rawRating = $hotel['HotelRating'] ?? 0;
+                                $ratingNumber =
+                                    $ratingMap[$rawRating] ?? (is_numeric($rawRating) ? (int) $rawRating : 0);
 
                                 // Extract facilities and normalize them
                                 $facilities = $hotel['HotelFacilities'] ?? [];
+                                if (!is_array($facilities)) {
+                                    $facilities = [];
+                                }
                                 $facilitiesLower = array_map('strtolower', $facilities);
                                 $facilitiesJson = json_encode($facilitiesLower);
                             @endphp
@@ -231,8 +241,16 @@
                                                             'ThreeStar' => 3,
                                                             'TwoStar' => 2,
                                                             'OneStar' => 1,
+                                                            '5' => 5,
+                                                            '4' => 4,
+                                                            '3' => 3,
+                                                            '2' => 2,
+                                                            '1' => 1,
                                                         ];
-                                                        $count = $stars[$hotel['HotelRating']] ?? 5;
+                                                        $rawRating = $hotel['HotelRating'] ?? 5;
+                                                        $count =
+                                                            $stars[$rawRating] ??
+                                                            (is_numeric($rawRating) ? (int) $rawRating : 5);
                                                     @endphp
                                                     @for ($j = 0; $j < $count; $j++)
                                                         <i class="fas fa-star"></i>
@@ -258,7 +276,7 @@
                                                 </div>
                                                 {{-- <div class="text-xs text-gray-400">/ {{ __('per night') }} • {{ __('including taxes') }}</div> --}}
                                             </div>
-                                            <a href="{{ route('hotel.details', ['id' => $hotel['HotelCode'] ?? ($hotel['HotelCode'] ?? 1), 'locale' => app()->getLocale()]) }}?check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}"
+                                            <a href="{{ route('hotel.details', array_merge(['id' => $hotel['HotelCode'] ?? 1, 'locale' => app()->getLocale()], request()->only(['CheckIn', 'CheckOut', 'PaxRooms', 'check_in', 'check_out']))) }}"
                                                 class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
                                                 {{ __('View Rooms') }}
                                             </a>

@@ -76,7 +76,7 @@ class HotelController extends Controller
                 'CheckIn' => $checkIn,
                 'CheckOut' => $checkOut,
                 'HotelCodes' => $hotelCodes,
-                'GuestNationality' => $request->input('GuestNationality', 'AE'),
+                'GuestNationality' => $request->input('GuestNationality', 'SA'),
                 'PaxRooms' => $paxRooms,
                 'ResponseTime' => $request->input('ResponseTime', 18),
                 'IsDetailedResponse' => $request->input('IsDetailedResponse', true),
@@ -172,16 +172,21 @@ class HotelController extends Controller
                 foreach ($response['HotelResult'] as &$hotel) {
                     if (isset($hotel['Rooms']) && is_array($hotel['Rooms'])) {
                         foreach ($hotel['Rooms'] as &$room) {
-                            // Apply commission to TotalFare
+                            // Apply commission to all potential price fields
                             if (isset($room['TotalFare'])) {
                                 $room['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['TotalFare']);
                             }
-                            // Also apply to nested Price properties for robustness
                             if (isset($room['Price']['PublishedPrice'])) {
                                 $room['Price']['PublishedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['PublishedPrice']);
                             }
                             if (isset($room['Price']['OfferedPrice'])) {
                                 $room['Price']['OfferedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['OfferedPrice']);
+                            }
+                            if (isset($room['Price']['Amount'])) {
+                                $room['Price']['Amount'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['Amount']);
+                            }
+                            if (isset($room['Rate']['Amount'])) {
+                                $room['Rate']['Amount'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Rate']['Amount']);
                             }
                         }
                         unset($room);
@@ -799,21 +804,69 @@ class HotelController extends Controller
                 }
             }
 
-            // 2. Check for availability (use default dates if not provided)
+            // 2. Check for availability (handle capitalized or lowercase params)
             $availableRooms = [];
-            $checkIn = $request->input('check_in');
-            $checkOut = $request->input('check_out');
-            $guests = $request->input('guests', 1);
+            $checkIn = $request->input('CheckIn', $request->input('check_in'));
+            $checkOut = $request->input('CheckOut', $request->input('check_out'));
 
-            // Set defaults if missing
+            $paxRooms = $request->input('PaxRooms');
+
+            // Backward Compatibility / Fallback
+            if (empty($paxRooms)) {
+                $paxRooms = [
+                    [
+                        'Adults' => (int) $request->input('guests', $request->input('adults', 1)),
+                        'Children' => (int) $request->input('children', 0),
+                        'ChildrenAges' => [],
+                    ],
+                ];
+            }
+
+            // Ensure correct structure for API with strict validation (same as getCityHotels)
+            if (is_array($paxRooms)) {
+                $cleanedPaxRooms = [];
+                foreach ($paxRooms as $room) {
+                    $adults = filter_var($room['Adults'] ?? 1, FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
+                    $children = filter_var($room['Children'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['default' => 0, 'min_range' => 0]]);
+
+                    $childrenAges = $room['ChildrenAges'] ?? [];
+                    if (! is_array($childrenAges)) {
+                        $childrenAges = [];
+                    }
+
+                    // Cast ages to integers and clamp to 0-12 (matching client requirements)
+                    $childrenAges = array_map(function ($age) {
+                        $ageInt = (int) $age;
+                        return max(0, min(12, $ageInt));
+                    }, $childrenAges);
+
+                    if ($children > count($childrenAges)) {
+                        for ($i = count($childrenAges); $i < $children; $i++) {
+                            $childrenAges[] = 0;
+                        }
+                    } elseif ($children < count($childrenAges)) {
+                        $childrenAges = array_slice($childrenAges, 0, $children);
+                    }
+
+                    $cleanedPaxRooms[] = [
+                        'Adults' => $adults,
+                        'Children' => $children,
+                        'ChildrenAges' => $childrenAges,
+                    ];
+                }
+                $paxRooms = $cleanedPaxRooms;
+            }
+
+            // Set default dates if missing
             if (empty($checkIn) || empty($checkOut)) {
                 $checkIn = Carbon::now()->addDay()->format('Y-m-d');
                 $checkOut = Carbon::now()->addDays(2)->format('Y-m-d');
-                $request->merge([
-                    'check_in' => $checkIn,
-                    'check_out' => $checkOut,
-                    'guests' => $guests,
-                ]);
+            }
+
+            // Calculate total guests for display
+            $guestsCount = 0;
+            foreach ($paxRooms as $room) {
+                $guestsCount += ($room['Adults'] ?? 1) + ($room['Children'] ?? 0);
             }
 
             if ($checkIn && $checkOut) {
@@ -822,19 +875,13 @@ class HotelController extends Controller
                         'CheckIn' => $checkIn,
                         'CheckOut' => $checkOut,
                         'HotelCodes' => $id,
-                        'GuestNationality' => 'AE', // Default or from request
-                        'PaxRooms' => [
-                            [
-                                'Adults' => (int) $guests,
-                                'Children' => 0,
-                                'ChildrenAges' => [],
-                            ],
-                        ],
+                        'GuestNationality' => 'SA', // Use SA for consistency with frontend search
+                        'PaxRooms' => $paxRooms,
                         'ResponseTime' => 20,
                         'IsDetailedResponse' => true,
                         'Filters' => [
                             'Refundable' => true, // Changed to true to match Postman/expectations
-                            'NoOfRooms' => 1, // Request at least 1 room
+                            'NoOfRooms' => count($paxRooms), // Request actual number of rooms
                             'MealType' => 'All',
                         ],
                     ];
@@ -960,16 +1007,27 @@ class HotelController extends Controller
 
             // Apply commission to room prices
             if (! empty($availableRooms)) {
+                $commissionPercentage = \App\Helpers\CommissionHelper::getCommissionPercentage();
                 foreach ($availableRooms as &$room) {
+                    // Apply commission to all potential price fields
                     if (isset($room['TotalFare'])) {
                         $room['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['TotalFare']);
                     }
-                    // Robustness: also apply to nested Price properties if they exist, e.g., if TotalFare is missing or as well
                     if (isset($room['Price']['PublishedPrice'])) {
                         $room['Price']['PublishedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['PublishedPrice']);
                     }
+                    if (isset($room['Price']['OfferedPrice'])) {
+                        $room['Price']['OfferedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['OfferedPrice']);
+                    }
+                    if (isset($room['Price']['Amount'])) {
+                        $room['Price']['Amount'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['Amount']);
+                    }
+                    if (isset($room['Rate']['Amount'])) {
+                        $room['Rate']['Amount'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Rate']['Amount']);
+                    }
                 }
                 unset($room); // Break reference
+                Log::info("Applied {$commissionPercentage}% commission to " . count($availableRooms) . " rooms for hotel {$id}");
             }
 
             // Log response for debugging
@@ -984,7 +1042,8 @@ class HotelController extends Controller
                 'availableRooms' => $availableRooms, // Pass real rooms
                 'checkIn' => $checkIn,
                 'checkOut' => $checkOut,
-                'guests' => $guests,
+                'guests' => $guestsCount,
+                'paxRooms' => $paxRooms,
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to fetch hotel details: '.$e->getMessage());
@@ -1004,9 +1063,24 @@ class HotelController extends Controller
         try {
             $hotelId = $request->input('hotel_id') ?? session('_old_input.hotel_id');
             $bookingCode = $request->input('booking_code') ?? session('_old_input.booking_code');
-            $checkIn = $request->input('check_in') ?? session('_old_input.check_in');
-            $checkOut = $request->input('check_out') ?? session('_old_input.check_out');
-            $guests = $request->input('guests', session('_old_input.guests', 1));
+            $checkIn = $request->input('CheckIn', $request->input('check_in')) ?? session('_old_input.check_in');
+            $checkOut = $request->input('CheckOut', $request->input('check_out')) ?? session('_old_input.check_out');
+            
+            $paxRooms = $request->input('PaxRooms');
+            if (empty($paxRooms)) {
+                $guests = $request->input('guests', session('_old_input.guests', 1));
+                $paxRooms = [[
+                    'Adults' => (int) $guests,
+                    'Children' => 0,
+                    'ChildrenAges' => [],
+                ]];
+            }
+
+            // Sync guests count for display
+            $guests = 0;
+            foreach ($paxRooms as $room) {
+                $guests += ($room['Adults'] ?? 1) + ($room['Children'] ?? 0);
+            }
 
             // More robust validation - check for null, empty string, or missing values
             $hasHotelId = !empty($hotelId) && $hotelId !== '';
@@ -1062,21 +1136,15 @@ class HotelController extends Controller
                         'CheckIn' => $checkIn,
                         'CheckOut' => $checkOut,
                         'HotelCodes' => $hotelId,
-                        'GuestNationality' => 'AE',
-                        'PaxRooms' => [
-                            [
-                                'Adults' => (int) $guests,
-                                'Children' => 0,
-                                'ChildrenAges' => [],
-                            ],
-                        ],
+                        'GuestNationality' => 'SA',
+                        'PaxRooms' => $paxRooms,
                         'ResponseTime' => 18,
                         'IsDetailedResponse' => true,
                         'Filters' => [
                             'Refundable' => true,
-                            'NoOfRooms' => 0,
-                            'MealType' => 'All',
-                        ],
+                        'NoOfRooms' => count($paxRooms),
+                        'MealType' => 'All',
+                    ],
                     ];
 
                     $searchResponse = $this->hotelApi->searchHotel($searchData);
@@ -1089,6 +1157,21 @@ class HotelController extends Controller
                                     if (isset($room['BookingCode']) && $room['BookingCode'] === $bookingCode) {
                                         $roomData = $room;
                                         $roomData['Currency'] = $hotel['Currency'] ?? 'USD';
+                                        
+                                        // CRITICAL: Apply commission to roomData immediately so the view shows the correct price
+                                        if (isset($roomData['TotalFare'])) {
+                                            $roomData['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission((float) $roomData['TotalFare']);
+                                        }
+                                        if (isset($roomData['Price']['PublishedPrice'])) {
+                                            $roomData['Price']['PublishedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $roomData['Price']['PublishedPrice']);
+                                        }
+                                        if (isset($roomData['Price']['OfferedPrice'])) {
+                                            $roomData['Price']['OfferedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $roomData['Price']['OfferedPrice']);
+                                        }
+                                        if (isset($roomData['Price']['Amount'])) {
+                                            $roomData['Price']['Amount'] = \App\Helpers\CommissionHelper::applyCommission((float) $roomData['Price']['Amount']);
+                                        }
+                                        
                                         break 2;
                                     }
                                 }
@@ -1102,10 +1185,13 @@ class HotelController extends Controller
 
             // If room data not found from API, use URL parameters or session as fallback
             if (! $roomData) {
+                // The total_fare from the request already includes commission.
+                $commissionedFare = (float) ($request->input('total_fare') ?? session('_old_input.total_fare', 0));
+
                 $roomData = [
                     'BookingCode' => $bookingCode,
                     'Name' => [$request->input('room_name') ?? session('_old_input.room_name', 'Room')],
-                    'TotalFare' => (float) ($request->input('total_fare') ?? session('_old_input.total_fare', 0)),
+                    'TotalFare' => $commissionedFare,
                     'Currency' => $request->input('currency') ?? session('_old_input.currency', 'USD'),
                     'Inclusion' => $request->input('inclusion') ?? session('_old_input.inclusion', ''),
                     'TotalTax' => 0,
@@ -1130,8 +1216,7 @@ class HotelController extends Controller
                 $currency = $request->input('currency', 'USD');
             }
 
-            // Apply commission to total fare
-            $totalFare = \App\Helpers\CommissionHelper::applyCommission($totalFare);
+            // totalFare is already commissioned (either in loop or from request)
 
             // Do not generate payment data immediately.
             // We want the user to go through the review process (either AJAX or separate page)
@@ -1159,6 +1244,7 @@ class HotelController extends Controller
                 'paymentData' => $paymentData,
                 'totalFare' => $totalFare,
                 'currency' => $currency,
+                'paxRooms' => $paxRooms,
             ]);
         } catch (\Exception $e) {
             Log::error('Reservation page error: '.$e->getMessage());
@@ -1176,6 +1262,21 @@ class HotelController extends Controller
             $checkIn = $request->input('check_in');
             $checkOut = $request->input('check_out');
             $guests = $request->input('guests', 1);
+            $paxRooms = $request->input('PaxRooms');
+
+            if (empty($paxRooms)) {
+                $paxRooms = [[
+                    'Adults' => (int) $guests,
+                    'Children' => 0,
+                    'ChildrenAges' => [],
+                ]];
+            }
+
+            // Sync guests count for display if needed
+            $guests = 0;
+            foreach ($paxRooms as $room) {
+                $guests += ($room['Adults'] ?? 1) + ($room['Children'] ?? 0);
+            }
 
             // Get guest information
             $guestName = $request->input('name');
@@ -1222,21 +1323,15 @@ class HotelController extends Controller
                         'CheckIn' => $checkIn,
                         'CheckOut' => $checkOut,
                         'HotelCodes' => $hotelId,
-                        'GuestNationality' => 'AE',
-                        'PaxRooms' => [
-                            [
-                                'Adults' => (int) $guests,
-                                'Children' => 0,
-                                'ChildrenAges' => [],
-                            ],
-                        ],
+                        'GuestNationality' => 'SA',
+                        'PaxRooms' => $paxRooms,
                         'ResponseTime' => 18,
                         'IsDetailedResponse' => true,
                         'Filters' => [
                             'Refundable' => true,
-                            'NoOfRooms' => 0,
-                            'MealType' => 'All',
-                        ],
+                        'NoOfRooms' => count($paxRooms),
+                        'MealType' => 'All',
+                    ],
                     ];
 
                     $searchResponse = $this->hotelApi->searchHotel($searchData);
@@ -1254,18 +1349,35 @@ class HotelController extends Controller
                                         $foundRoom = $room;
                                         break 2;
                                     }
-
-                                    // Secondary match: Room Name (if session refreshed and code changed)
-                                    $currentRoomName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
-                                    if ($requestedRoomName && $currentRoomName === $requestedRoomName) {
-                                        $foundRoom = $room;
+ 
+                                    // Secondary match: Room Name + Inclusion (Better for same names)
+                                    if (!$foundRoom) {
+                                        $currentRoomName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
+                                        $requestedInclusion = $request->input('inclusion');
+                                        $currentInclusion = $room['Inclusion'] ?? '';
+                                        
+                                        if ($requestedRoomName && $currentRoomName === $requestedRoomName) {
+                                            // If inclusion matches, it's definitely the one
+                                            if ($requestedInclusion && $currentInclusion === $requestedInclusion) {
+                                                $foundRoom = $room;
+                                            } else {
+                                                // Otherwise, hold it as a potential match
+                                                $foundRoom = $room;
+                                            }
+                                        }
                                     }
+
                                 }
                             }
                         }
 
                         if ($foundRoom) {
+                            // CRITICAL: Apply commission to roomData ONLY ONCE after the search loop finishes
+                            // We use PublishedPrice as the base if available, otherwise TotalFare
+                            $basePrice = (float) ($foundRoom['Price']['PublishedPrice'] ?? $foundRoom['TotalFare'] ?? 0);
+                            
                             $roomData = $foundRoom;
+                            $roomData['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission($basePrice);
                             $roomData['Currency'] = $searchResponse['HotelResult'][0]['Currency'] ?? 'USD';
 
                             // Final safety check: ensure no local confirmed booking exists for this room/dates
@@ -1292,12 +1404,36 @@ class HotelController extends Controller
                     if ($roomData && isset($roomData['BookingCode'])) {
                         $preBookResponse = $this->hotelApi->preBook($roomData['BookingCode']);
                         if (isset($preBookResponse['Status']['Code']) && $preBookResponse['Status']['Code'] == 200) {
-                            // Update roomData and bookingCode from PreBook response if refreshed
+                            // Update roomData, bookingCode and totalFare from PreBook response if refreshed
                             if (isset($preBookResponse['BookingCode'])) {
                                 $bookingCode = $preBookResponse['BookingCode'];
                                 $roomData['BookingCode'] = $bookingCode;
                             }
-                            Log::info('PreBook successful in review step', ['booking_code' => $bookingCode]);
+                            
+                            // TBO returns the BASE price in PreBook. We apply commission to it.
+                            if (isset($preBookResponse['HotelResult'][0]['Rooms'][0]['TotalFare'])) {
+                                $basePrice = (float) $preBookResponse['HotelResult'][0]['Rooms'][0]['TotalFare'];
+                                $roomData['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission($basePrice);
+                                $roomData['Currency'] = $preBookResponse['HotelResult'][0]['Currency'] ?? ($roomData['Currency'] ?? 'USD');
+
+                                if (isset($roomData['Price'])) {
+                                    $roomData['Price']['PublishedPrice'] = $roomData['TotalFare'];
+                                    $roomData['Price']['Amount'] = $roomData['TotalFare'];
+                                }
+                            } elseif (isset($preBookResponse['Price']['PublishedPrice'])) {
+                                $basePrice = (float) $preBookResponse['Price']['PublishedPrice'];
+                                $roomData['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission($basePrice);
+                                $roomData['Currency'] = $preBookResponse['Price']['Currency'] ?? ($roomData['Currency'] ?? 'USD');
+
+                                if (isset($roomData['Price'])) {
+                                    $roomData['Price']['PublishedPrice'] = $roomData['TotalFare'];
+                                }
+                            }
+
+                            Log::info('PreBook successful in review step', [
+                                'booking_code' => $bookingCode,
+                                'commissioned_price' => $roomData['TotalFare'] ?? 'unchanged'
+                            ]);
                         } else {
                             $errorMsg = $preBookResponse['Status']['Description'] ?? 'Room no longer available';
                             Log::warning('PreBook failed in review step: '.$errorMsg);
@@ -1338,6 +1474,7 @@ class HotelController extends Controller
 
             // Fallback to request input if totalFare is still 0
             if ($totalFare == 0 && $request->input('total_fare')) {
+                // If we are taking total_fare from the request, it ALREADY includes commission.
                 $totalFare = (float) $request->input('total_fare');
                 $currency = $request->input('currency', 'USD');
             }
@@ -1349,8 +1486,33 @@ class HotelController extends Controller
             $hotelNameAr = $language === 'ar' ? $currentName : $altName;
             $hotelNameEn = $language === 'en' ? $currentName : $altName;
 
-            // Apply commission to total fare
-            $totalFare = \App\Helpers\CommissionHelper::applyCommission($totalFare);
+            // totalFare is already commissioned at this point
+
+            // Handle Discount Code
+            $originalPrice = $totalFare;
+            $discountAmount = 0;
+            $discountCodeId = null;
+            $discountCodeInput = $request->input('discount_code');
+            $discountError = null;
+
+            if ($discountCodeInput) {
+                $codeModel = \App\Models\DiscountCode::where('code', $discountCodeInput)->first();
+                if ($codeModel) {
+                    if ($codeModel->isValid()) {
+                        $discountAmount = $totalFare * ($codeModel->discount_percentage / 100);
+                        $totalFare = $totalFare - $discountAmount;
+                        $discountCodeId = $codeModel->id;
+                    } else {
+                        if ($codeModel->is_used) {
+                            $discountError = __('This discount code has already been used.');
+                        } else {
+                            $discountError = __('This discount code has expired or is not yet active.');
+                        }
+                    }
+                } else {
+                    $discountError = __('Invalid discount code.');
+                }
+            }
 
             // Prepare data for booking creation
             $bookingData = [
@@ -1363,6 +1525,9 @@ class HotelController extends Controller
                 'check_in' => $checkIn,
                 'check_out' => $checkOut,
                 'total_price' => $totalFare,
+                'original_price' => $originalPrice,
+                'discount_amount' => $discountAmount,
+                'discount_code_id' => $discountCodeId,
                 'currency' => $currency,
                 'guest_name' => $guestName,
                 'guest_email' => $guestEmail,
@@ -1394,6 +1559,10 @@ class HotelController extends Controller
                 'nights' => $nights,
                 'paymentData' => $paymentData,
                 'totalFare' => $totalFare,
+                'originalPrice' => $originalPrice,
+                'discountAmount' => $discountAmount,
+                'discountError' => $discountError,
+                'discountCode' => $discountCodeInput,
                 'currency' => $currency,
                 'guestName' => $guestName,
                 'guestEmail' => $guestEmail,

@@ -173,6 +173,10 @@ Route::prefix(LaravelLocalization::setLocale().'/admin')->name('admin.')->middle
 
         Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings');
         Route::post('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
+
+        // Discount Codes
+        Route::post('/discount-codes', [\App\Http\Controllers\Admin\DiscountCodeController::class, 'store'])->name('discount-codes.store');
+        Route::delete('/discount-codes/{discountCode}', [\App\Http\Controllers\Admin\DiscountCodeController::class, 'destroy'])->name('discount-codes.destroy');
     });
 });
 

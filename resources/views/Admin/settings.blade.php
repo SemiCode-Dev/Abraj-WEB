@@ -11,6 +11,23 @@
             <p class="text-gray-600 dark:text-gray-400">Manage website settings and configurations</p>
         </div>
 
+        @if (session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">{{ session('success') }}</span>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <strong class="font-bold">Error!</strong>
+                <ul class="mt-2 list-disc list-inside text-sm">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <!-- Settings Tabs -->
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
             <!-- Tab Navigation -->
@@ -31,6 +48,10 @@
                     <button onclick="switchTab('commission')" id="tab-commission"
                         class="settings-tab px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 border-b-2 border-transparent hover:text-orange-600 dark:hover:text-orange-400 transition">
                         <i class="fas fa-percentage mr-2"></i>Abraj Commission
+                    </button>
+                    <button onclick="switchTab('discount')" id="tab-discount"
+                        class="settings-tab px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 border-b-2 border-transparent hover:text-orange-600 dark:hover:text-orange-400 transition">
+                        <i class="fas fa-ticket-alt mr-2"></i>Discount Codes
                     </button>
                 </nav>
             </div>
@@ -196,6 +217,90 @@
                     </div>
                 </div>
 
+                <!-- Abraj Commission Tab -->
+                <div id="content-commission" class="tab-content hidden">
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Abraj Commission</h2>
+                        <p class="text-gray-600 dark:text-gray-400">Manage the commission percentage added to all hotel
+                            bookings</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div
+                            class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                            <form action="{{ route('admin.settings.update') }}" method="POST">
+                                @csrf
+                                <div class="mb-6">
+                                    <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                        Commission Percentage (%)
+                                    </label>
+                                    <div class="relative">
+                                        <input type="number" name="commission_percentage" step="0.01" min="0"
+                                            max="100"
+                                            value="{{ \App\Models\Setting::get('commission_percentage', 0) }}"
+                                            class="w-full px-4 py-2 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                                        <div
+                                            class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400">
+                                            %
+                                        </div>
+                                    </div>
+                                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                        This value will be added to the base room price fetched from TBO.
+                                    </p>
+                                </div>
+
+                                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-6">
+                                    <h4 class="text-sm font-bold text-blue-900 dark:text-blue-300 mb-2 flex items-center">
+                                        <i class="fas fa-calculator mr-2"></i>Live Example
+                                    </h4>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex justify-between text-blue-800 dark:text-blue-400">
+                                            <span>Base Price</span>
+                                            <span class="font-mono">1,000.00 SAR</span>
+                                        </div>
+                                        <div class="flex justify-between text-blue-800 dark:text-blue-400">
+                                            <span>Commission (<span
+                                                    id="exampleCommission">{{ \App\Models\Setting::get('commission_percentage', 0) }}</span>%)</span>
+                                            <span class="font-mono"
+                                                id="exampleCommissionAmount">{{ number_format(1000 * (\App\Models\Setting::get('commission_percentage', 0) / 100), 2) }}
+                                                SAR</span>
+                                        </div>
+                                        <div
+                                            class="border-t border-blue-200 dark:border-blue-800 pt-2 flex justify-between font-bold text-blue-900 dark:text-blue-300">
+                                            <span>Final User Price</span>
+                                            <span class="font-mono"
+                                                id="exampleFinalPrice">{{ number_format(1000 * (1 + \App\Models\Setting::get('commission_percentage', 0) / 100), 2) }}
+                                                SAR</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit"
+                                    class="w-full py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-semibold">
+                                    Update Commission
+                                </button>
+                            </form>
+                        </div>
+                        <div
+                            class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Commission Policy</h3>
+                            <ul class="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                                <li class="flex items-start">
+                                    <i class="fas fa-info-circle mt-1 mr-2 text-orange-600"></i>
+                                    The commission is applied to the total room price including taxes provided by TBO.
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-info-circle mt-1 mr-2 text-orange-600"></i>
+                                    Users see the final price inclusive of this commission.
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-info-circle mt-1 mr-2 text-orange-600"></i>
+                                    Discount codes are applied to the price AFTER the commission has been added.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Contact Information Tab -->
                 <div id="content-contact" class="tab-content hidden">
                     <div class="mb-6">
@@ -252,56 +357,149 @@
                 </div>
             </div>
 
-            <!-- Abraj Commission Tab -->
-            <div id="content-commission" class="tab-content hidden">
-                <div class="mb-6">
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Abraj Commission</h2>
-                    <p class="text-gray-600 dark:text-gray-400">Set the commission percentage applied to hotel bookings</p>
+        </div>
+
+        <!-- Discount Codes Tab -->
+        <div id="content-discount" class="tab-content hidden">
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Discount Codes</h2>
+                <p class="text-gray-600 dark:text-gray-400">Manage one-time use discount codes</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Create Code Form -->
+                <div class="lg:col-span-1">
+                    <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Create New Code</h3>
+                        <form action="{{ route('admin.discount-codes.store') }}" method="POST">
+                            @csrf
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Code
+                                        (Unique)</label>
+                                    <input type="text" name="code" required value="{{ old('code') }}"
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 @error('code') border-red-500 @enderror">
+                                    @error('code')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Discount
+                                        Percentage (%)</label>
+                                    <input type="number" name="discount_percentage" required min="1"
+                                        max="100" step="0.01" value="{{ old('discount_percentage') }}"
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 @error('discount_percentage') border-red-500 @enderror">
+                                    @error('discount_percentage')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Start
+                                        Date</label>
+                                    <input type="datetime-local" name="start_date" required
+                                        value="{{ old('start_date') }}"
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 @error('start_date') border-red-500 @enderror">
+                                    @error('start_date')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">End
+                                        Date</label>
+                                    <input type="datetime-local" name="end_date" required value="{{ old('end_date') }}"
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 @error('end_date') border-red-500 @enderror">
+                                    @error('end_date')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <button type="submit"
+                                    class="w-full py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-semibold">
+                                    <i class="fas fa-plus mr-2"></i>Create Code
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
-                <form action="{{ route('admin.settings.update') }}" method="POST">
-                    @csrf
-                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-                        <div class="max-w-md">
-                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                                <i class="fas fa-percentage mr-2 text-orange-600"></i>Commission Percentage
-                            </label>
-                            <div class="relative">
-                                <input type="number" name="commission_percentage"
-                                    value="{{ $commissionPercentage ?? 0 }}" min="0" max="100"
-                                    step="0.01"
-                                    class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                    placeholder="0.00">
-                                <span
-                                    class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 pointer-events-none">%</span>
-                            </div>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                Enter a percentage between 0 and 100. This will be added to all hotel room prices.
-                            </p>
-                            @error('commission_percentage')
-                                <p class="text-xs text-red-500 mt-2">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Save Button -->
-                        <div class="mt-6">
-                            <button type="submit"
-                                class="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition shadow-lg font-semibold">
-                                <i class="fas fa-save mr-2"></i>Save Commission Settings
-                            </button>
-                        </div>
+                <!-- Codes List -->
+                <div class="lg:col-span-2">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-700/50">
+                                    <th
+                                        class="px-4 py-3 text-sm font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">
+                                        Code</th>
+                                    <th
+                                        class="px-4 py-3 text-sm font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">
+                                        Discount</th>
+                                    <th
+                                        class="px-4 py-3 text-sm font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">
+                                        Validity</th>
+                                    <th
+                                        class="px-4 py-3 text-sm font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">
+                                        Used?</th>
+                                    <th
+                                        class="px-4 py-3 text-sm font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">
+                                        Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($discountCodes as $code)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
+                                        <td
+                                            class="px-4 py-3 text-sm text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 font-mono">
+                                            {{ $code->code }}</td>
+                                        <td
+                                            class="px-4 py-3 text-sm text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">
+                                            {{ $code->discount_percentage }}%</td>
+                                        <td
+                                            class="px-4 py-3 text-sm text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">
+                                            <div class="text-xs">From: {{ $code->start_date->format('Y-m-d H:i') }}</div>
+                                            <div class="text-xs">To: {{ $code->end_date->format('Y-m-d H:i') }}</div>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm border-b border-gray-200 dark:border-gray-700">
+                                            @if ($code->is_used)
+                                                <span class="px-2 py-1 bg-red-100 text-red-600 rounded text-xs">Used
+                                                    ({{ $code->used_at->format('Y-m-d') }})
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs">Available</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-sm border-b border-gray-200 dark:border-gray-700">
+                                            <form action="{{ route('admin.discount-codes.destroy', $code) }}"
+                                                method="POST" onsubmit="return confirm('Are you sure?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-500 hover:text-red-700 transition">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                            No discount codes found.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
-                </form>
-            </div>
-            <!-- Save Button -->
-            <div
-                class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                <button
-                    class="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition shadow-lg font-semibold">
-                    <i class="fas fa-save mr-2"></i>Save Changes
-                </button>
+                </div>
             </div>
         </div>
+        <!-- Save Button -->
+        <div
+            class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+            <button
+                class="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition shadow-lg font-semibold">
+                <i class="fas fa-save mr-2"></i>Save Changes
+            </button>
+        </div>
+    </div>
     </div>
 
     @push('scripts')
@@ -345,6 +543,15 @@
                         document.getElementById('exampleFinalPrice').textContent = finalPrice.toFixed(2) +
                             ' SAR';
                     });
+                }
+
+                // Handle Tab persistence from Hash
+                const hash = window.location.hash;
+                if (hash) {
+                    const tabName = hash.replace('#', '');
+                    if (document.getElementById('tab-' + tabName)) {
+                        switchTab(tabName);
+                    }
                 }
             });
         </script>

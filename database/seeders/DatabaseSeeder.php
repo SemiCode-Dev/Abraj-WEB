@@ -24,6 +24,9 @@ class DatabaseSeeder extends Seeder
             CitySeeder::class,
             AdminUserSeeder::class,
             PackageSeeder::class,
+            NationalitySeeder::class,
+            SettingsSeeder::class,
+            AirportsSeeder::class,
         ]);
     }
 }

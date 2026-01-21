@@ -248,48 +248,84 @@
                         @endauth
                         <form id="reservationForm" onsubmit="return false;">
                             <div id="guestInfoSection" class="space-y-6">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="group">
+                                <div id="personalInfoFields" class="space-y-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div class="group">
+                                            <label
+                                                class="block text-gray-700 dark:text-gray-300 font-semibold mb-2 flex items-center gap-2">
+                                                <i class="fas fa-user text-orange-600"></i>
+                                                <span>{{ __('Full Name') }} <span class="text-red-500">*</span></span>
+                                            </label>
+                                            <input type="text" id="guestName" name="name" required
+                                                class="w-full px-4 py-3.5 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
+                                        </div>
+                                        <div class="group">
+                                            <label
+                                                class="block text-gray-700 dark:text-gray-300 font-semibold mb-2 flex items-center gap-2">
+                                                <i class="fas fa-envelope text-orange-600"></i>
+                                                <span>{{ __('Email') }} <span class="text-red-500">*</span></span>
+                                            </label>
+                                            <input type="email" id="guestEmail" name="email" required
+                                                class="w-full px-4 py-3.5 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
+                                        </div>
+                                    </div>
+                                    <div class="group intl-tel-input-container">
                                         <label
                                             class="block text-gray-700 dark:text-gray-300 font-semibold mb-2 flex items-center gap-2">
-                                            <i class="fas fa-user text-orange-600"></i>
-                                            <span>{{ __('Full Name') }} <span class="text-red-500">*</span></span>
+                                            <i class="fas fa-phone text-orange-600"></i>
+                                            <span>{{ __('Mobile Number') }} <span class="text-red-500">*</span></span>
                                         </label>
-                                        <input type="text" id="guestName" name="name" required
+                                        <input type="tel" id="guestPhone" name="phone"
+                                            value="{{ old('phone', auth()->check() ? auth()->user()->phone : '') }}"
+                                            required maxlength="11"
                                             class="w-full px-4 py-3.5 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
+                                        <input type="hidden" name="phone_country_code" id="guestPhoneCountryCode"
+                                            value="{{ old('phone_country_code', auth()->check() ? auth()->user()->phone_country_code : '') }}">
                                     </div>
                                     <div class="group">
                                         <label
                                             class="block text-gray-700 dark:text-gray-300 font-semibold mb-2 flex items-center gap-2">
-                                            <i class="fas fa-envelope text-orange-600"></i>
-                                            <span>{{ __('Email') }} <span class="text-red-500">*</span></span>
+                                            <i class="fas fa-sticky-note text-orange-600"></i>
+                                            <span>{{ __('Special Notes (Optional)') }}</span>
                                         </label>
-                                        <input type="email" id="guestEmail" name="email" required
-                                            class="w-full px-4 py-3.5 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
+                                        <textarea rows="4" id="guestNotes" name="notes"
+                                            class="w-full px-4 py-3.5 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 resize-none force-input-text"
+                                            placeholder="{{ __('Any special requests or notes...') }}"></textarea>
                                     </div>
                                 </div>
-                                <div class="group intl-tel-input-container">
-                                    <label
-                                        class="block text-gray-700 dark:text-gray-300 font-semibold mb-2 flex items-center gap-2">
-                                        <i class="fas fa-phone text-orange-600"></i>
-                                        <span>{{ __('Mobile Number') }} <span class="text-red-500">*</span></span>
+
+                                <!-- Discount Code Section -->
+                                <div
+                                    class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-6 border-2 border-blue-100 dark:border-blue-800">
+                                    <label class="block text-gray-900 dark:text-white font-bold mb-4 text-lg">
+                                        <i class="fas fa-ticket-alt text-orange-600 mr-2"></i>
+                                        {{ __('Do you have a discount code?') }}
                                     </label>
-                                    <input type="tel" id="guestPhone" name="phone"
-                                        value="{{ old('phone', auth()->check() ? auth()->user()->phone : '') }}" required
-                                        maxlength="11"
-                                        class="w-full px-4 py-3.5 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
-                                    <input type="hidden" name="phone_country_code" id="guestPhoneCountryCode"
-                                        value="{{ old('phone_country_code', auth()->check() ? auth()->user()->phone_country_code : '') }}">
-                                </div>
-                                <div class="group">
-                                    <label
-                                        class="block text-gray-700 dark:text-gray-300 font-semibold mb-2 flex items-center gap-2">
-                                        <i class="fas fa-sticky-note text-orange-600"></i>
-                                        <span>{{ __('Special Notes (Optional)') }}</span>
-                                    </label>
-                                    <textarea rows="4" id="guestNotes" name="notes"
-                                        class="w-full px-4 py-3.5 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 resize-none force-input-text"
-                                        placeholder="{{ __('Any special requests or notes...') }}"></textarea>
+                                    <div class="flex gap-6 mb-4">
+                                        <label class="flex items-center cursor-pointer group">
+                                            <input type="radio" name="has_discount" value="no" checked
+                                                class="w-5 h-5 text-orange-600 focus:ring-orange-500">
+                                            <span
+                                                class="ml-2 text-gray-700 dark:text-gray-300 font-semibold group-hover:text-orange-600 transition-colors">
+                                                {{ __('No') }}
+                                            </span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer group">
+                                            <input type="radio" name="has_discount" value="yes"
+                                                class="w-5 h-5 text-orange-600 focus:ring-orange-500">
+                                            <span
+                                                class="ml-2 text-gray-700 dark:text-gray-300 font-semibold group-hover:text-orange-600 transition-colors">
+                                                {{ __('Yes') }}
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div id="discountInputContainer" class="hidden animate-fade-in">
+                                        <div class="relative">
+                                            <input type="text" id="discountCodeInput"
+                                                class="w-full px-4 py-3.5 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all force-input-text"
+                                                placeholder="{{ __('Enter discount code here') }}">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </form>
@@ -310,12 +346,29 @@
                                 value="{{ isset($currency) ? $currency : request('currency', 'USD') }}">
                             <input type="hidden" name="room_name" value="{{ request('room_name') }}">
                             <input type="hidden" name="inclusion" value="{{ request('inclusion') }}">
+                            @if (isset($paxRooms) && is_array($paxRooms))
+                                @foreach ($paxRooms as $index => $room)
+                                    <input type="hidden" name="PaxRooms[{{ $index }}][Adults]"
+                                        value="{{ $room['Adults'] }}">
+                                    <input type="hidden" name="PaxRooms[{{ $index }}][Children]"
+                                        value="{{ $room['Children'] }}">
+                                    @if (isset($room['ChildrenAges']) && is_array($room['ChildrenAges']))
+                                        @foreach ($room['ChildrenAges'] as $ageIndex => $age)
+                                            <input type="hidden"
+                                                name="PaxRooms[{{ $index }}][ChildrenAges][{{ $ageIndex }}]"
+                                                value="{{ $age }}">
+                                        @endforeach
+                                    @endif
+                                @endforeach
+                            @endif
                             <input type="hidden" id="reviewFormName" name="name" value="{{ old('name') }}">
                             <input type="hidden" id="reviewFormEmail" name="email" value="{{ old('email') }}">
                             <input type="hidden" id="reviewFormPhone" name="phone" value="{{ old('phone') }}">
                             <input type="hidden" id="reviewFormPhoneCountryCode" name="phone_country_code"
                                 value="{{ old('phone_country_code') }}">
                             <input type="hidden" id="reviewFormNotes" name="notes" value="{{ old('notes') }}">
+                            <input type="hidden" id="reviewFormDiscountCode" name="discount_code"
+                                value="{{ old('discount_code') }}">
                             <input type="hidden" id="reviewFormTerms" name="terms" value="1">
                         </form>
                     </div>
@@ -404,7 +457,8 @@
                                 </div>
                                 <div>
                                     <div class="text-sm text-gray-500 mb-1">{{ __('Check Out') }}</div>
-                                    <div class="font-semibold text-gray-900">{{ $checkOut ?? request('check_out', '--') }}
+                                    <div class="font-semibold text-gray-900">
+                                        {{ $checkOut ?? request('check_out', '--') }}
                                     </div>
                                 </div>
                                 <div>
@@ -833,7 +887,7 @@
         @auth
         // Use account information checkbox
         const useAccountInfo = document.getElementById('useAccountInfo');
-        const guestInfoSection = document.getElementById('guestInfoSection');
+        const personalInfoFields = document.getElementById('personalInfoFields');
         const guestName = document.getElementById('guestName');
         const guestEmail = document.getElementById('guestEmail');
         const guestPhone = document.getElementById('guestPhone');
@@ -842,15 +896,15 @@
             useAccountInfo.addEventListener('change', function() {
                 if (this.checked) {
                     // Fill form with user data
-                    guestName.value = '{{ auth()->user()->name }}';
-                    guestEmail.value = '{{ auth()->user()->email }}';
-                    guestPhone.value = '{{ auth()->user()->phone ?? '' }}';
+                    if (guestName) guestName.value = '{{ auth()->user()->name }}';
+                    if (guestEmail) guestEmail.value = '{{ auth()->user()->email }}';
+                    if (guestPhone) guestPhone.value = '{{ auth()->user()->phone ?? '' }}';
 
-                    // Hide guest information section
-                    guestInfoSection.classList.add('hidden');
+                    // Hide personal info fields but keep discount code section
+                    if (personalInfoFields) personalInfoFields.classList.add('hidden');
                 } else {
-                    // Show guest information section
-                    guestInfoSection.classList.remove('hidden');
+                    // Show personal info fields
+                    if (personalInfoFields) personalInfoFields.classList.remove('hidden');
                 }
             });
         }
@@ -860,10 +914,28 @@
         document.querySelectorAll('input[name="payment"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 const cardDetails = document.getElementById('cardDetails');
-                if (this.value === 'card') {
-                    cardDetails.style.display = 'block';
+                if (cardDetails) {
+                    if (this.value === 'card') {
+                        cardDetails.style.display = 'block';
+                    } else {
+                        cardDetails.style.display = 'none';
+                    }
+                }
+            });
+        });
+
+        // Discount code toggle
+        const hasDiscountRadios = document.querySelectorAll('input[name="has_discount"]');
+        const discountInputContainer = document.getElementById('discountInputContainer');
+        const discountCodeInput = document.getElementById('discountCodeInput');
+
+        hasDiscountRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'yes') {
+                    discountInputContainer.classList.remove('hidden');
                 } else {
-                    cardDetails.style.display = 'none';
+                    discountInputContainer.classList.add('hidden');
+                    if (discountCodeInput) discountCodeInput.value = '';
                 }
             });
         });
@@ -963,6 +1035,8 @@
                     document.getElementById('reviewFormPhone').value = phone;
                     document.getElementById('reviewFormPhoneCountryCode').value = countryCode;
                     document.getElementById('reviewFormNotes').value = notes;
+                    document.getElementById('reviewFormDiscountCode').value = document.getElementById(
+                        'discountCodeInput')?.value || '';
                     document.getElementById('reviewFormTerms').value = '1';
                     reviewForm.submit();
                 }
@@ -981,9 +1055,9 @@
             const phone = document.getElementById('guestPhone')?.value.trim();
             const termsAccepted = termsCheckbox?.checked;
 
-            // Check if guest info section is hidden (using account info)
-            const guestInfoSection = document.getElementById('guestInfoSection');
-            const isUsingAccountInfo = guestInfoSection?.classList.contains('hidden');
+            // Check if personal info fields are hidden (using account info)
+            const personalInfoFields = document.getElementById('personalInfoFields');
+            const isUsingAccountInfo = useAccountInfo?.checked;
 
             if (isUsingAccountInfo) {
                 // If using account info, we still need to check terms
@@ -1081,9 +1155,9 @@
                 const termsCheckbox = document.getElementById('termsCheckbox');
                 const termsAccepted = termsCheckbox?.checked;
 
-                // Check if guest info section is hidden (using account info)
-                const guestInfoSection = document.getElementById('guestInfoSection');
-                const isUsingAccountInfo = guestInfoSection?.classList.contains('hidden');
+                // Check if personal info fields are hidden (using account info)
+                const personalInfoFields = document.getElementById('personalInfoFields');
+                const isUsingAccountInfo = useAccountInfo?.checked;
 
                 // If using account info, get user data
                 if (isUsingAccountInfo) {
@@ -1150,6 +1224,8 @@
                     document.getElementById('reviewFormPhone').value = finalPhone;
                     document.getElementById('reviewFormPhoneCountryCode').value = finalPhoneCountryCode;
                     document.getElementById('reviewFormNotes').value = notes;
+                    document.getElementById('reviewFormDiscountCode').value = document.getElementById(
+                        'discountCodeInput')?.value || '';
                     document.getElementById('reviewFormTerms').value = '1';
 
                     // Submit form to review page

@@ -203,6 +203,22 @@
                         <!-- Price Summary -->
                         <div
                             class="bg-gradient-to-r from-orange-50 via-orange-100 to-orange-50 dark:from-orange-900/40 dark:via-orange-800/40 dark:to-orange-900/40 rounded-2xl p-6 border-4 border-orange-200 dark:border-orange-800 mb-6">
+
+                            @if ($discountAmount > 0)
+                                <div class="flex items-center justify-between mb-2 text-gray-500 line-through text-sm">
+                                    <span>{{ __('Original Price') }}</span>
+                                    <span>{{ number_format($originalPrice, 2) }} {{ $currency }}</span>
+                                </div>
+                                <div
+                                    class="flex items-center justify-between mb-4 text-green-600 font-bold bg-green-50 dark:bg-green-900/20 p-2 rounded-lg border border-green-100 dark:border-green-800/50">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-tag"></i>
+                                        <span>{{ __('Discount') }}</span>
+                                    </div>
+                                    <span>- {{ number_format($discountAmount, 2) }} {{ $currency }}</span>
+                                </div>
+                            @endif
+
                             <div class="flex items-center justify-between mb-4">
                                 <div>
                                     <div class="text-lg font-bold text-gray-900 dark:text-white mb-1">
@@ -218,7 +234,33 @@
                                     </div>
                                 </div>
                             </div>
+
+                            @if ($discountCode && $discountAmount > 0)
+                                <div class="mt-4 pt-4 border-t border-orange-200 dark:border-orange-800">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-gray-500">{{ __('Applied Code') }}:</span>
+                                        <span
+                                            class="bg-orange-600 text-white px-2 py-0.5 rounded font-bold uppercase">{{ $discountCode }}</span>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
+
+                        <!-- Discount Errors -->
+                        @if ($discountError)
+                            <div
+                                class="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-4 mb-6 animate-pulse">
+                                <div class="flex items-start gap-3">
+                                    <i class="fas fa-exclamation-circle text-red-600 text-xl mt-1"></i>
+                                    <div class="text-sm text-red-800 dark:text-red-400">
+                                        <div class="font-semibold mb-1">{{ __('Discount Code Error') }}</div>
+                                        <div>{{ $discountError }}</div>
+                                        <div class="mt-2 text-xs text-red-600/70">
+                                            {{ __('The base price has been applied without discount.') }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
                         <!-- Important Notice -->
                         <div

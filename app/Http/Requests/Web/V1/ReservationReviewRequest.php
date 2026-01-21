@@ -20,6 +20,7 @@ class ReservationReviewRequest extends FormRequest
             'check_out' => ['required', 'date', 'after:check_in'],
             'guests' => ['required', 'integer', 'min:1'],
             'terms' => ['required', 'accepted'],
+            'discount_code' => ['nullable', 'string', 'max:255'],
         ];
 
         // If user is not authenticated, require name, email, and phone

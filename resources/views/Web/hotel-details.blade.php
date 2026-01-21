@@ -207,7 +207,7 @@
     <section class="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center mb-4">
-                <a href="{{ route('all.hotels') }}?destination={{ request('destination') }}&check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}"
+                <a href="{{ route('city.hotels', array_merge(['cityCode' => $hotelDetails['HotelDetails'][0]['CityCode'] ?? 'RUH', 'locale' => app()->getLocale()], request()->only(['CheckIn', 'CheckOut', 'PaxRooms', 'check_in', 'check_out']))) }}"
                     class="text-white/80 hover:text-white transition">
                     <i
                         class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
@@ -485,7 +485,7 @@
                                                 placeholder="{{ __('Check In') }}"
                                                 class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 font-medium cursor-pointer bg-white">
                                             <input type="hidden" name="check_in" id="checkInInput"
-                                                value="{{ request('check_in') }}">
+                                                value="{{ $checkIn }}">
                                         </div>
                                     </div>
 
@@ -502,7 +502,7 @@
                                                 placeholder="{{ __('Check Out') }}"
                                                 class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 font-medium cursor-pointer bg-white">
                                             <input type="hidden" name="check_out" id="checkOutInput"
-                                                value="{{ request('check_out') }}">
+                                                value="{{ $checkOut }}">
                                         </div>
                                     </div>
                                 </div>
@@ -1118,11 +1118,13 @@
         const hiddenInputsContainer = document.getElementById('hiddenGuestInputs');
         const guestsSummary = document.getElementById('guestsSummary');
 
-        let rooms = [{
-            adults: 2,
-            children: 0,
-            childrenAges: []
-        }];
+        let rooms = @json($paxRooms ?? [['Adults' => 2, 'Children' => 0, 'ChildrenAges' => []]]);
+        // Normalize keys
+        rooms = rooms.map(r => ({
+            adults: r.Adults || r.adults || 1,
+            children: r.Children || r.children || 0,
+            childrenAges: r.ChildrenAges || r.childrenAges || []
+        }));
 
         function renderRooms() {
             guestsRoomsContainer.innerHTML = '';
@@ -1385,6 +1387,17 @@
             const perNight = nights > 0 ? (price / nights).toFixed(2) : price.toFixed(2);
             const currency = room.Currency || 'SAR';
 
+            // Serialize PaxRooms for the link
+            let paxParams = '';
+            rooms.forEach((r, rIdx) => {
+                paxParams += `&PaxRooms[${rIdx}][Adults]=${r.adults}&PaxRooms[${rIdx}][Children]=${r.children}`;
+                if (r.childrenAges && r.childrenAges.length > 0) {
+                    r.childrenAges.forEach((age, aIdx) => {
+                        paxParams += `&PaxRooms[${rIdx}][ChildrenAges][${aIdx}]=${age}`;
+                    });
+                }
+            });
+
             div.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="h-48 md:h-full">
@@ -1407,7 +1420,7 @@
                                 <div class="text-xs text-gray-400">{{ __('per night') }}</div>
                                 ${nights > 1 ? `<div class="text-xs text-gray-500 mt-1">{{ __('Total') }}: ${price.toFixed(2)} ${currency}</div>` : ''}
                             </div>
-                            <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&check_in=${checkIn}&check_out=${checkOut}&guests=${guests}&booking_code=${encodeURIComponent(room.BookingCode || '')}&total_fare=${price}&currency=${currency}&room_name=${encodeURIComponent(roomName)}" 
+                            <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&CheckIn=${checkIn}&CheckOut=${checkOut}&guests=${guests}${paxParams}&booking_code=${encodeURIComponent(room.BookingCode || '')}&total_fare=${price}&currency=${currency}&room_name=${encodeURIComponent(roomName)}" 
                                class="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-700 transition shadow-lg">
                                 {{ __('Book Now') }}
                             </a>

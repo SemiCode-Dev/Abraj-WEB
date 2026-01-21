@@ -149,7 +149,7 @@
                     <!-- Row 1: Country, City, Adults -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Country Select -->
-                        <div class="relative z-[110]">
+                        <div class="relative z-[130]">
                             <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                                 <i
                                     class="fas fa-globe text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
@@ -161,7 +161,7 @@
                                 class="w-full px-4 py-5 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-xl force-input-text bg-white">
                             <input type="hidden" id="countrySelect" name="country_code" value="SA">
                             <div id="countryAutocomplete"
-                                class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                                class="absolute z-[150] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
                             </div>
                             <div
                                 class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
@@ -170,7 +170,7 @@
                         </div>
 
                         <!-- City Select -->
-                        <div class="relative z-[110]">
+                        <div class="relative z-[120]">
                             <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
                                 <i
                                     class="fas fa-map-marker-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
@@ -182,7 +182,7 @@
                                 disabled>
                             <input type="hidden" name="destination" id="destinationCode">
                             <div id="cityAutocomplete"
-                                class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                                class="absolute z-[150] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
                             </div>
                             <div
                                 class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
@@ -208,7 +208,7 @@
 
                             <!-- Dropdown Content -->
                             <div id="guestsDropdown"
-                                class="absolute z-50 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl hidden p-6 w-full md:w-auto md:min-w-[450px] left-0 md:left-auto right-0 md:right-0 rtl:md:left-0 rtl:right-auto">
+                                class="absolute z-[150] mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl hidden p-6 w-full md:w-auto md:min-w-[450px] left-0 md:left-auto right-0 md:right-0 rtl:md:left-0 rtl:right-auto">
                                 <!-- Rooms Container -->
                                 <div id="roomsContainer"
                                     class="space-y-4 max-h-60 overflow-y-auto custom-scrollbar mb-4 pl-[25px]">
@@ -398,7 +398,7 @@
                                 }
 
                                 /* Mobile styles implicitly handled by removing fixed widths above,
-                                                                           but we ensure correct stacking */
+                                                                                   but we ensure correct stacking */
                                 @media (max-width: 767px) {
                                     .flatpickr-months .flatpickr-month {
                                         width: 100% !important;

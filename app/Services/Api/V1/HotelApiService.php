@@ -62,7 +62,7 @@ class HotelApiService
             'CheckIn' => $data['CheckIn'],
             'CheckOut' => $data['CheckOut'],
             'HotelCodes' => (string) $data['HotelCodes'], // Ensure it's a string
-            'GuestNationality' => $data['GuestNationality'] ?? 'AE',
+            'GuestNationality' => $data['GuestNationality'] ?? 'SA',
             'PaxRooms' => $data['PaxRooms'] ?? [
                 [
                     'Adults' => 1,

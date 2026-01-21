@@ -14,8 +14,9 @@ class SettingsController extends Controller
     public function index()
     {
         $commissionPercentage = Setting::get('commission_percentage', 0);
+        $discountCodes = \App\Models\DiscountCode::orderBy('created_at', 'desc')->get();
         
-        return view('Admin.settings', compact('commissionPercentage'));
+        return view('Admin.settings', compact('commissionPercentage', 'discountCodes'));
     }
 
     /**

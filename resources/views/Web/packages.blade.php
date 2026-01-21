@@ -22,7 +22,7 @@
                             class="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                             <!-- Package Image -->
                             <div class="relative h-64 overflow-hidden">
-                                <img src="{{ $package->image ? asset('storage/' . $package->image) : 'https://images.unsplash.com/photo-1551884170-09fb70a3a2ed?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}"
+                                <img src="{{ asset('storage/' . $package->image) }}"
                                     alt="{{ $package->locale_title }}"
                                     class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                                 @if ($package->price)

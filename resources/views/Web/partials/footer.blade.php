@@ -15,9 +15,26 @@
                         </h3>
                     @endif
                 </div>
-                <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                    {{ __('Abraj Stay is a specialized platform offering premium travel options and 24/7 support.') }}
-                </p>
+                <ul class="mt-4 space-y-3 text-sm text-gray-600 dark:text-gray-300">
+                    <li class="flex items-center gap-2">
+                        <i class="fas fa-envelope text-orange-500 w-5"></i>
+                        <a href="mailto:info@abrajstay.com" class="hover:text-orange-500 transition line-clamp-1">
+                            info@abrajstay.com
+                        </a>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i class="fas fa-phone text-orange-500 w-5"></i>
+                        <p dir="ltr" class="hover:text-orange-500 transition cursor-pointer">
+                            +966 9200 15728
+                        </p>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-map-marker-alt text-orange-500 w-5 mt-1"></i>
+                        <span>
+                            {{ __('Spring Towers, Prince Mohammed Ibn Salman Ibn Abdulaziz Rd, Riyadh, Saudi Arabia, Zip Code: 13316') }}
+                        </span>
+                    </li>
+                </ul>
             </div>
 
             <!-- Quick Links -->
