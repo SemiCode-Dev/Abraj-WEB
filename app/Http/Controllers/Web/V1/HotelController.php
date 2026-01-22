@@ -1024,7 +1024,7 @@ class HotelController extends Controller
                     ];
                 }
                 $paxRooms = $cleanedPaxRooms;
-            }
+
 
             // Set default dates if missing (Unified with listing page)
             if (empty($checkIn) || empty($checkOut)) {
