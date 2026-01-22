@@ -576,84 +576,6 @@
                         <div id="availabilityMessage" class="hidden mt-2 p-3 rounded-lg text-sm"></div>
                     </div>
 
-                    <!-- Extra Features Selection -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ __('Extra Features') }}</h2>
-                        <p class="text-gray-600 text-sm mb-4">{{ __('Select extra features for your stay') }}</p>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <label
-                                class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition">
-                                <input type="checkbox" name="extra_features[]" value="late_checkout"
-                                    class="w-5 h-5 text-orange-600 rounded">
-                                <span class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-sm text-gray-700">
-                                    <i
-                                        class="fas fa-clock text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Late Check-out') }}
-                                </span>
-                            </label>
-                            <label
-                                class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition">
-                                <input type="checkbox" name="extra_features[]" value="early_checkin"
-                                    class="w-5 h-5 text-orange-600 rounded">
-                                <span class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-sm text-gray-700">
-                                    <i
-                                        class="fas fa-early-bird text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Early Check-in') }}
-                                </span>
-                            </label>
-                            <label
-                                class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition">
-                                <input type="checkbox" name="extra_features[]" value="extra_bed"
-                                    class="w-5 h-5 text-orange-600 rounded">
-                                <span class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-sm text-gray-700">
-                                    <i
-                                        class="fas fa-bed text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Extra Bed') }}
-                                </span>
-                            </label>
-                            <label
-                                class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition">
-                                <input type="checkbox" name="extra_features[]" value="baby_cot"
-                                    class="w-5 h-5 text-orange-600 rounded">
-                                <span class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-sm text-gray-700">
-                                    <i
-                                        class="fas fa-baby text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Baby Cot') }}
-                                </span>
-                            </label>
-                            <label
-                                class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition">
-                                <input type="checkbox" name="extra_features[]" value="room_upgrade"
-                                    class="w-5 h-5 text-orange-600 rounded">
-                                <span class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-sm text-gray-700">
-                                    <i
-                                        class="fas fa-arrow-up text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Room Upgrade') }}
-                                </span>
-                            </label>
-                            <label
-                                class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition">
-                                <input type="checkbox" name="extra_features[]" value="spa_package"
-                                    class="w-5 h-5 text-orange-600 rounded">
-                                <span class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-sm text-gray-700">
-                                    <i
-                                        class="fas fa-spa text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Spa Package') }}
-                                </span>
-                            </label>
-                            <label
-                                class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition">
-                                <input type="checkbox" name="extra_features[]" value="dinner_package"
-                                    class="w-5 h-5 text-orange-600 rounded">
-                                <span class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-sm text-gray-700">
-                                    <i
-                                        class="fas fa-utensils text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                    {{ __('Dinner Package') }}
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-
                     <!-- Available Rooms -->
                     <div class="bg-white rounded-2xl shadow-lg p-6">
                         <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ __('Available Rooms') }}</h2>
@@ -822,21 +744,7 @@
                                 @endif
 
                                 <!-- Website -->
-                                @if ($hotel && isset($hotel['HotelWebsiteUrl']))
-                                    <div class="flex items-start">
-                                        <div
-                                            class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <i class="fas fa-globe text-orange-600"></i>
-                                        </div>
-                                        <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
-                                            <div class="font-semibold text-gray-900 mb-1">{{ __('Website') }}</div>
-                                            <p class="text-sm text-gray-600">
-                                                <a href="{{ $hotel['HotelWebsiteUrl'] }}" target="_blank"
-                                                    class="hover:text-orange-600 break-all">{{ $hotel['HotelWebsiteUrl'] }}</a>
-                                            </p>
-                                        </div>
-                                    </div>
-                                @endif
+
                             </div>
                         </div>
 
