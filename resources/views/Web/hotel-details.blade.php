@@ -1153,7 +1153,7 @@
                         childAgesHtml += `
                             <div class="flex flex-col">
                                 <label class="text-[10px] text-gray-500 mb-0.5">{{ __('Child') }} ${ageIndex + 1}</label>
-                                <select class="child-age-select w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs border border-gray-200 dark:border-gray-600 rounded-md p-1" 
+                                <select class="child-age-select w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs border border-gray-200 dark:border-gray-600 rounded-md p-1"
                                     data-room-index="${index}" data-age-index="${ageIndex}">${options}</select>
                             </div>`;
                     });
@@ -1431,7 +1431,7 @@
                                 <div class="text-xs text-gray-400">{{ __('per night') }}</div>
                                 ${nights > 1 ? `<div class="text-xs text-gray-500 mt-1">{{ __('Total') }}: ${price.toFixed(2)} ${currency}</div>` : ''}
                             </div>
-                            <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&CheckIn=${checkIn}&CheckOut=${checkOut}&guests=${guests}${paxParams}&booking_code=${encodeURIComponent(room.BookingCode || '')}&total_fare=${price}&currency=${currency}&room_name=${encodeURIComponent(roomName)}" 
+                            <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&CheckIn=${checkIn}&CheckOut=${checkOut}&guests=${guests}${paxParams}&booking_code=${encodeURIComponent(room.BookingCode || '')}&total_fare=${price}&currency=${currency}&room_name=${encodeURIComponent(roomName)}"
                                class="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-700 transition shadow-lg">
                                 {{ __('Book Now') }}
                             </a>
