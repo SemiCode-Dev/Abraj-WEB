@@ -657,7 +657,7 @@
             if (!paginationContainer) return;
             paginationContainer.innerHTML = '';
 
-            // Single row preferred, but allow wrap if truly needed to avoid hiding. 
+            // Single row preferred, but allow wrap if truly needed to avoid hiding.
             // Gap-1 and px-1 keep it tight.
             paginationContainer.className = 'flex gap-1 items-center justify-center flex-wrap max-w-full px-1';
 
@@ -876,7 +876,7 @@
             return `
             <div class="hotel-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300"
                 data-id="${hotel.HotelCode}"
-                data-name="${hotel.HotelName.toLowerCase()}" 
+                data-name="${hotel.HotelName.toLowerCase()}"
                 data-rating="${ratingMap[hotel.HotelRating] || (parseInt(hotel.HotelRating) || 5)}"
                 data-price="${hotel.MinPrice || 0}"
                 data-facilities='${JSON.stringify((hotel.HotelFacilities || []).map(f => f.toLowerCase())).replace(/'/g, "&apos;")}'>
@@ -948,7 +948,7 @@
                                         <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
                                             <i class="fas fa-wifi ${isAr ? 'ml-1' : 'mr-1'}"></i> ${wifiText}
                                         </span>` : ''}
-                                
+
                                 ${facilitiesJson.includes('pool') || facilitiesJson.includes('swimming') ? `
                                         <span class="px-3 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
                                             <i class="fas fa-swimming-pool ${isAr ? 'ml-1' : 'mr-1'}"></i> ${poolText}
