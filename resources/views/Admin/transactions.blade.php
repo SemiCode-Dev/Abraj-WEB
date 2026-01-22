@@ -30,7 +30,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Revenue</p>
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">SAR
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">USD
                             {{ number_format($stats['total_revenue'], 2) }}</p>
                     </div>
                     <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">

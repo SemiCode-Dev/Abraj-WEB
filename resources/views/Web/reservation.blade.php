@@ -1057,7 +1057,8 @@
 
             // Check if personal info fields are hidden (using account info)
             const personalInfoFields = document.getElementById('personalInfoFields');
-            const isUsingAccountInfo = useAccountInfo?.checked;
+            const useAccountInfoCheckbox = document.getElementById('useAccountInfo');
+            const isUsingAccountInfo = useAccountInfoCheckbox?.checked;
 
             if (isUsingAccountInfo) {
                 // If using account info, we still need to check terms
@@ -1157,7 +1158,8 @@
 
                 // Check if personal info fields are hidden (using account info)
                 const personalInfoFields = document.getElementById('personalInfoFields');
-                const isUsingAccountInfo = useAccountInfo?.checked;
+                const useAccountInfoCheckbox = document.getElementById('useAccountInfo');
+                const isUsingAccountInfo = useAccountInfoCheckbox?.checked;
 
                 // If using account info, get user data
                 if (isUsingAccountInfo) {

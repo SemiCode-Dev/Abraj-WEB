@@ -22,13 +22,12 @@
                             class="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                             <!-- Package Image -->
                             <div class="relative h-64 overflow-hidden">
-                                <img src="{{ asset('storage/' . $package->image) }}"
-                                    alt="{{ $package->locale_title }}"
+                                <img src="{{ asset('storage/' . $package->image) }}" alt="{{ $package->locale_title }}"
                                     class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                                 @if ($package->price)
                                     <div
                                         class="absolute top-4 {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} bg-orange-500 text-white px-4 py-2 rounded-lg font-bold">
-                                        {{ number_format($package->price, 2) }} {{ __('SAR') }}
+                                        {{ number_format($package->price, 2) }} {{ __('USD') }}
                                     </div>
                                 @endif
                             </div>

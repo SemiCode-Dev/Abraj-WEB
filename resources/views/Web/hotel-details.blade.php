@@ -714,7 +714,7 @@
                                                                 </span>
                                                                 <span
                                                                     class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">
-                                                                    {{ $room['Currency'] ?? ($room['Price']['CurrencyCode'] ?? 'SAR') }}
+                                                                    {{ isset($currency) ? $currency : request('currency', 'USD') }}
                                                                 </span>
                                                             </div>
                                                             <div class="text-xs text-gray-400">/ {{ __('Total Price') }}
@@ -1347,7 +1347,7 @@
             hotels.forEach(hotel => {
                 if (hotel.Rooms) hotel.Rooms.forEach(room => allRooms.push({
                     ...room,
-                    Currency: hotel.Currency || 'SAR'
+                    Currency: hotel.Currency || 'USD'
                 }));
             });
 
@@ -1385,7 +1385,7 @@
             const price = parseFloat(room.TotalFare || room.Rate?.Amount || room.Price?.Amount || 0);
             const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (86400000));
             const perNight = nights > 0 ? (price / nights).toFixed(2) : price.toFixed(2);
-            const currency = room.Currency || 'SAR';
+            const currency = room.Currency || 'USD';
 
             // Serialize PaxRooms for the link
             let paxParams = '';

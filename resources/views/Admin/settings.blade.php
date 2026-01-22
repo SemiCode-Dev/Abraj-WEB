@@ -496,9 +496,9 @@
 
                         document.getElementById('exampleCommission').textContent = percentage.toFixed(2);
                         document.getElementById('exampleCommissionAmount').textContent = commissionAmount
-                            .toFixed(2) + ' SAR';
+                            .toFixed(2) + ' USD';
                         document.getElementById('exampleFinalPrice').textContent = finalPrice.toFixed(2) +
-                            ' SAR';
+                            ' USD';
                     });
                 }
 

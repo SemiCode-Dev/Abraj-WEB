@@ -458,7 +458,7 @@ class HotelController extends Controller
                                             if ($code) {
                                                 $availabilityMap[$code] = [
                                                     'price' => $res['MinHotelPrice']['TotalPrice'] ?? 0,
-                                                    'currency' => $res['MinHotelPrice']['Currency'] ?? 'SAR',
+                                                    'currency' => $res['MinHotelPrice']['Currency'] ?? 'USD',
                                                 ];
                                             }
                                         }

@@ -152,6 +152,15 @@
                     </div>
 
                     <!-- Hotels Grid -->
+                    <div id="noResultsMessage" class="hidden py-16 text-center bg-white rounded-2xl shadow-lg mb-6">
+                        <div class="mb-4">
+                            <i class="fas fa-hotel text-gray-200 text-7xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">
+                            {{ __('No hotels available for the selected dates') }}</h3>
+                        <p class="text-gray-500">{{ __('Try adjusting your filters or search terms') }}</p>
+                    </div>
+
                     <div class="space-y-6" id="hotelsGrid">
                         @php $shownHotels = []; @endphp
                         @foreach ($hotels as $hotel)
@@ -276,7 +285,7 @@
                                                     </span>
                                                     <span
                                                         class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">
-                                                        {{ $hotel['Currency'] ?? 'SAR' }}
+                                                        {{ $hotel['Currency'] ?? 'USD' }}
                                                     </span>
                                                 </div>
                                                 {{-- <div class="text-xs text-gray-400">/ {{ __('per night') }} • {{ __('including taxes') }}</div> --}}
@@ -567,6 +576,20 @@
         function updateHotelCount() {
             const countElement = document.querySelector('.text-orange-600.font-bold');
             if (countElement) countElement.textContent = filteredHotels.length + ' {{ __('hotels') }}';
+
+            const noResultsMessage = document.getElementById('noResultsMessage');
+            const hotelsGrid = document.getElementById('hotelsGrid');
+            const paginationContainer = document.getElementById('paginationContainer');
+
+            if (filteredHotels.length === 0) {
+                if (noResultsMessage) noResultsMessage.classList.remove('hidden');
+                if (hotelsGrid) hotelsGrid.classList.add('hidden');
+                if (paginationContainer) paginationContainer.classList.add('hidden');
+            } else {
+                if (noResultsMessage) noResultsMessage.classList.add('hidden');
+                if (hotelsGrid) hotelsGrid.classList.remove('hidden');
+                if (paginationContainer) paginationContainer.classList.remove('hidden');
+            }
         }
 
         // Initialize
@@ -703,7 +726,7 @@
 
             // Min Price
             const price = hotel.MinPrice || hotel.StartPrice || '';
-            const currency = hotel.Currency || 'SAR';
+            const currency = hotel.Currency || 'USD';
 
             // Strings
             const wifiText = '{{ __('WiFi') }}';
