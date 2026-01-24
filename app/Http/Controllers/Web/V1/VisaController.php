@@ -64,7 +64,7 @@ class VisaController extends Controller
                     'comment' => $request->comment,
                 ];
 
-                Mail::to('ab2429601@gmail.com')->send(new BookingRequestMail($mailData, 'Visa Booking'));
+                Mail::to('support@abrajstay.com')->send(new BookingRequestMail($mailData, 'Visa Booking'));
             } catch (\Exception $e) {
                 Log::error('Failed to send visa booking email: ' . $e->getMessage());
             }

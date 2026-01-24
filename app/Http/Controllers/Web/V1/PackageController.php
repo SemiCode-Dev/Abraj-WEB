@@ -59,7 +59,7 @@ class PackageController extends Controller
                     'message' => $request->message ?? '',
                 ];
 
-                Mail::to('ab2429601@gmail.com')->send(new BookingRequestMail($mailData, 'Package Contact'));
+                Mail::to('support@abrajstay.com')->send(new BookingRequestMail($mailData, 'Package Contact'));
             } catch (\Exception $e) {
                 Log::error('Failed to send package contact email: ' . $e->getMessage());
             }

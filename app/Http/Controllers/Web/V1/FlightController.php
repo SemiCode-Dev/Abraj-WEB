@@ -73,7 +73,7 @@ class FlightController extends Controller
                     'notes' => $request->notes,
                 ];
 
-                Mail::to('ab2429601@gmail.com')->send(new BookingRequestMail($mailData, 'Flight Booking'));
+                Mail::to('support@abrajstay.com')->send(new BookingRequestMail($mailData, 'Flight Booking'));
             } catch (\Exception $e) {
                 Log::error('Failed to send flight booking email: '.$e->getMessage());
             }

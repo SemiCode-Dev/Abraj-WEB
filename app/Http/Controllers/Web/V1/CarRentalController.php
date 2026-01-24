@@ -67,7 +67,7 @@ class CarRentalController extends Controller
                     'notes' => $request->notes,
                 ];
 
-                Mail::to('ab2429601@gmail.com')->send(new BookingRequestMail($mailData, 'Request (Mishwar/Car Rental)'));
+                Mail::to('support@abrajstay.com')->send(new BookingRequestMail($mailData, 'Request (Mishwar/Car Rental)'));
             } catch (\Exception $e) {
                 Log::error('Failed to send car rental booking email: ' . $e->getMessage());
             }
