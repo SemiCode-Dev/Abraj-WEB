@@ -199,12 +199,15 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #d9480f;
         }
+        .header-details {
+            background:#06063d;
+        }
     </style>
 @endpush
 
 @section('content')
     <!-- Hotel Header -->
-    <section class="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white py-12">
+    <section class="header-details relative text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center mb-4">
                 <a href="{{ route('city.hotels', array_merge(['cityCode' => $hotelDetails['HotelDetails'][0]['CityCode'] ?? 'RUH', 'locale' => app()->getLocale()], request()->only(['CheckIn', 'CheckOut', 'PaxRooms', 'check_in', 'check_out']))) }}"
@@ -1061,7 +1064,7 @@
                         childAgesHtml += `
                             <div class="flex flex-col">
                                 <label class="text-[10px] text-gray-500 mb-0.5">{{ __('Child') }} ${ageIndex + 1}</label>
-                                <select class="child-age-select w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs border border-gray-200 dark:border-gray-600 rounded-md p-1"
+                                <select class="child-age-select w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs border border-gray-200 dark:border-gray-600 rounded-md p-1" 
                                     data-room-index="${index}" data-age-index="${ageIndex}">${options}</select>
                             </div>`;
                     });
@@ -1306,17 +1309,6 @@
                 }
             });
 
-            // Serialize PaxRooms for the link
-            let paxParams = '';
-            rooms.forEach((r, rIdx) => {
-                paxParams += `&PaxRooms[${rIdx}][Adults]=${r.adults}&PaxRooms[${rIdx}][Children]=${r.children}`;
-                if (r.childrenAges && r.childrenAges.length > 0) {
-                    r.childrenAges.forEach((age, aIdx) => {
-                        paxParams += `&PaxRooms[${rIdx}][ChildrenAges][${aIdx}]=${age}`;
-                    });
-                }
-            });
-
             div.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="h-48 md:h-full">
@@ -1339,7 +1331,7 @@
                                 <div class="text-xs text-gray-400">{{ __('per night') }}</div>
                                 ${nights > 1 ? `<div class="text-xs text-gray-500 mt-1">{{ __('Total') }}: ${price.toFixed(2)} ${currency}</div>` : ''}
                             </div>
-                            <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&CheckIn=${checkIn}&CheckOut=${checkOut}&guests=${guests}${paxParams}&booking_code=${encodeURIComponent(room.BookingCode || '')}&total_fare=${price}&currency=${currency}&room_name=${encodeURIComponent(roomName)}"
+                            <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&CheckIn=${checkIn}&CheckOut=${checkOut}&guests=${guests}${paxParams}&booking_code=${encodeURIComponent(room.BookingCode || '')}&total_fare=${price}&currency=${currency}&room_name=${encodeURIComponent(roomName)}" 
                                class="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-700 transition shadow-lg">
                                 {{ __('Book Now') }}
                             </a>

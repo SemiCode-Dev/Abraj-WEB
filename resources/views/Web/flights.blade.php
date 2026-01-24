@@ -19,8 +19,8 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
                 <!-- <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-                                                                                                        {{ __('Booking Form') }}
-                                                                                                    </h2> -->
+                                                                                                                {{ __('Booking Form') }}
+                                                                                                            </h2> -->
 
                 @if (session('success'))
                     <div
@@ -95,27 +95,38 @@
                         </label>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="relative">
-                                <input type="text" id="originCountrySearchInput" autocomplete="off"
-                                    placeholder="{{ __('Select Country') }}"
-                                    class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white">
-                                <input type="hidden" id="origin_country_id" name="origin_country_id"
-                                    value="{{ old('origin_country_id') }}">
-                                <div id="originCountryAutocomplete"
-                                    class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                                <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                    {{ __('Country') }}
+                                </label>
+                                <select id="origin_country_id" name="origin_country_id"
+                                    class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white appearance-none cursor-pointer">
+                                    <option value="">{{ __('Select Country') }}</option>
+                                    @foreach ($countries as $country)
+                                        <option value="{{ $country->id }}"
+                                            {{ old('origin_country_id') == $country->id ? 'selected' : '' }}>
+                                            {{ $country->locale_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div
+                                    class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                    <i class="fas fa-chevron-down"></i>
                                 </div>
                                 @error('origin_country_id')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div class="relative">
-                                <input type="text" id="originAirportSearchInput" autocomplete="off"
-                                    placeholder="{{ __('Select Airport') }}"
-                                    class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white"
-                                    disabled>
-                                <input type="hidden" id="origin_airport_id" name="origin_airport_id"
-                                    value="{{ old('origin_airport_id') }}">
-                                <div id="originAirportAutocomplete"
-                                    class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                                <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                    {{ __('Airport') }}
+                                </label>
+                                <select id="origin_airport_id" name="origin_airport_id" disabled
+                                    class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white appearance-none cursor-pointer">
+                                    <option value="">{{ __('Select Airport') }}</option>
+                                </select>
+                                <div
+                                    class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                    <i class="fas fa-chevron-down"></i>
                                 </div>
                                 @error('origin_airport_id')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -130,27 +141,38 @@
                         </label>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="relative">
-                                <input type="text" id="destinationCountrySearchInput" autocomplete="off"
-                                    placeholder="{{ __('Select Country') }}"
-                                    class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white">
-                                <input type="hidden" id="destination_country_id" name="destination_country_id"
-                                    value="{{ old('destination_country_id') }}">
-                                <div id="destinationCountryAutocomplete"
-                                    class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                                <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                    {{ __('Country') }}
+                                </label>
+                                <select id="destination_country_id" name="destination_country_id"
+                                    class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white appearance-none cursor-pointer">
+                                    <option value="">{{ __('Select Country') }}</option>
+                                    @foreach ($countries as $country)
+                                        <option value="{{ $country->id }}"
+                                            {{ old('destination_country_id') == $country->id ? 'selected' : '' }}>
+                                            {{ $country->locale_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div
+                                    class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                    <i class="fas fa-chevron-down"></i>
                                 </div>
                                 @error('destination_country_id')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div class="relative">
-                                <input type="text" id="destinationAirportSearchInput" autocomplete="off"
-                                    placeholder="{{ __('Select Airport') }}"
-                                    class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white"
-                                    disabled>
-                                <input type="hidden" id="destination_airport_id" name="destination_airport_id"
-                                    value="{{ old('destination_airport_id') }}">
-                                <div id="destinationAirportAutocomplete"
-                                    class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                                <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                    {{ __('Airport') }}
+                                </label>
+                                <select id="destination_airport_id" name="destination_airport_id" disabled
+                                    class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white appearance-none cursor-pointer">
+                                    <option value="">{{ __('Select Airport') }}</option>
+                                </select>
+                                <div
+                                    class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                    <i class="fas fa-chevron-down"></i>
                                 </div>
                                 @error('destination_airport_id')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -253,185 +275,58 @@
                     document.querySelector("#flightPhoneCountryCode").value = "+" + initialCountryData.dialCode;
                 }
 
-                const allCountries = @json($countries->map(fn($c) => ['id' => $c->id, 'name' => $c->locale_name]));
+                function initAirportFetcher(countrySelectId, airportSelectId, initialAirportId = null) {
+                    const countrySelect = document.getElementById(countrySelectId);
+                    const airportSelect = document.getElementById(airportSelectId);
 
-                function initSearchableSelector(options) {
-                    let {
-                        inputEl,
-                        hiddenEl,
-                        resultsEl,
-                        data = [],
-                        onSelect,
-                        placeholder,
-                        getExcludeId // Optional function to get ID to exclude
-                    } = options;
-                    if (!inputEl || !hiddenEl || !resultsEl) return;
+                    if (!countrySelect || !airportSelect) return;
 
-                    let items = data;
-
-                    function showResults(keyword = "") {
-                        resultsEl.innerHTML = "";
-                        const lowerK = keyword.toLowerCase();
-                        const excludeId = getExcludeId ? getExcludeId() : null;
-
-                        const results = items.filter(item => {
-                            const name = item.name || item.locale_name || "";
-                            return name.toLowerCase().includes(lowerK);
-                        });
-
-                        if (results.length === 0) {
-                            resultsEl.classList.add("hidden");
+                    function loadAirports(countryId, preSelectedId = null) {
+                        if (!countryId) {
+                            airportSelect.innerHTML = '<option value="">{{ __('Select Country First') }}</option>';
+                            airportSelect.disabled = true;
                             return;
                         }
 
-                        resultsEl.classList.remove("hidden");
-                        results.forEach(item => {
-                            const isExcluded = excludeId && item.id == excludeId;
-                            const div = document.createElement("div");
-                            div.className =
-                                "px-4 py-2 text-sm " +
-                                (isExcluded ?
-                                    "bg-gray-50 dark:bg-gray-700/50 text-gray-400 dark:text-gray-500 cursor-not-allowed italic" :
-                                    "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                );
+                        airportSelect.disabled = false;
+                        airportSelect.innerHTML = '<option value="">{{ __('Loading...') }}</option>';
 
-                            div.innerHTML = `<span class="font-medium">${item.name}</span>`;
-
-                            if (!isExcluded) {
-                                div.addEventListener("click", () => {
-                                    inputEl.value = item.name;
-                                    hiddenEl.value = item.id;
-                                    resultsEl.classList.add("hidden");
-                                    if (onSelect) onSelect(item);
-                                    hiddenEl.dispatchEvent(new Event("change"));
+                        fetch(`/{{ app()->getLocale() }}/locations/countries/${countryId}/airports?v=v10`)
+                            .then(res => res.json())
+                            .then(data => {
+                                airportSelect.innerHTML = '<option value="">{{ __('Select Airport') }}</option>';
+                                data.forEach(airport => {
+                                    const option = document.createElement('option');
+                                    option.value = airport.id;
+                                    option.text = airport.name || airport.locale_name;
+                                    if (preSelectedId && preSelectedId == airport.id) {
+                                        option.selected = true;
+                                    }
+                                    airportSelect.appendChild(option);
                                 });
-                            }
-                            resultsEl.appendChild(div);
-                        });
+                            })
+                            .catch(() => {
+                                airportSelect.innerHTML =
+                                    '<option value="">{{ __('Error loading airports') }}</option>';
+                            });
                     }
 
-                    inputEl.addEventListener("focus", () => showResults(inputEl.value));
-                    inputEl.addEventListener("input", () => showResults(inputEl.value));
-
-                    // Click outside to close
-                    document.addEventListener("click", (e) => {
-                        if (!inputEl.contains(e.target) && !resultsEl.contains(e.target)) {
-                            resultsEl.classList.add("hidden");
-                        }
+                    countrySelect.addEventListener('change', function() {
+                        loadAirports(this.value);
                     });
 
-                    return {
-                        updateData: (newData, clearInput = true) => {
-                            items = newData;
-                            if (clearInput) {
-                                inputEl.value = "";
-                                hiddenEl.value = "";
-                            }
-                            inputEl.disabled = false;
-                            inputEl.placeholder = placeholder || "";
-                        },
-                        disable: (msg) => {
-                            inputEl.disabled = true;
-                            inputEl.placeholder = msg || "";
-                            inputEl.value = "";
-                            hiddenEl.value = "";
-                        },
-                        setLoading: (msg) => {
-                            inputEl.disabled = true;
-                            inputEl.placeholder = msg || "{{ __('Loading...') }}";
-                        }
-                    };
-                }
-
-                // --- Origin Logic ---
-                const originCountrySelector = initSearchableSelector({
-                    inputEl: document.getElementById('originCountrySearchInput'),
-                    hiddenEl: document.getElementById('origin_country_id'),
-                    resultsEl: document.getElementById('originCountryAutocomplete'),
-                    data: allCountries,
-                    placeholder: '{{ __('Select Country') }}'
-                });
-
-                const originAirportSelector = initSearchableSelector({
-                    inputEl: document.getElementById('originAirportSearchInput'),
-                    hiddenEl: document.getElementById('origin_airport_id'),
-                    resultsEl: document.getElementById('originAirportAutocomplete'),
-                    placeholder: '{{ __('Select Airport') }}',
-                    getExcludeId: () => document.getElementById('destination_airport_id').value
-                });
-
-                document.getElementById('origin_country_id').addEventListener('change', function() {
-                    const countryId = this.value;
-                    if (!countryId) {
-                        originAirportSelector.disable('{{ __('Select Airport') }}');
-                        return;
-                    }
-
-                    originAirportSelector.setLoading('{{ __('Loading...') }}');
-                    fetch(`/{{ app()->getLocale() }}/locations/countries/${countryId}/airports?v=v10`)
-                        .then(res => res.json())
-                        .then(data => {
-                            originAirportSelector.updateData(data, true);
-                        })
-                        .catch(() => {
-                            originAirportSelector.disable('{{ __('Error loading airports') }}');
-                        });
-                });
-
-                // --- Destination Logic ---
-                const destinationCountrySelector = initSearchableSelector({
-                    inputEl: document.getElementById('destinationCountrySearchInput'),
-                    hiddenEl: document.getElementById('destination_country_id'),
-                    resultsEl: document.getElementById('destinationCountryAutocomplete'),
-                    data: allCountries,
-                    placeholder: '{{ __('Select Country') }}'
-                });
-
-                const destinationAirportSelector = initSearchableSelector({
-                    inputEl: document.getElementById('destinationAirportSearchInput'),
-                    hiddenEl: document.getElementById('destination_airport_id'),
-                    resultsEl: document.getElementById('destinationAirportAutocomplete'),
-                    placeholder: '{{ __('Select Airport') }}',
-                    getExcludeId: () => document.getElementById('origin_airport_id').value
-                });
-
-                document.getElementById('destination_country_id').addEventListener('change', function() {
-                    const countryId = this.value;
-                    if (!countryId) {
-                        destinationAirportSelector.disable('{{ __('Select Airport') }}');
-                        return;
-                    }
-
-                    destinationAirportSelector.setLoading('{{ __('Loading...') }}');
-                    fetch(`/{{ app()->getLocale() }}/locations/countries/${countryId}/airports?v=v10`)
-                        .then(res => res.json())
-                        .then(data => {
-                            destinationAirportSelector.updateData(data, true);
-                        })
-                        .catch(() => {
-                            destinationAirportSelector.disable('{{ __('Error loading airports') }}');
-                        });
-                });
-
-                // Handle initial values (for old input/validation errors)
-                const initialOriginCountryId = '{{ old('origin_country_id') }}';
-                if (initialOriginCountryId) {
-                    const c = allCountries.find(x => x.id == initialOriginCountryId);
-                    if (c) {
-                        document.getElementById('originCountrySearchInput').value = c.name;
-                        // Trigger the change to load airports
-                        document.getElementById('origin_country_id').dispatchEvent(new Event('change'));
+                    // Initial Load (e.g. Validation Error or Edit)
+                    if (countrySelect.value) {
+                        loadAirports(countrySelect.value, initialAirportId);
                     }
                 }
 
-                const initialDestCountryId = '{{ old('destination_country_id') }}';
-                if (initialDestCountryId) {
-                    const c = allCountries.find(x => x.id == initialDestCountryId);
-                    if (c) {
-                        document.getElementById('destinationCountrySearchInput').value = c.name;
-                        document.getElementById('destination_country_id').dispatchEvent(new Event('change'));
-                    }
-                }
+                // Initialize Origin
+                initAirportFetcher('origin_country_id', 'origin_airport_id', '{{ old('origin_airport_id') }}');
+
+                // Initialize Destination 
+                initAirportFetcher('destination_country_id', 'destination_airport_id',
+                    '{{ old('destination_airport_id') }}');
 
                 // Set minimum return date based on departure date
                 const departureDateInput = document.querySelector('input[name="departure_date"]');

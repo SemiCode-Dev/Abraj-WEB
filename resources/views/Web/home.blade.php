@@ -155,16 +155,19 @@
                                     class="fas fa-globe text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                 {{ __('Country') }}
                             </label>
-                            <input type="text" id="countrySearchInput" autocomplete="off"
-                                placeholder="{{ __('Select Country') }}"
-                                value="{{ app()->getLocale() === 'ar' ? 'المملكة العربية السعودية' : 'Saudi Arabia' }}"
-                                class="w-full px-4 py-5 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-xl force-input-text bg-white">
-                            <input type="hidden" id="countrySelect" name="country_code" value="SA">
-                            <div id="countryAutocomplete"
-                                class="absolute z-[150] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
-                            </div>
+
+                            <select id="countrySelect" name="country_code"
+                                class="w-full px-4 py-5 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-xl force-input-text bg-white appearance-none cursor-pointer">
+                                @foreach ($countries as $country)
+                                    <option value="{{ $country['Code'] ?? $country['CountryCode'] }}"
+                                        {{ ($country['Code'] ?? $country['CountryCode']) == 'SA' ? 'selected' : '' }}>
+                                        {{ $country['Name'] ?? $country['CountryName'] }}
+                                    </option>
+                                @endforeach
+                            </select>
+
                             <div
-                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-12 text-gray-400 pointer-events-none">
                                 <i class="fas fa-chevron-down"></i>
                             </div>
                         </div>
@@ -176,16 +179,13 @@
                                     class="fas fa-map-marker-alt text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                 {{ __('City') }}
                             </label>
-                            <input type="text" id="citySelect" autocomplete="off"
-                                placeholder="{{ __('Select City') }}"
-                                class="w-full px-4 py-5 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-xl force-input-text bg-white"
-                                disabled>
-                            <input type="hidden" name="destination" id="destinationCode">
-                            <div id="cityAutocomplete"
-                                class="absolute z-[150] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
-                            </div>
+                            <select id="citySelect" name="destination" disabled
+                                class="w-full px-4 py-5 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl text-xl force-input-text bg-white appearance-none cursor-pointer">
+                                <option value="">{{ __('Select City') }}</option>
+                            </select>
+
                             <div
-                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-12 text-gray-400 pointer-events-none">
                                 <i class="fas fa-chevron-down"></i>
                             </div>
                         </div>
@@ -398,7 +398,7 @@
                                 }
 
                                 /* Mobile styles implicitly handled by removing fixed widths above,
-                                                                                   but we ensure correct stacking */
+                                                                                                                                                           but we ensure correct stacking */
                                 @media (max-width: 767px) {
                                     .flatpickr-months .flatpickr-month {
                                         width: 100% !important;
@@ -2027,204 +2027,62 @@ $fallbackImages = [
             const allCountries = @json($countries ?? []);
 
             // -----------------------------------------------------------------------------
-            // COUNTRY SEARCH LOGIC
+            // COUNTRY & CITY DROPDOWN LOGIC
             // -----------------------------------------------------------------------------
-            function initCountrySearch(inputEl, codeEl, listEl, data) {
-                if (!inputEl || !codeEl || !listEl) return;
+            const countrySelect = document.getElementById('countrySelect');
+            const citySelect = document.getElementById('citySelect');
 
-                function showCountryResults(keyword = "") {
-                    listEl.innerHTML = "";
-                    const lowerK = keyword.toLowerCase();
-                    const results = keyword === "" ? data : data.filter(c => {
-                        const name = c.Name || c.CountryName || "";
-                        return name.toLowerCase().includes(lowerK);
-                    });
+            function loadCities(countryCode) {
+                if (!citySelect) return;
 
-                    if (results.length === 0) {
-                        listEl.classList.add("hidden");
-                        return;
-                    }
+                // Reset City Dropdown
+                citySelect.innerHTML = '<option value="">{{ __('Select City') }}</option>';
+                citySelect.disabled = true;
 
-                    listEl.classList.remove("hidden");
-                    const seenCodes = new Set(); // Prevent duplicates if needed
+                if (!countryCode) return;
 
-                    results.forEach(c => {
-                        const code = c.Code || c.CountryCode;
-                        const name = c.Name || c.CountryName;
-                        if (!code || seenCodes.has(code)) return;
-                        seenCodes.add(code);
+                citySelect.disabled = false;
+                const loadingOption = document.createElement('option');
+                loadingOption.text = "{{ __('Loading cities...') }}";
+                citySelect.add(loadingOption);
+                citySelect.value = loadingOption.value; // Select loading
 
-                        const div = document.createElement("div");
-                        div.className =
-                            "px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100";
-                        div.innerHTML = `<span class="font-medium">${name}</span>`;
-
-                        div.addEventListener("click", () => {
-                            inputEl.value = name;
-                            codeEl.value = code;
-                            listEl.classList.add("hidden");
-                            // Trigger change on the hidden input so City logic picks it up
-                            codeEl.dispatchEvent(new Event("change"));
-                        });
-
-                        listEl.appendChild(div);
-                    });
-                }
-
-                inputEl.addEventListener("focus", () => showCountryResults(inputEl.value));
-                inputEl.addEventListener("input", () => showCountryResults(inputEl.value));
-            }
-
-
-            // -----------------------------------------------------------------------------
-            // DUAL FORM LOGIC (Hero & Main)
-            // -----------------------------------------------------------------------------
-
-            // Helper to initialize country/city logic
-            function initCitySearch(countryEl, cityEl, cityBoxEl, codeEl, hotelEl = null, initialCountryCode =
-                null) {
-                if (!countryEl || !cityEl || !cityBoxEl) return;
-
-                let filteredCitiesLocal = [];
-
-                function loadCitiesForCountry(countryCode) {
-                    cityEl.value = "";
-                    codeEl.value = "";
-                    cityEl.disabled = true;
-                    cityBoxEl.classList.add("hidden");
-                    filteredCitiesLocal = [];
-
-                    if (hotelEl) {
-                        hotelEl.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
-                        hotelEl.disabled = true;
-                    }
-
-                    if (!countryCode) return;
-
-                    cityEl.placeholder = "{{ __('Loading cities...') }}";
-
-                    let url = "{{ route('locations.cities', ['country' => ':id']) }}";
-                    url = url.replace(':id', countryCode);
-                    url += (url.includes('?') ? '&' : '?') + 'v=v10';
-
-                    fetch(url)
-                        .then(res => res.json())
-                        .then(data => {
-                            filteredCitiesLocal = data;
-                            cityEl.disabled = false;
-                            cityEl.placeholder = "{{ __('Select City') }}";
-                        })
-                        .catch(err => {
-                            cityEl.placeholder = "{{ __('Error') }}";
-                        });
-                }
-
-                countryEl.addEventListener("change", function() {
-                    loadCitiesForCountry(this.value);
-                });
-
-                // Auto-load cities if initial country code is provided
-                if (initialCountryCode) {
-                    setTimeout(() => {
-                        loadCitiesForCountry(initialCountryCode);
-                    }, 100);
-                }
-
-                function showResultsLocal(keyword = "") {
-                    cityBoxEl.innerHTML = "";
-                    if (filteredCitiesLocal.length === 0) {
-                        cityBoxEl.classList.add("hidden");
-                        return;
-                    }
-
-                    let results = keyword === "" ? filteredCitiesLocal :
-                        filteredCitiesLocal.filter(city => city.name && city.name.toLowerCase().includes(keyword
-                            .toLowerCase()));
-
-                    if (results.length === 0) {
-                        cityBoxEl.classList.add("hidden");
-                        return;
-                    }
-
-                    cityBoxEl.classList.remove("hidden");
-                    const seenNames = new Set();
-
-                    results.forEach(city => {
-                        if (!city.name || seenNames.has(city.name)) return;
-                        seenNames.add(city.name);
-
-                        const div = document.createElement("div");
-                        div.className =
-                            "px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100";
-                        div.innerHTML = `<span class="font-medium">${city.name}</span>`;
-
-                        div.addEventListener("click", () => {
-                            cityEl.value = city.name;
-                            codeEl.value = city.code;
-                            cityBoxEl.classList.add("hidden");
-                            if (hotelEl) loadHotelsForCityInternal(city.code, hotelEl);
-                        });
-                        cityBoxEl.appendChild(div);
-                    });
-                }
-
-                cityEl.addEventListener("focus", () => {
-                    if (!cityEl.disabled && filteredCitiesLocal.length > 0) showResultsLocal("");
-                });
-                cityEl.addEventListener("input", function() {
-                    showResultsLocal(this.value);
-                });
-            }
-
-            function loadHotelsForCityInternal(cityCode, selectEl) {
-                if (!cityCode) return;
-                selectEl.innerHTML = '<option value="">{{ __('Loading hotels...') }}</option>';
-                selectEl.disabled = true;
-
-                let url = "{{ route('ajax.get-hotels', ['cityCode' => ':code']) }}";
-                url = url.replace(':code', cityCode);
+                let url = "{{ route('locations.cities', ['country' => ':id']) }}";
+                url = url.replace(':id', countryCode);
+                url += (url.includes('?') ? '&' : '?') + 'v=v11';
 
                 fetch(url)
                     .then(res => res.json())
                     .then(data => {
-                        selectEl.innerHTML = '<option value="">{{ __('Select Hotel') }}</option>';
-                        data.forEach(hotel => {
-                            const option = document.createElement("option");
-                            option.value = hotel.HotelCode || '';
-                            option.textContent = hotel.HotelName || '';
-                            selectEl.appendChild(option);
+                        // Clear loading
+                        citySelect.innerHTML = '<option value="">{{ __('Select City') }}</option>';
+
+                        // Populate
+                        data.forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city.code;
+                            option.text = city.name;
+                            citySelect.appendChild(option);
                         });
-                        selectEl.disabled = false;
+
+                        citySelect.disabled = false;
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        citySelect.innerHTML = '<option value="">{{ __('Error loading cities') }}</option>';
                     });
             }
 
-            // Initialize Main Form Country
-            initCountrySearch(
-                document.getElementById("countrySearchInput"),
-                document.getElementById("countrySelect"),
-                document.getElementById("countryAutocomplete"),
-                allCountries
-            );
+            if (countrySelect && citySelect) {
+                countrySelect.addEventListener('change', function() {
+                    loadCities(this.value);
+                });
 
-            // Initialize Main Form City
-            // Note: We pass the HIDDEN input 'countrySelect' as the country element
-            initCitySearch(
-                document.getElementById("countrySelect"),
-                document.getElementById("citySelect"),
-                document.getElementById("cityAutocomplete"),
-                document.getElementById("destinationCode"),
-                document.getElementById(
-                    "hotelSelect"), // This is removed/null now probably, but logic handles null
-                'SA' // Auto-load Saudi Arabia cities on page load
-            );
-
-            // Initialize Hero Form Country
-            initCountrySearch(
-                document.getElementById("heroCountrySearchInput"),
-                document.getElementById("heroCountrySelect"),
-                document.getElementById("heroCountryAutocomplete"),
-                allCountries
-            );
+                // Initial load
+                if (countrySelect.value) {
+                    loadCities(countrySelect.value);
+                }
+            }
 
 
 
@@ -2455,13 +2313,13 @@ $fallbackImages = [
             // Main Form Submission
             // Main Form Submission
             // Main Form Submission
+            // Main Form Submission
             document.getElementById("searchForm").addEventListener("submit", function(e) {
                 e.preventDefault();
 
                 const countrySelect = document.getElementById("countrySelect");
-                const countrySearchInput = document.getElementById("countrySearchInput");
                 const citySelect = document.getElementById("citySelect");
-                const cityCode = document.getElementById("destinationCode").value;
+                const cityCode = citySelect ? citySelect.value : '';
                 const checkInInput = this.querySelector('input[name="CheckIn"]');
                 const checkOutInput = this.querySelector('input[name="CheckOut"]');
                 const checkInDisplay = document.getElementById("checkInDisplay");
@@ -2471,7 +2329,7 @@ $fallbackImages = [
                 const checkOut = checkOutInput.value;
 
                 // Reset Errors (Remove red borders)
-                [countrySearchInput, citySelect, checkInDisplay, checkOutDisplay].forEach(el => {
+                [countrySelect, citySelect, checkInDisplay, checkOutDisplay].forEach(el => {
                     if (el) el.classList.remove("border-red-500");
                 });
 
@@ -2482,7 +2340,7 @@ $fallbackImages = [
                     showToast(
                         "{{ app()->getLocale() === 'ar' ? 'الرجاء اختيار الدولة' : __('Please select a country') }}",
                         "error");
-                    if (countrySearchInput) countrySearchInput.classList.add("border-red-500");
+                    if (countrySelect) countrySelect.classList.add("border-red-500");
                     hasError = true;
                 }
 
@@ -2522,13 +2380,11 @@ $fallbackImages = [
                 this.submit();
 
                 // Add listeners to remove red border on interaction
-                if (countrySearchInput) {
-                    countrySearchInput.addEventListener('input', () => countrySearchInput.classList.remove(
+                if (countrySelect) {
+                    countrySelect.addEventListener('change', () => countrySelect.classList.remove(
                         "border-red-500"));
                 }
                 if (citySelect) {
-                    citySelect.addEventListener('input', () => citySelect.classList.remove(
-                        "border-red-500"));
                     citySelect.addEventListener('change', () => citySelect.classList.remove(
                         "border-red-500"));
                 }
@@ -2543,52 +2399,7 @@ $fallbackImages = [
                 }
             });
 
-            // Hero Form Submission
-            document.getElementById("heroSearchForm").addEventListener("submit", function(e) {
-                e.preventDefault();
-                const cityCode = document.getElementById("heroDestinationCode").value;
 
-                if (!cityCode) {
-                    showToast("{{ __('Please select a city') }}", "error");
-                    return;
-                }
-
-                const baseUrl = "{{ route('city.hotels', ['cityCode' => ':cityCode']) }}";
-                window.location.href = baseUrl.replace(':cityCode', cityCode);
-            });
-
-            // Global click to close autocompletes
-            document.addEventListener("click", function(e) {
-                const pairs = [{
-                        input: "countrySearchInput",
-                        box: "countryAutocomplete"
-                    },
-                    {
-                        input: "citySelect",
-                        box: "cityAutocomplete"
-                    },
-                    {
-                        input: "heroCountrySearchInput",
-                        box: "heroCountryAutocomplete"
-                    },
-                    {
-                        input: "heroDestinationCode",
-                        box: "heroCityAutocomplete"
-                    }
-                ];
-
-                pairs.forEach(pair => {
-                    const inputEl = document.getElementById(pair.input);
-                    const boxEl = document.getElementById(pair.box);
-
-                    if (inputEl && boxEl) {
-                        // If click is NOT on input AND NOT on box, close it
-                        if (!inputEl.contains(e.target) && !boxEl.contains(e.target)) {
-                            boxEl.classList.add("hidden");
-                        }
-                    }
-                });
-            });
 
         });
     </script>

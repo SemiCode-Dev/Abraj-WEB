@@ -495,6 +495,163 @@ class HotelController extends Controller
                 }
             } // End if ($checkIn && ...)
             // -------------------------------------------------------------------------
+            // AVAILABLE SEARCH (TBO) - User filter
+            // -------------------------------------------------------------------------
+            // If request has Date + Pax info, we MUST filter by actual availability from TBO
+            $checkIn = request('CheckIn');
+            $checkOut = request('CheckOut');
+
+            // Parse PaxRooms
+            $paxRooms = request('PaxRooms');
+
+            // Backward Compatibility / Fallback
+            if (empty($paxRooms) && request('adults')) {
+                $paxRooms = [
+                    [
+                        'Adults' => (int) request('adults'),
+                        'Children' => (int) request('children', 0),
+                        'ChildrenAges' => [],
+                    ],
+                ];
+            }
+
+            // Ensure correct structure for API with strict validation
+            if (is_array($paxRooms)) {
+                $cleanedPaxRooms = [];
+                foreach ($paxRooms as $room) {
+                    $adults = filter_var($room['Adults'] ?? 1, FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
+                    $children = filter_var($room['Children'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['default' => 0, 'min_range' => 0]]);
+
+                    $childrenAges = $room['ChildrenAges'] ?? [];
+                    if (! is_array($childrenAges)) {
+                        $childrenAges = [];
+                    }
+
+                    // Cast ages to integers and clamp to 0-17
+                    $childrenAges = array_map(function ($age) {
+                        $ageInt = (int) $age;
+
+                        return max(0, min(17, $ageInt));
+                    }, $childrenAges);
+
+                    // strict sync: Children count MUST match ChildrenAges length
+                    // If mismatch, prioritize ChildrenAges array
+                    if ($children > count($childrenAges)) {
+                        // Pad with default age 0 if missing
+                        for ($i = count($childrenAges); $i < $children; $i++) {
+                            $childrenAges[] = 0;
+                        }
+                    } elseif ($children < count($childrenAges)) {
+                        // Truncate if too many
+                        $childrenAges = array_slice($childrenAges, 0, $children);
+                    }
+
+                    // Final Clean Room Object
+                    $cleanedPaxRooms[] = [
+                        'Adults' => $adults,
+                        'Children' => $children,
+                        'ChildrenAges' => $childrenAges,
+                    ];
+                }
+                $paxRooms = $cleanedPaxRooms;
+            }
+
+            if ($checkIn && $checkOut && ! empty($paxRooms)) {
+                // Validate Dates
+                try {
+                    $inDate = \Carbon\Carbon::parse($checkIn);
+                    $outDate = \Carbon\Carbon::parse($checkOut);
+                    $today = \Carbon\Carbon::today();
+
+                    if ($outDate->lte($inDate)) {
+                        Log::warning('Search skipped: CheckOut must be after CheckIn');
+                        $allLightweightHotels = []; // Return empty or handle error
+                    } elseif ($inDate->lt($today)) {
+                        Log::warning('Search skipped: CheckIn cannot be in the past');
+                        // $allLightweightHotels = []; // Optional: strict fail
+                    } else {
+                        Log::info('City Availability Search', ['city' => $cityCode, 'in' => $checkIn, 'out' => $checkOut, 'pax' => $paxRooms]);
+
+                        // 1. We have $allLightweightHotels from the city list
+                        if (! empty($allLightweightHotels)) {
+                            // 2. Extract codes (Limit to 50-100 to avoid API overflow/timeouts)
+                            // TBO Search allows multiple codes, but performance degrades.
+                            // Let's take the top 50 hotels (which are usually the most relevant if sorted,
+                            // or just the first 50 found) to check availability.
+                            // If we want more, we'd need complex background processing or pagination of SEARCH itself.
+                            $candidateHotels = array_slice($allLightweightHotels, 0, 50);
+                            $candidateCodes = array_column($candidateHotels, 'HotelCode');
+                            $codesString = implode(',', $candidateCodes);
+
+                            if (! empty($codesString)) {
+                                try {
+                                    $searchData = [
+                                        'CheckIn' => $checkIn,
+                                        'CheckOut' => $checkOut,
+                                        'HotelCodes' => $codesString,
+                                        'GuestNationality' => 'AE',
+                                        'PaxRooms' => $paxRooms,
+                                        'ResponseTime' => 20,
+                                        'IsDetailedResponse' => false, // We just need availability status, not full details yet
+                                        'Filters' => [
+                                            'Refundable' => false, // Don't restrict
+                                            'NoOfRooms' => 1,
+                                            'MealType' => 'All',
+                                        ],
+                                    ];
+
+                                    // Call TBO Search
+                                    // We use a different cache key for AVAILABILITY search
+                                    $searchCacheKey = 'avail_search_'.md5(json_encode($searchData));
+                                    $searchResponse = Cache::remember($searchCacheKey, 300, function () use ($searchData) { // 5 mins cache
+                                        return $this->hotelApi->searchHotel($searchData);
+                                    });
+
+                                    $availabilityMap = [];
+                                    if (isset($searchResponse['Status']['Code']) && $searchResponse['Status']['Code'] == 200) {
+                                        $results = $searchResponse['HotelResult'] ?? [];
+                                        foreach ($results as $res) {
+                                            $code = $res['HotelCode'] ?? '';
+                                            if ($code) {
+                                                $availabilityMap[$code] = [
+                                                    'price' => $res['MinHotelPrice']['TotalPrice'] ?? 0,
+                                                    'currency' => $res['MinHotelPrice']['Currency'] ?? 'USD',
+                                                ];
+                                            }
+                                        }
+                                    }
+
+                                    // 3. Filter the main list and merge real-time price
+                                    $filteredByAvailability = [];
+                                    foreach ($allLightweightHotels as $h) {
+                                        if (isset($availabilityMap[$h['HotelCode']])) {
+                                            $basePrice = (float) $availabilityMap[$h['HotelCode']]['price'];
+                                            $h['MinPrice'] = \App\Helpers\CommissionHelper::applyCommission($basePrice);
+                                            $h['Currency'] = $availabilityMap[$h['HotelCode']]['currency'];
+                                            $filteredByAvailability[] = $h;
+                                        }
+                                    }
+
+                                    // Log results
+                                    Log::info('Availability Filter: Checked '.count($candidateCodes).', Found '.count($availabilityMap));
+
+                                    // Replace the list
+                                    $allLightweightHotels = $filteredByAvailability;
+
+                                } catch (\Exception $e) {
+                                    Log::error('Availability Search Failed: '.$e->getMessage());
+                                    // Fallback: Do we show all or none?
+                                    // Usually show all with a warning, or just ignore failure and show list (safer).
+                                }
+                            }
+                        } // End if (!empty($allLightweightHotels))
+
+                    } // End else (valid dates)
+                } catch (\Exception $e) {
+                    Log::warning('Date parsing error: '.$e->getMessage());
+                }
+            } // End if ($checkIn && ...)
+            // -------------------------------------------------------------------------
 
             // STRICT FILTERING
             // Filter hotels to ensure they actually belong to the requested city

@@ -19,8 +19,8 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
                 <!-- <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-                                                                        {{ __('Booking Form') }}
-                                                                    </h2> -->
+                                                                            {{ __('Booking Form') }}
+                                                                        </h2> -->
 
                 @if (session('success'))
                     <div
@@ -95,27 +95,38 @@
                         </label>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="relative">
-                                <input type="text" id="countrySearchInput" autocomplete="off"
-                                    placeholder="{{ __('Select Country') }}"
-                                    class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white shadow-sm">
-                                <input type="hidden" id="destination_country_id" name="destination_country_id"
-                                    value="{{ old('destination_country_id') }}">
-                                <div id="countryAutocomplete"
-                                    class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                                <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                    {{ __('Country') }}
+                                </label>
+                                <select id="destination_country_id" name="destination_country_id"
+                                    class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white appearance-none cursor-pointer">
+                                    <option value="">{{ __('Select Country') }}</option>
+                                    @foreach ($countries as $country)
+                                        <option value="{{ $country->id }}"
+                                            {{ old('destination_country_id') == $country->id ? 'selected' : '' }}>
+                                            {{ $country->locale_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div
+                                    class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                    <i class="fas fa-chevron-down"></i>
                                 </div>
                                 @error('destination_country_id')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div class="relative">
-                                <input type="text" id="citySearchInput" autocomplete="off"
-                                    placeholder="{{ __('Select City') }}"
-                                    class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white shadow-sm"
-                                    disabled>
-                                <input type="hidden" id="destination_city_id" name="destination_city_id"
-                                    value="{{ old('destination_city_id') }}">
-                                <div id="cityAutocomplete"
-                                    class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden">
+                                <label class="block text-gray-700 dark:text-gray-300 text-xs font-bold mb-2 uppercase">
+                                    {{ __('City') }}
+                                </label>
+                                <select id="destination_city_id" name="destination_city_id" disabled
+                                    class="w-full px-4 py-3 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100 bg-white appearance-none cursor-pointer">
+                                    <option value="">{{ __('Select City') }}</option>
+                                </select>
+                                <div
+                                    class="absolute {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} top-11 text-gray-400 pointer-events-none">
+                                    <i class="fas fa-chevron-down"></i>
                                 </div>
                                 @error('destination_city_id')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -229,129 +240,46 @@
                     document.querySelector("#carPhoneCountryCode").value = "+" + initialCountryData.dialCode;
                 }
 
-                // Searchable Selectors Logic
-                const allCountries = @json($countries->map(fn($c) => ['id' => $c->id, 'name' => $c->locale_name]));
+                const countrySelect = document.getElementById('destination_country_id');
+                const citySelect = document.getElementById('destination_city_id');
 
-                function initSearchableSelector(options) {
-                    let {
-                        inputEl,
-                        hiddenEl,
-                        resultsEl,
-                        data = [],
-                        onSelect,
-                        placeholder
-                    } = options;
-                    if (!inputEl || !hiddenEl || !resultsEl) return;
-
-                    let items = data;
-
-                    function showResults(keyword = "") {
-                        resultsEl.innerHTML = "";
-                        const lowerK = keyword.toLowerCase();
-                        const results = items.filter(item => {
-                            const name = item.name || "";
-                            return name.toLowerCase().includes(lowerK);
-                        });
-
-                        if (results.length === 0) {
-                            resultsEl.classList.add("hidden");
-                            return;
-                        }
-
-                        resultsEl.classList.remove("hidden");
-                        results.forEach(item => {
-                            const div = document.createElement("div");
-                            div.className =
-                                "px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm border-b border-gray-50 dark:border-gray-700 last:border-0";
-                            div.innerHTML = `<span class="font-medium">${item.name}</span>`;
-                            div.addEventListener("click", () => {
-                                inputEl.value = item.name;
-                                hiddenEl.value = item.id;
-                                resultsEl.classList.add("hidden");
-                                if (onSelect) onSelect(item);
-                                hiddenEl.dispatchEvent(new Event("change"));
-                            });
-                            resultsEl.appendChild(div);
-                        });
-                    }
-
-                    inputEl.addEventListener("focus", () => showResults(inputEl.value));
-                    inputEl.addEventListener("input", () => showResults(inputEl.value));
-
-                    document.addEventListener("click", (e) => {
-                        if (!inputEl.contains(e.target) && !resultsEl.contains(e.target)) {
-                            resultsEl.classList.add("hidden");
-                        }
-                    });
-
-                    return {
-                        updateData: (newData, clearInput = true) => {
-                            items = newData;
-                            if (clearInput) {
-                                inputEl.value = "";
-                                hiddenEl.value = "";
-                            }
-                            inputEl.disabled = false;
-                            inputEl.placeholder = placeholder || "";
-                        },
-                        disable: (msg) => {
-                            inputEl.disabled = true;
-                            inputEl.placeholder = msg || "";
-                            inputEl.value = "";
-                            hiddenEl.value = "";
-                        },
-                        setLoading: (msg) => {
-                            inputEl.disabled = true;
-                            inputEl.placeholder = msg || "{{ __('Loading...') }}";
-                        },
-                        setValue: (id, name) => {
-                            hiddenEl.value = id;
-                            inputEl.value = name;
-                        }
-                    };
-                }
-
-                const countrySelector = initSearchableSelector({
-                    inputEl: document.getElementById('countrySearchInput'),
-                    hiddenEl: document.getElementById('destination_country_id'),
-                    resultsEl: document.getElementById('countryAutocomplete'),
-                    data: allCountries,
-                    placeholder: '{{ __('Select Country') }}'
-                });
-
-                const citySelector = initSearchableSelector({
-                    inputEl: document.getElementById('citySearchInput'),
-                    hiddenEl: document.getElementById('destination_city_id'),
-                    resultsEl: document.getElementById('cityAutocomplete'),
-                    placeholder: '{{ __('Select City') }}'
-                });
-
-                document.getElementById('destination_country_id').addEventListener('change', function() {
-                    const countryId = this.value;
+                function loadCities(countryId, initialCityId = null) {
                     if (!countryId) {
-                        citySelector.disable('{{ __('Select City') }}');
+                        citySelect.innerHTML = '<option value="">{{ __('Select Country First') }}</option>';
+                        citySelect.disabled = true;
                         return;
                     }
 
-                    citySelector.setLoading('{{ __('Loading...') }}');
+                    citySelect.disabled = false;
+                    citySelect.innerHTML = '<option value="">{{ __('Loading...') }}</option>';
+
                     fetch(`/{{ app()->getLocale() }}/locations/countries/${countryId}/cities?v=v10`)
                         .then(res => res.json())
                         .then(data => {
-                            citySelector.updateData(data, true);
+                            citySelect.innerHTML = '<option value="">{{ __('Select City') }}</option>';
+                            data.forEach(city => {
+                                const option = document.createElement('option');
+                                option.value = city.id;
+                                option.text = city.name;
+                                if (initialCityId && initialCityId == city.id) {
+                                    option.selected = true;
+                                }
+                                citySelect.appendChild(option);
+                            });
                         })
                         .catch(() => {
-                            citySelector.disable('{{ __('Error loading cities') }}');
+                            citySelect.innerHTML = '<option value="">{{ __('Error loading cities') }}</option>';
                         });
-                });
+                }
 
-                // Handle initial values
-                const initialCountryId = '{{ old('destination_country_id') }}';
-                if (initialCountryId) {
-                    const c = allCountries.find(x => x.id == initialCountryId);
-                    if (c) {
-                        document.getElementById('countrySearchInput').value = c.name;
-                        document.getElementById('destination_country_id').dispatchEvent(new Event('change'));
-                        // City loading is async, usually we'd need another step to set initial city name
+                if (countrySelect) {
+                    countrySelect.addEventListener('change', function() {
+                        loadCities(this.value);
+                    });
+
+                    // Initial Load (e.g. Validation Error or Edit)
+                    if (countrySelect.value) {
+                        loadCities(countrySelect.value, '{{ old('destination_city_id') }}');
                     }
                 }
 

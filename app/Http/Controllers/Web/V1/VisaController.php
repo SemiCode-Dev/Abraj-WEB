@@ -7,6 +7,8 @@ use App\Http\Requests\Web\V1\VisaBookingRequest;
 use App\Models\Country;
 use App\Models\VisaBooking;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingRequestMail;
 
 class VisaController extends Controller
 {
@@ -45,6 +47,27 @@ class VisaController extends Controller
                 'passport_number' => $request->passport_number ?? null,
                 'comment' => $request->comment,
             ]);
+
+            // Send Email Notification
+            try {
+                $country = Country::find($request->country_id);
+                $nationality = Country::find($request->nationality_id);
+
+                $mailData = [
+                    'name' => $user ? $user->name : $request->name,
+                    'phone' => $countryCode . ($user ? ($user->phone ?? '') : $request->phone),
+                    'visa_type' => $request->visa_type,
+                    'country' => $country ? ($country->name_en ?? $country->name) : $request->country_id,
+                    'nationality' => $nationality ? ($nationality->name_en ?? $nationality->name) : $request->nationality_id,
+                    'duration' => $request->duration,
+                    'passport_number' => $request->passport_number ?? null,
+                    'comment' => $request->comment,
+                ];
+
+                Mail::to('ab2429601@gmail.com')->send(new BookingRequestMail($mailData, 'Visa Booking'));
+            } catch (\Exception $e) {
+                Log::error('Failed to send visa booking email: ' . $e->getMessage());
+            }
 
             return redirect()->back()->with('success', __('Visa service request submitted successfully!'));
         } catch (\Exception $e) {

@@ -7,6 +7,8 @@ use App\Http\Requests\Web\V1\PackageContactRequest;
 use App\Models\Package;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingRequestMail;
 
 class PackageController extends Controller
 {
@@ -46,6 +48,21 @@ class PackageController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            // Send Email Notification
+            try {
+                $mailData = [
+                    'package_name' => $package->title ?? $package->title_ar ?? 'Unknown Package',
+                    'name' => $user ? $user->name : $request->name,
+                    'email' => $user ? $user->email : $request->email,
+                    'phone' => ($user ? ($user->phone_country_code ?? '966') : $request->phone_country_code) . ($user ? $user->phone : $request->phone),
+                    'message' => $request->message ?? '',
+                ];
+
+                Mail::to('ab2429601@gmail.com')->send(new BookingRequestMail($mailData, 'Package Contact'));
+            } catch (\Exception $e) {
+                Log::error('Failed to send package contact email: ' . $e->getMessage());
+            }
 
             return redirect()->back()->with('success', __('Contact request submitted successfully!'));
         } catch (\Exception $e) {
