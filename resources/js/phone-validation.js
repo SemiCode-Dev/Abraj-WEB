@@ -51,20 +51,46 @@ window.initPhoneValidation = function (inputId, countryCodeInputId, options = {}
     // Set initial maxlength
     updateMaxLength();
 
-    const validate = function () {
-        const value = phoneInput.value.replace(/[^0-9]/g, '');
+    let lastToastTime = 0;
+    const toastThrottle = 3000; // 3 seconds
+
+    const validate = function (showError = false) {
+        const rawValue = phoneInput.value.trim();
+        const valueOnlyDigits = rawValue.replace(/[^0-9]/g, '');
         const minLength = parseInt(phoneInput.getAttribute('minlength'));
         const isValid = iti.isValidNumber();
 
-        if (!value) {
+        if (!rawValue) {
             phoneInput.setCustomValidity('');
             phoneInput.classList.remove('border-red-500');
             return true;
         }
 
-        if (value.length < minLength || !isValid) {
-            phoneInput.setCustomValidity(`رقم الهاتف يجب أن يكون ${minLength} أرقام بالضبط`);
-            phoneInput.classList.add('border-red-500');
+        // Check if library says it's valid (trust the library primarily)
+        if (isValid) {
+            phoneInput.setCustomValidity('');
+            phoneInput.classList.remove('border-red-500');
+            return true;
+        }
+
+        // Fallback: check manual length if library isn't sure
+        let nationalValue = valueOnlyDigits;
+        const countryData = iti.getSelectedCountryData();
+        if (countryData.dialCode && nationalValue.startsWith(countryData.dialCode)) {
+            nationalValue = nationalValue.substring(countryData.dialCode.length);
+        }
+
+        if (nationalValue.length < minLength) {
+            if (showError) {
+                phoneInput.setCustomValidity(`رقم الهاتف يجب أن يكون ${minLength} أرقام بالضبط`);
+                phoneInput.classList.add('border-red-500');
+
+                const now = Date.now();
+                if (window.showToast && now - lastToastTime > toastThrottle) {
+                    window.showToast(`رقم الهاتف يجب أن يكون ${minLength} أرقام بالضبط`, "error");
+                    lastToastTime = now;
+                }
+            }
             return false;
         } else {
             phoneInput.setCustomValidity('');
@@ -79,10 +105,14 @@ window.initPhoneValidation = function (inputId, countryCodeInputId, options = {}
         phoneInput.value = value;
 
         const maxLength = parseInt(phoneInput.getAttribute('maxlength'));
-        if (phoneInput.value.length > maxLength) {
-            phoneInput.value = phoneInput.value.slice(0, maxLength);
+        // Allow a bit more length in case they type the dial code
+        if (phoneInput.value.length > maxLength + 5) {
+            phoneInput.value = phoneInput.value.slice(0, maxLength + 5);
         }
-        validate();
+
+        // Don't validate/block while typing to avoid annoying tooltips
+        phoneInput.setCustomValidity('');
+        phoneInput.classList.remove('border-red-500');
     });
 
     // Update country code and maxlength on country change
@@ -93,12 +123,12 @@ window.initPhoneValidation = function (inputId, countryCodeInputId, options = {}
             countryCodeInput.value = "+" + countryData.dialCode;
         }
         updateMaxLength();
-        validate();
+        validate(false); // Silent validate
     });
 
-    // Validate length on blur
+    // Validate on blur
     phoneInput.addEventListener('blur', function () {
-        if (!validate() && phoneInput.value.trim().length > 0) {
+        if (!validate(true) && phoneInput.value.trim().length > 0) {
             phoneInput.reportValidity();
         }
     });
@@ -116,38 +146,27 @@ window.initPhoneValidation = function (inputId, countryCodeInputId, options = {}
         countryCodeInput.value = "+" + initialCountryData.dialCode;
     }
 
-    // Intercept form submission to validate length
+    // Intercept form submission
     const form = phoneInput.closest('form');
     if (form) {
         const handleSubmit = function (e) {
-            if (!validate()) {
+            if (!validate(true)) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 phoneInput.reportValidity();
-
-                if (window.showToast) {
-                    const minLength = phoneInput.getAttribute('minlength');
-                    window.showToast(`رقم الهاتف يجب أن يكون ${minLength} أرقام بالضبط`, "error");
-                }
                 return false;
             }
         };
 
-        // Attach to BOTH submit and any buttons that might trigger it
-        // Use capture phase to ensure we hit it before any other libraries/scripts
         form.addEventListener('submit', handleSubmit, true);
 
         const submitBtns = form.querySelectorAll('button[type="submit"], button.submit-btn');
         submitBtns.forEach(btn => {
             btn.addEventListener('click', function (e) {
-                if (!validate()) {
+                if (!validate(true)) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
                     phoneInput.reportValidity();
-                    if (window.showToast) {
-                        const minLength = phoneInput.getAttribute('minlength');
-                        window.showToast(`رقم الهاتف يجب أن يكون ${minLength} أرقام بالضبط`, "error");
-                    }
                 }
             }, true);
         });

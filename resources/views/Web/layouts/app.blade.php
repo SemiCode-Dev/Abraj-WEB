@@ -457,14 +457,36 @@
                 // Set initial maxlength
                 updateMaxLength();
 
-                const validateRegPhone = function() {
+                const validateRegPhone = function(showError = false) {
                     const value = regPhoneInput.value.replace(/[^0-9]/g, '');
                     const minLength = parseInt(regPhoneInput.getAttribute('minlength'));
+                    const isValid = iti.isValidNumber();
 
-                    if (value && value.length < minLength) {
-                        regPhoneInput.setCustomValidity(`رقم الهاتف يجب أن يكون ${minLength} أرقام بالضبط`);
+                    if (!value) {
+                        regPhoneInput.setCustomValidity('');
+                        return true;
+                    }
+
+                    if (isValid) {
+                        regPhoneInput.setCustomValidity('');
+                        return true;
+                    }
+
+                    // Fallback
+                    let nationalValue = value;
+                    const countryData = iti.getSelectedCountryData();
+                    if (countryData.dialCode && nationalValue.startsWith(countryData.dialCode)) {
+                        nationalValue = nationalValue.substring(countryData.dialCode.length);
+                    }
+
+                    if (nationalValue.length < minLength) {
+                        if (showError) {
+                            regPhoneInput.setCustomValidity(`رقم الهاتف يجب أن يكون ${minLength} أرقام بالضبط`);
+                        }
+                        return false;
                     } else {
                         regPhoneInput.setCustomValidity('');
+                        return true;
                     }
                 };
 
@@ -475,10 +497,10 @@
                     regPhoneInput.value = value;
 
                     const maxLength = parseInt(regPhoneInput.getAttribute('maxlength'));
-                    if (regPhoneInput.value.length > maxLength) {
-                        regPhoneInput.value = regPhoneInput.value.slice(0, maxLength);
+                    if (regPhoneInput.value.length > maxLength + 5) {
+                        regPhoneInput.value = regPhoneInput.value.slice(0, maxLength + 5);
                     }
-                    validateRegPhone();
+                    regPhoneInput.setCustomValidity('');
                 });
 
                 regPhoneInput.addEventListener("countrychange", function() {
@@ -486,7 +508,7 @@
                     document.querySelector("#reg_phone_country_code").value = "+" + countryData.dialCode;
                     updateMaxLength(); // Update maxlength when country changes
                     reset();
-                    validateRegPhone();
+                    validateRegPhone(false);
                     // Re-validate after country change if there's a value
                     if (regPhoneInput.value.trim()) {
                         setTimeout(validatePhone, 150);
