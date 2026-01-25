@@ -456,8 +456,12 @@
                 // Set initial maxlength
                 updateMaxLength();
 
-                // Prevent typing beyond maxlength
+                // Prevent typing beyond maxlength and filter non-numeric
                 regPhoneInput.addEventListener('input', function(e) {
+                    // Remove any non-numeric characters
+                    let value = regPhoneInput.value.replace(/[^0-9]/g, '');
+                    regPhoneInput.value = value;
+
                     const maxLength = parseInt(regPhoneInput.getAttribute('maxlength'));
                     if (regPhoneInput.value.length > maxLength) {
                         regPhoneInput.value = regPhoneInput.value.slice(0, maxLength);
