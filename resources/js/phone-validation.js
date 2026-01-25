@@ -45,14 +45,36 @@ window.initPhoneValidation = function (inputId, countryCodeInputId, options = {}
         const countryCode = iti.getSelectedCountryData().iso2;
         const maxLength = phoneLengths[countryCode] || 15;
         phoneInput.setAttribute('maxlength', maxLength);
+        phoneInput.setAttribute('minlength', maxLength); // Same as maxlength for exact length
     };
 
     // Set initial maxlength
     updateMaxLength();
 
-    // Prevent typing beyond maxlength
+    const validate = function () {
+        const value = phoneInput.value.replace(/[^0-9]/g, '');
+        const minLength = parseInt(phoneInput.getAttribute('minlength'));
+        const isValid = iti.isValidNumber();
+
+        if (!value) {
+            phoneInput.setCustomValidity('');
+            phoneInput.classList.remove('border-red-500');
+            return true;
+        }
+
+        if (value.length < minLength || !isValid) {
+            phoneInput.setCustomValidity(`رقم الهاتف يجب أن يكون ${minLength} أرقام بالضبط`);
+            phoneInput.classList.add('border-red-500');
+            return false;
+        } else {
+            phoneInput.setCustomValidity('');
+            phoneInput.classList.remove('border-red-500');
+            return true;
+        }
+    };
+
+    // Prevent typing beyond maxlength and filter non-numeric
     phoneInput.addEventListener('input', function (e) {
-        // Remove any non-numeric characters
         let value = phoneInput.value.replace(/[^0-9]/g, '');
         phoneInput.value = value;
 
@@ -60,6 +82,7 @@ window.initPhoneValidation = function (inputId, countryCodeInputId, options = {}
         if (phoneInput.value.length > maxLength) {
             phoneInput.value = phoneInput.value.slice(0, maxLength);
         }
+        validate();
     });
 
     // Update country code and maxlength on country change
@@ -70,6 +93,20 @@ window.initPhoneValidation = function (inputId, countryCodeInputId, options = {}
             countryCodeInput.value = "+" + countryData.dialCode;
         }
         updateMaxLength();
+        validate();
+    });
+
+    // Validate length on blur
+    phoneInput.addEventListener('blur', function () {
+        if (!validate() && phoneInput.value.trim().length > 0) {
+            phoneInput.reportValidity();
+        }
+    });
+
+    // Clear validation message on focus to allow typing
+    phoneInput.addEventListener('focus', function () {
+        phoneInput.setCustomValidity('');
+        phoneInput.classList.remove('border-red-500');
     });
 
     // Set initial country code
@@ -77,6 +114,43 @@ window.initPhoneValidation = function (inputId, countryCodeInputId, options = {}
     const countryCodeInput = document.querySelector(`#${countryCodeInputId}`);
     if (countryCodeInput) {
         countryCodeInput.value = "+" + initialCountryData.dialCode;
+    }
+
+    // Intercept form submission to validate length
+    const form = phoneInput.closest('form');
+    if (form) {
+        const handleSubmit = function (e) {
+            if (!validate()) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                phoneInput.reportValidity();
+
+                if (window.showToast) {
+                    const minLength = phoneInput.getAttribute('minlength');
+                    window.showToast(`رقم الهاتف يجب أن يكون ${minLength} أرقام بالضبط`, "error");
+                }
+                return false;
+            }
+        };
+
+        // Attach to BOTH submit and any buttons that might trigger it
+        // Use capture phase to ensure we hit it before any other libraries/scripts
+        form.addEventListener('submit', handleSubmit, true);
+
+        const submitBtns = form.querySelectorAll('button[type="submit"], button.submit-btn');
+        submitBtns.forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                if (!validate()) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    phoneInput.reportValidity();
+                    if (window.showToast) {
+                        const minLength = phoneInput.getAttribute('minlength');
+                        window.showToast(`رقم الهاتف يجب أن يكون ${minLength} أرقام بالضبط`, "error");
+                    }
+                }
+            }, true);
+        });
     }
 
     return iti;

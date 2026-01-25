@@ -451,10 +451,22 @@
                     const countryCode = iti.getSelectedCountryData().iso2;
                     const maxLength = phoneLengths[countryCode] || 15;
                     regPhoneInput.setAttribute('maxlength', maxLength);
+                    regPhoneInput.setAttribute('minlength', maxLength); // Same as maxlength for exact length
                 };
 
                 // Set initial maxlength
                 updateMaxLength();
+
+                const validateRegPhone = function() {
+                    const value = regPhoneInput.value.replace(/[^0-9]/g, '');
+                    const minLength = parseInt(regPhoneInput.getAttribute('minlength'));
+
+                    if (value && value.length < minLength) {
+                        regPhoneInput.setCustomValidity(`رقم الهاتف يجب أن يكون ${minLength} أرقام بالضبط`);
+                    } else {
+                        regPhoneInput.setCustomValidity('');
+                    }
+                };
 
                 // Prevent typing beyond maxlength and filter non-numeric
                 regPhoneInput.addEventListener('input', function(e) {
@@ -466,6 +478,7 @@
                     if (regPhoneInput.value.length > maxLength) {
                         regPhoneInput.value = regPhoneInput.value.slice(0, maxLength);
                     }
+                    validateRegPhone();
                 });
 
                 regPhoneInput.addEventListener("countrychange", function() {
@@ -473,6 +486,7 @@
                     document.querySelector("#reg_phone_country_code").value = "+" + countryData.dialCode;
                     updateMaxLength(); // Update maxlength when country changes
                     reset();
+                    validateRegPhone();
                     // Re-validate after country change if there's a value
                     if (regPhoneInput.value.trim()) {
                         setTimeout(validatePhone, 150);
@@ -482,6 +496,19 @@
                 // Set initial value
                 const initialCountryData = iti.getSelectedCountryData();
                 document.querySelector("#reg_phone_country_code").value = "+" + initialCountryData.dialCode;
+
+                // Validate minimum length on blur
+                regPhoneInput.addEventListener('blur', function() {
+                    validateRegPhone();
+                    if (!regPhoneInput.validity.valid && regPhoneInput.value.trim().length > 0) {
+                        regPhoneInput.reportValidity();
+                    }
+                });
+
+                // Clear validation message on focus
+                regPhoneInput.addEventListener('focus', function() {
+                    regPhoneInput.setCustomValidity('');
+                });
 
                 // Ensure it's updated on input as well (though countrychange should be enough for the code)
             }
@@ -588,6 +615,26 @@
             };
 
             // Client-side phone validation
+            const regPhoneInput = document.querySelector("#reg_phone");
+            const minLength = parseInt(regPhoneInput.getAttribute('minlength'));
+            if (regPhoneInput.value.length < minLength) {
+                const msg = `{{ __('Phone number must be exactly') }} ${minLength} {{ __('digits') }}`;
+                showToast(msg, "error");
+
+                regPhoneInput.classList.add("border-red-500");
+                const errorEl = document.querySelector("#reg_phone_error");
+                if (errorEl) {
+                    errorEl.innerHTML = msg;
+                    errorEl.classList.remove("hidden");
+                }
+
+                // Reset button state
+                text.classList.remove("hidden");
+                loader.classList.add("hidden");
+                btn.disabled = false;
+                return;
+            }
+
             if (window.itiRegistration && typeof window.intlTelInputUtils !== 'undefined' && !window.itiRegistration
                 .isValidNumber()) {
                 const errorMap = [

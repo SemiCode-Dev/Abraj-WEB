@@ -94,7 +94,7 @@
                                         {{ __('Phone') }} <span class="text-red-500">*</span>
                                     </label>
                                     <input type="tel" id="packagePhone" name="phone" value="{{ old('phone') }}"
-                                        required maxlength="15"
+                                        required
                                         class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
                                     <input type="hidden" name="phone_country_code" id="packagePhoneCountryCode"
                                         value="{{ old('phone_country_code') }}">

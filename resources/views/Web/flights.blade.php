@@ -19,8 +19,8 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
                 <!-- <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-                                                                                                                        {{ __('Booking Form') }}
-                                                                                                                    </h2> -->
+                                                                                                                            {{ __('Booking Form') }}
+                                                                                                                        </h2> -->
 
                 @if (session('success'))
                     <div

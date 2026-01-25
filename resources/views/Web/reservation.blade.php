@@ -277,7 +277,7 @@
                                         </label>
                                         <input type="tel" id="guestPhone" name="phone"
                                             value="{{ old('phone', auth()->check() ? auth()->user()->phone : '') }}"
-                                            required maxlength="11"
+                                            required
                                             class="w-full px-4 py-3.5 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-300 force-input-text">
                                         <input type="hidden" name="phone_country_code" id="guestPhoneCountryCode"
                                             value="{{ old('phone_country_code', auth()->check() ? auth()->user()->phone_country_code : '') }}">
@@ -858,29 +858,11 @@
     <script>
         let guestIti;
         document.addEventListener('DOMContentLoaded', function() {
-            const guestPhoneInput = document.querySelector("#guestPhone");
-            if (guestPhoneInput) {
-                guestIti = window.intlTelInput(guestPhoneInput, {
-                    initialCountry: "{{ auth()->check() && auth()->user()->phone_country_code ? strtolower(auth()->user()->phone_country_code) : 'sa' }}",
-                    separateDialCode: true,
-                    countrySearch: false,
-                    geoIpLookup: function(callback) {
-                        fetch("https://ipapi.co/json")
-                            .then(res => res.json())
-                            .then(data => callback(data.country_code))
-                            .catch(() => callback("sa"));
-                    },
-                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+            // Use shared phone validation utility
+            if (window.initPhoneValidation) {
+                guestIti = window.initPhoneValidation('guestPhone', 'guestPhoneCountryCode', {
+                    initialCountry: "{{ auth()->check() && auth()->user()->phone_country_code ? strtolower(str_replace('+', '', auth()->user()->phone_country_code)) : 'sa' }}"
                 });
-
-                guestPhoneInput.addEventListener("countrychange", function() {
-                    const countryData = guestIti.getSelectedCountryData();
-                    document.querySelector("#guestPhoneCountryCode").value = "+" + countryData.dialCode;
-                });
-
-                // Set initial value
-                const countryData = guestIti.getSelectedCountryData();
-                document.querySelector("#guestPhoneCountryCode").value = "+" + countryData.dialCode;
             }
         });
 

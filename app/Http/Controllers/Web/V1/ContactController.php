@@ -30,8 +30,33 @@ class ContactController extends Controller
         if (!auth()->check()) {
             $validationRules['name'] = 'required|string|max:255';
             $validationRules['email'] = 'required|email|max:255';
-            $validationRules['phone'] = 'required|string|max:20';
             $validationRules['phone_country_code'] = 'required|string|max:10';
+            $validationRules['phone'] = [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) use ($request) {
+                    $countryCode = strtolower(str_replace('+', '', $request->phone_country_code));
+                    $lengths = [
+                        '966' => 9,  // SA
+                        '20' => 11,  // EG
+                        '1' => 10,   // US
+                        '971' => 9,  // AE
+                        '965' => 8,  // KW
+                        '973' => 8,  // BH
+                        '974' => 8,  // QA
+                        '968' => 8,  // OM
+                        '962' => 9,  // JO
+                        '961' => 8,  // LB
+                    ];
+
+                    $expectedLength = $lengths[$countryCode] ?? null;
+                    $digitsOnly = preg_replace('/[^0-9]/', '', $value);
+
+                    if ($expectedLength && strlen($digitsOnly) !== $expectedLength) {
+                        $fail(__('The phone number must be exactly :length digits for the selected country.', ['length' => $expectedLength]));
+                    }
+                }
+            ];
         }
 
         $request->validate($validationRules);
