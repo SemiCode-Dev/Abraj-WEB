@@ -183,7 +183,7 @@
                                     <div class="intl-tel-input-container">
                                         <label
                                             class="block text-gray-700 font-semibold mb-2">{{ __('Phone') }}</label>
-                                        <input type="tel" id="reg_phone" name="phone" required maxlength="11"
+                                        <input type="tel" id="reg_phone" name="phone" required maxlength="15"
                                             class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
                                         <input type="hidden" name="phone_country_code" id="reg_phone_country_code">
                                     </div>
@@ -360,9 +360,119 @@
                     utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
                 });
 
+                // Store global instance for validation
+                window.itiRegistration = iti;
+
+                const errorMap = [
+                    "{{ __('Invalid number') }}",
+                    "{{ __('Invalid country code') }}",
+                    "{{ __('Phone number is too short') }}",
+                    "{{ __('Phone number is too long') }}",
+                    "{{ __('Invalid number') }}"
+                ];
+
+                const errorMsg = document.querySelector("#reg_phone_error");
+
+                // Add error message element if not exists
+                if (!errorMsg) {
+                    const msgDiv = document.createElement('span');
+                    msgDiv.id = "reg_phone_error";
+                    msgDiv.className = "text-red-500 text-sm mt-1 hidden block";
+                    regPhoneInput.parentNode.appendChild(msgDiv);
+                }
+
+                const reset = function() {
+                    regPhoneInput.classList.remove("border-red-500");
+                    const errorEl = document.querySelector("#reg_phone_error");
+                    if (errorEl) {
+                        errorEl.innerHTML = "";
+                        errorEl.classList.add("hidden");
+                    }
+                };
+
+                const validatePhone = function() {
+                    reset();
+                    const phoneValue = regPhoneInput.value.trim();
+
+                    if (!phoneValue) {
+                        return; // Empty is handled by HTML5 required
+                    }
+
+                    // Wait a bit for utils script to load if needed
+                    setTimeout(function() {
+                        if (typeof window.intlTelInputUtils !== 'undefined') {
+                            const isValid = iti.isValidNumber();
+
+                            if (!isValid) {
+                                regPhoneInput.classList.add("border-red-500");
+                                const errorCode = iti.getValidationError();
+                                const errorEl = document.querySelector("#reg_phone_error");
+                                if (errorEl && errorCode !== -99) { // -99 means unknown error
+                                    errorEl.innerHTML = errorMap[errorCode] ||
+                                        "{{ __('Invalid number') }}";
+                                    errorEl.classList.remove("hidden");
+                                }
+                            }
+                        }
+                    }, 100);
+                };
+
+                // Validate on blur
+                regPhoneInput.addEventListener('blur', validatePhone);
+
+                // Reset on change/key
+                regPhoneInput.addEventListener('change', reset);
+                regPhoneInput.addEventListener('keyup', reset);
+
+                // Country-specific phone lengths (without country code)
+                const phoneLengths = {
+                    'sa': 9, // Saudi Arabia
+                    'eg': 11, // Egypt (changed from 10 to 11)
+                    'us': 10, // USA
+                    'ae': 9, // UAE
+                    'kw': 8, // Kuwait
+                    'bh': 8, // Bahrain
+                    'qa': 8, // Qatar
+                    'om': 8, // Oman
+                    'jo': 9, // Jordan
+                    'lb': 8, // Lebanon
+                    'sy': 9, // Syria
+                    'iq': 10, // Iraq
+                    'ye': 9, // Yemen
+                    'ps': 9, // Palestine
+                    'gb': 10, // UK
+                    'de': 11, // Germany
+                    'fr': 9, // France
+                    'it': 10, // Italy
+                    'es': 9, // Spain
+                };
+
+                const updateMaxLength = function() {
+                    const countryCode = iti.getSelectedCountryData().iso2;
+                    const maxLength = phoneLengths[countryCode] || 15;
+                    regPhoneInput.setAttribute('maxlength', maxLength);
+                };
+
+                // Set initial maxlength
+                updateMaxLength();
+
+                // Prevent typing beyond maxlength
+                regPhoneInput.addEventListener('input', function(e) {
+                    const maxLength = parseInt(regPhoneInput.getAttribute('maxlength'));
+                    if (regPhoneInput.value.length > maxLength) {
+                        regPhoneInput.value = regPhoneInput.value.slice(0, maxLength);
+                    }
+                });
+
                 regPhoneInput.addEventListener("countrychange", function() {
                     const countryData = iti.getSelectedCountryData();
                     document.querySelector("#reg_phone_country_code").value = "+" + countryData.dialCode;
+                    updateMaxLength(); // Update maxlength when country changes
+                    reset();
+                    // Re-validate after country change if there's a value
+                    if (regPhoneInput.value.trim()) {
+                        setTimeout(validatePhone, 150);
+                    }
                 });
 
                 // Set initial value
@@ -472,6 +582,39 @@
                 phone_country_code: form.phone_country_code.value,
                 password: form.password.value,
             };
+
+            // Client-side phone validation
+            if (window.itiRegistration && typeof window.intlTelInputUtils !== 'undefined' && !window.itiRegistration
+                .isValidNumber()) {
+                const errorMap = [
+                    "{{ __('Invalid number') }}",
+                    "{{ __('Invalid country code') }}",
+                    "{{ __('Phone number is too short') }}",
+                    "{{ __('Phone number is too long') }}",
+                    "{{ __('Invalid number') }}"
+                ];
+                const errorCode = window.itiRegistration.getValidationError();
+                const msg = errorMap[errorCode] || "{{ __('Invalid number') }}";
+
+                showToast(msg, "error");
+
+                // Also show inline error
+                const regPhoneInput = document.querySelector("#reg_phone");
+                if (regPhoneInput) {
+                    regPhoneInput.classList.add("border-red-500");
+                    const errorEl = document.querySelector("#reg_phone_error");
+                    if (errorEl) {
+                        errorEl.innerHTML = msg;
+                        errorEl.classList.remove("hidden");
+                    }
+                }
+
+                // Reset button state
+                text.classList.remove("hidden");
+                loader.classList.add("hidden");
+                btn.disabled = false;
+                return;
+            }
 
             try {
                 let response = await fetch("/register", {

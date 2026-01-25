@@ -56,7 +56,6 @@
                                 {{ __('Phone Number') }} <span class="text-red-500">*</span>
                             </label>
                             <input type="tel" id="visaPhone" name="phone" value="{{ old('phone') }}" required
-                                maxlength="11"
                                 class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-gray-100">
                             <input type="hidden" name="phone_country_code" id="visaPhoneCountryCode"
                                 value="{{ old('phone_country_code') }}">
@@ -201,29 +200,11 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const visaPhoneInput = document.querySelector("#visaPhone");
-            if (visaPhoneInput) {
-                const iti = window.intlTelInput(visaPhoneInput, {
-                    initialCountry: "{{ auth()->check() && auth()->user()->phone_country_code ? strtolower(auth()->user()->phone_country_code) : 'sa' }}",
-                    separateDialCode: true,
-                    countrySearch: false,
-                    geoIpLookup: function(callback) {
-                        fetch("https://ipapi.co/json")
-                            .then(res => res.json())
-                            .then(data => callback(data.country_code))
-                            .catch(() => callback("sa"));
-                    },
-                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+            // Use shared phone validation utility
+            if (window.initPhoneValidation) {
+                window.initPhoneValidation('visaPhone', 'visaPhoneCountryCode', {
+                    initialCountry: "{{ auth()->check() && auth()->user()->phone_country_code ? strtolower(str_replace('+', '', auth()->user()->phone_country_code)) : 'sa' }}"
                 });
-
-                visaPhoneInput.addEventListener("countrychange", function() {
-                    const countryData = iti.getSelectedCountryData();
-                    document.querySelector("#visaPhoneCountryCode").value = "+" + countryData.dialCode;
-                });
-
-                // Set initial value
-                const initialCountryData = iti.getSelectedCountryData();
-                document.querySelector("#visaPhoneCountryCode").value = "+" + initialCountryData.dialCode;
             }
 
 

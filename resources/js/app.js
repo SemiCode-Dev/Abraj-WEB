@@ -4,6 +4,9 @@ import 'intl-tel-input/build/css/intlTelInput.css';
 
 window.intlTelInput = intlTelInput;
 
+// Import phone validation utility
+import './phone-validation';
+
 // Theme toggle: update DOM and persist user preference
 function updateThemeIcon() {
 	const isDark = document.documentElement.classList.contains('dark');

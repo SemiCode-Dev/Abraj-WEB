@@ -54,13 +54,36 @@ class AuthService
             $countryCode = '+' . $countryCode;
         }
         
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => bcrypt($data['password']),
-            'phone' => $phone, // Clean number: 1141367100
-            'phone_country_code' => $countryCode, // With +: +20
-        ]);
+        try {
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => bcrypt($data['password']),
+                'phone' => $phone, // Clean number: 1141367100
+                'phone_country_code' => $countryCode, // With +: +20
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Check for duplicate entry error code usually 1062
+            if ($e->errorInfo[1] == 1062) {
+                if (str_contains($e->getMessage(), 'users_email_unique')) {
+                    return [
+                        'status' => 'error',
+                        'message' => 'The email has already been taken.',
+                    ];
+                }
+                if (str_contains($e->getMessage(), 'users_phone_unique')) {
+                    return [
+                        'status' => 'error',
+                        'message' => 'The phone number has already been taken.',
+                    ];
+                }
+                return [
+                    'status' => 'error',
+                    'message' => 'Account already exists with these details.',
+                ];
+            }
+            throw $e;
+        }
 
         // Login user for session-based auth (Web)
         auth()->login($user);

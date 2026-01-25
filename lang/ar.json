@@ -795,5 +795,9 @@
     "Contact_Us_Text": "لأي استفسار أو شكوى، يمكن التواصل معنا عبر صفحة “تواصل معنا” داخل موقع أو تطبيق أبراج ستاي.",
     "Data_Security_Content": "نستخدم تقنيات تشفير متطورة لحماية البيانات من الوصول غير المصرح به.",
     "No hotels available for the selected dates": "لا يوجد فنادق متاحة في التواريخ المختارة",
-    "Try adjusting your filters or search terms": "حاول تعديل خيارات التصفية أو كلمات البحث"
+    "Try adjusting your filters or search terms": "حاول تعديل خيارات التصفية أو كلمات البحث",
+    "Invalid number": "رقم الهاتف غير صحيح",
+    "Invalid country code": "رمز الدولة غير صحيح",
+    "Phone number is too short": "رقم الهاتف قصير جداً",
+    "Phone number is too long": "رقم الهاتف طويل جداً"
 }
