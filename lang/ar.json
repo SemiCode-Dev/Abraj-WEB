@@ -799,5 +799,9 @@
     "Invalid number": "رقم الهاتف غير صحيح",
     "Invalid country code": "رمز الدولة غير صحيح",
     "Phone number is too short": "رقم الهاتف قصير جداً",
-    "Phone number is too long": "رقم الهاتف طويل جداً"
+    "Phone number is too long": "رقم الهاتف طويل جداً",
+    "Commercial Registration Number": "رقم السجل التجاري",
+    "Tourism License Number": "رقم ترخيص السياحة",
+    "Category": "الفئة",
+    "General Travel and Tourism Services Provider": "مقدم خدمات سفر و سياحة عامة"
 }

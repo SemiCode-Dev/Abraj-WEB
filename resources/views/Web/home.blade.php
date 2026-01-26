@@ -398,7 +398,7 @@
                                 }
 
                                 /* Mobile styles implicitly handled by removing fixed widths above,
-                                                                                                                                                           but we ensure correct stacking */
+                                                                                                                                                                                           but we ensure correct stacking */
                                 @media (max-width: 767px) {
                                     .flatpickr-months .flatpickr-month {
                                         width: 100% !important;
@@ -796,68 +796,53 @@
             </div>
 
             @php
-                // Fetch 5 random cities from different countries that have hotels
-                // Primary query: Cities known to have hotels
-                $randomCities = \App\Models\City::where('hotels_count', '>', 0)
-                    ->whereNotNull('code')
-                    ->where('code', '!=', '')
-                    ->inRandomOrder()
-                    ->take(50)
-                    ->get()
-                    ->unique('country_id')
-                    ->take(5);
-
-                // Fallback query: If no cities found with hotels_count > 0 (e.g. data not synced yet)
-                // Just show any valid cities so the section isn't empty
-if ($randomCities->isEmpty()) {
-    $randomCities = \App\Models\City::whereNotNull('code')
-        ->where('code', '!=', '')
-        ->inRandomOrder()
-        ->take(50)
-        ->get()
-        ->unique('country_id')
-        ->take(5);
-}
-
-// Predefined high-quality destination images
-$fallbackImages = [
-    'https://images.unsplash.com/photo-1506929113675-bc7a264fa1d7?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80',
+                // Fixed destinations corrected by user feedback
+                $fixedDestinations = [
+                    [
+                        'name_ar' => 'الجزائر',
+                        'code' => '109517', // Algiers
+                        'image' => asset('images/destinations/algeria.png'),
+                    ],
+                    [
+                        'name_ar' => 'أسكوشينجا',
+                        'code' => '109887', // Ascochinga
+                        'image' => asset('images/destinations/ascochinga.png'),
+                    ],
+                    [
+                        'name_ar' => 'دبي',
+                        'code' => '115936', // Dubai
+                        'image' => asset('images/destinations/dubai.png'),
+                    ],
+                    [
+                        'name_ar' => 'إسبينجيرا',
+                        'code' => '291081', // Espingueira
+                        'image' => asset('images/destinations/espingueira.png'),
+                    ],
+                    [
+                        'name_ar' => 'الرياض',
+                        'code' => '147536', // Riyadh
+                        'image' => asset('images/destinations/riyadh.png'),
+                    ],
                 ];
-                shuffle($fallbackImages);
             @endphp
 
             <div
                 class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
-                @foreach ($randomCities as $index => $city)
+                @foreach ($fixedDestinations as $destination)
                     <div class="group relative cursor-pointer min-w-[280px] sm:min-w-0">
-                        <a href="{{ route('city.hotels', $city->code) }}">
+                        <a href="{{ route('city.hotels', $destination['code']) }}">
                             <div
                                 class="relative h-80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                                @php
-                                    $cityImage = $city->image;
-                                    // Robust check: must be non-empty and look like a URL if present
-                                    if (
-                                        empty($cityImage) ||
-                                        (!str_starts_with($cityImage, 'http') && !str_starts_with($cityImage, '/'))
-                                    ) {
-                                        $cityImage = $fallbackImages[$index % count($fallbackImages)];
-                                    }
-                                @endphp
-                                <img src="{{ $cityImage }}" alt="{{ $city->locale_name }}"
+                                <img src="{{ $destination['image'] }}" alt="{{ $destination['name_ar'] }}"
                                     class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
 
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
                                 </div>
                                 <div class="absolute bottom-0 left-0 right-0 p-6">
-                                    <h3 class="text-2xl font-bold text-white mb-3">{{ $city->locale_name }}</h3>
+                                    <h3 class="text-2xl font-bold text-white mb-3">{{ $destination['name_ar'] }}</h3>
 
-                                    <div class="flex items-center text-white text-sm font-semibold">
+                                    <div
+                                        class="inline-flex items-center bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
                                         <span>{{ __('Explore Now') }}</span>
                                         <i
                                             class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-xs"></i>

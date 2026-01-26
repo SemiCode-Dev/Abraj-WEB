@@ -4,16 +4,15 @@
         <div class="flex justify-between items-center h-20 md:h-28">
             <!-- Logo -->
             <div class="flex-shrink-0">
+                <style>
+                    .logo-light { display: block !important; }
+                    .logo-dark { display: none !important; }
+                    .dark .logo-light { display: none !important; }
+                    .dark .logo-dark { display: block !important; }
+                </style>
                 <a href="{{ route('home') }}" class="flex items-center">
-                    @if (file_exists(public_path('images/abraj-stay-logo.png')))
-                        <img src="{{ asset('images/abraj-stay-logo.png') }}" alt="ABRAJ STAY" class="h-6 md:h-8 w-auto">
-                    @else
-                        <span class="flex items-center text-xl md:text-2xl font-bold">
-                            <span class="text-orange-500 font-extrabold text-2xl md:text-3xl">A</span>
-                            <span class="text-blue-900 font-serif font-bold">BRAJ</span>
-                            <span class="text-orange-500 font-serif font-bold ml-2">STAY</span>
-                        </span>
-                    @endif
+                    <img src="/images/abraj-stay-logo.png" alt="ABRAJ STAY" class="h-6 md:h-8 w-auto logo-light">
+                    <img src="/images/abraj-stay-logo-white.png" alt="ABRAJ STAY" class="h-6 md:h-8 w-auto logo-dark">
                 </a>
             </div>
 

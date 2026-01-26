@@ -6,14 +6,8 @@
             <!-- About -->
             <div>
                 <div class="mb-4">
-                    @if (file_exists(public_path('images/abraj-stay-logo.png')))
-                        <img src="{{ asset('images/abraj-stay-logo.png') }}" alt="ABRAJ STAY" class="h-10 w-auto">
-                    @else
-                        <h3 class="text-xl font-bold">
-                            <span class="text-orange-500">A</span><span class="text-blue-900">BRAJ</span> <span
-                                class="text-orange-500">STAY</span>
-                        </h3>
-                    @endif
+                    <img src="/images/abraj-stay-logo.png" alt="ABRAJ STAY" class="h-10 w-auto logo-light">
+                    <img src="/images/abraj-stay-logo-white.png" alt="ABRAJ STAY" class="h-10 w-auto logo-dark">
                 </div>
                 <ul class="mt-4 space-y-3 text-sm text-gray-600 dark:text-gray-300">
                     <li class="flex items-center gap-2">
@@ -56,8 +50,8 @@
             <div>
                 <h4 class="font-semibold mb-4 text-center text-gray-900 dark:text-gray-100">{{ __('Policies') }}</h4>
                 <ul class="space-y-2 text-sm text-gray-600 text-center">
-                    <li><a href="{{ route('about') }}"
-                            class="hover:text-orange-500 transition">{{ __('About Us') }}</a></li>
+                    <li><a href="{{ route('about') }}" class="hover:text-orange-500 transition">{{ __('About Us') }}</a>
+                    </li>
                     <li><a href="{{ route('privacy') }}"
                             class="hover:text-orange-500 transition">{{ __('Privacy Policy') }}</a></li>
                     <li><a href="{{ route('terms') }}"
@@ -132,14 +126,8 @@
             <!-- Copyright and Logo (Centered) -->
             <div class="flex flex-col items-center justify-center order-1 md:order-2">
                 <div class="flex items-center justify-center mb-2">
-                    @if (file_exists(public_path('images/abraj-stay-logo.png')))
-                        <img src="{{ asset('images/abraj-stay-logo.png') }}" alt="ABRAJ STAY" class="h-8 w-auto">
-                    @else
-                        <span class="font-bold">
-                            <span class="text-orange-500">A</span><span class="text-blue-900">BRAJ</span> <span
-                                class="text-orange-500">STAY</span>
-                        </span>
-                    @endif
+                    <img src="/images/abraj-stay-logo.png" alt="ABRAJ STAY" class="h-8 w-auto logo-light">
+                    <img src="/images/abraj-stay-logo-white.png" alt="ABRAJ STAY" class="h-8 w-auto logo-dark">
                 </div>
                 <p>&copy; {{ date('Y') }} ABRAJ STAY. {{ __('All rights reserved.') }}</p>
             </div>
@@ -149,6 +137,43 @@
                 class="flex items-center justify-center md:justify-end space-x-4 {{ app()->getLocale() === 'ar' ? 'space-x-reverse' : '' }} order-2 md:order-3">
                 <img src="{{ asset('images/footer/vat.png') }}" alt="VAT" class="h-16 w-auto">
                 <img src="{{ asset('images/footer/maroof.png') }}" alt="Maroof" class="h-20 w-auto">
+            </div>
+        </div>
+
+        <!-- Dedicated Registration Info Bar (Bottom) -->
+        <div class="mt-10 pt-8  dark:border-gray-800">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-y-8 md:gap-y-0 text-center max-w-6xl mx-auto">
+                <!-- Category -->
+                <div class="flex flex-col items-center justify-center relative px-4">
+                    <p class="text-[10px] md:text-sm text-gray-500 dark:text-gray-400 mb-1 font-semibold uppercase tracking-wider">
+                        {{ __('Category') }}:
+                    </p>
+                    <p class="text-xs md:text-base font-bold text-gray-900 dark:text-white leading-relaxed">
+                        {{ __('General Travel and Tourism Services Provider') }}
+                    </p>
+                    <div class="hidden md:block absolute {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} top-1/2 -translate-y-1/2 h-12 w-px bg-gray-300 dark:bg-gray-700"></div>
+                </div>
+
+                <!-- Commercial Registration -->
+                <div class="flex flex-col items-center justify-center relative px-4">
+                    <p class="text-[10px] md:text-sm text-gray-600 dark:text-gray-400 mb-1 font-semibold uppercase tracking-wider">
+                        {{ __('Commercial Registration Number') }}:
+                    </p>
+                    <p class="text-xs md:text-base font-bold text-gray-900 dark:text-white tracking-[0.2em]">
+                        1010363465
+                    </p>
+                    <div class="hidden md:block absolute {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} top-1/2 -translate-y-1/2 h-12 w-px bg-gray-300 dark:bg-gray-700"></div>
+                </div>
+
+                <!-- Tourism License -->
+                <div class="flex flex-col items-center justify-center px-4">
+                    <p class="text-[10px] md:text-sm text-gray-500 dark:text-gray-400 mb-1 font-semibold uppercase tracking-wider">
+                        {{ __('Tourism License Number') }}:
+                    </p>
+                    <p class="text-xs md:text-base font-bold text-gray-900 dark:text-white tracking-[0.2em]">
+                        73103013
+                    </p>
+                </div>
             </div>
         </div>
     </div>
