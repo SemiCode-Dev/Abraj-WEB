@@ -24,6 +24,7 @@ class HotelController extends Controller
 
     public function search(Request $request)
     {
+        set_time_limit(180);
         try {
             $hotelCodes = $request->input('HotelCodes');
 
@@ -81,8 +82,8 @@ class HotelController extends Controller
                 'ResponseTime' => $request->input('ResponseTime', 18),
                 'IsDetailedResponse' => $request->input('IsDetailedResponse', true),
                 'Filters' => $request->input('Filters', [
-                    'Refundable' => true,
-                    'NoOfRooms' => 0,
+                    'Refundable' => false,
+                    'NoOfRooms' => 1,
                     'MealType' => 'All',
                 ]),
             ];
@@ -90,121 +91,58 @@ class HotelController extends Controller
             // Log request data for debugging
             Log::info('Hotel search request', $data);
 
-            // Create cache key based on search parameters
-            $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
-            $data['Language'] = $language;
-            $cacheKey = 'hotel_search_'.md5(json_encode($data));
 
-            // Cache search results for 5 minutes (300 seconds) - reduced from 1 hour
-            // Shorter cache ensures fresher availability data after bookings
-            $response = Cache::remember($cacheKey, 300, function () use ($data) {
-                return $this->hotelApi->searchHotel($data);
-            });
+            // Use AvailabilityService (single source of truth)
+            $availabilityService = app(\App\Services\Hotel\AvailabilityService::class);
+            
+                $availability = $availabilityService->checkAvailability(
+                    $hotelCodes,
+                    $checkIn,
+                    $checkOut,
+                    $paxRooms,
+                    $request->input('GuestNationality', 'SA')
+                );
 
-            // Filter rooms based on LOCAL bookings (Safety Layer)
-            // 1. Filter CONFIRMED: Normal bookings
-            // 2. Filter PENDING: Payment in progress
-            if (isset($response['HotelResult']) && is_array($response['HotelResult'])) {
-                foreach ($response['HotelResult'] as $hotelIndex => $hotel) {
-                    if (isset($hotel['Rooms']) && is_array($hotel['Rooms'])) {
-                        $hotelCode = $hotel['HotelCode'] ?? '';
-
-                        // Count bookings that should reduce availability (CONFIRMED + PENDING)
-                        $reservedRoomCounts = \App\Models\HotelBooking::where('hotel_code', $hotelCode)
-                            ->whereIn('booking_status', [
-                                \App\Constants\BookingStatus::CONFIRMED,
-                                \App\Constants\BookingStatus::PENDING,
-                            ])
-                            ->where(function ($query) use ($checkIn, $checkOut) {
-                                $query->where('check_in', '<', $checkOut)
-                                    ->where('check_out', '>', $checkIn);
-                            })
-                            ->selectRaw('room_name, COUNT(*) as reserved_count')
-                            ->groupBy('room_name')
-                            ->pluck('reserved_count', 'room_name')
-                            ->toArray();
-
-                        // Only filter if there are reserved rooms
-                        if (! empty($reservedRoomCounts)) {
-                            // Group rooms by name to count how many TBO returned
-                            $roomsByName = [];
-                            foreach ($hotel['Rooms'] as $room) {
-                                $roomName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
-                                if (! isset($roomsByName[$roomName])) {
-                                    $roomsByName[$roomName] = [];
-                                }
-                                $roomsByName[$roomName][] = $room;
-                            }
-
-                            // For each room type, remove the number that are Reserved
-                            $filteredRooms = [];
-                            foreach ($roomsByName as $roomName => $rooms) {
-                                $tboAvailableCount = count($rooms);
-                                $reservedCount = $reservedRoomCounts[$roomName] ?? 0;
-                                $actuallyAvailableCount = max(0, $tboAvailableCount - $reservedCount);
-
-                                // Add only the actually available rooms
-                                for ($i = 0; $i < $actuallyAvailableCount; $i++) {
-                                    if (isset($rooms[$i])) {
-                                        $filteredRooms[] = $rooms[$i];
-                                    }
-                                }
-
-                                if ($reservedCount > 0) {
-                                    Log::info('Room availability adjusted (Confirmed+Pending)', [
-                                        'hotel' => $hotelCode,
-                                        'room_type' => $roomName,
-                                        'tbo_count' => $tboAvailableCount,
-                                        'reserved_count' => $reservedCount,
-                                        'showing_count' => $actuallyAvailableCount,
-                                    ]);
-                                }
-                            }
-
-                            $response['HotelResult'][$hotelIndex]['Rooms'] = $filteredRooms;
-                        }
-                    }
-                }
+            if (!$availability->isAvailable()) {
+                return response()->json([
+                    'Status' => [
+                        'Code' => 200, // TBO often returns 200 even with 0 results
+                        'Description' => 'No availability found',
+                    ],
+                    'HotelResult' => []
+                ]);
             }
 
-            // Apply commission to room prices in search results
-            if (isset($response['HotelResult']) && is_array($response['HotelResult'])) {
-                foreach ($response['HotelResult'] as &$hotel) {
-                    if (isset($hotel['Rooms']) && is_array($hotel['Rooms'])) {
-                        foreach ($hotel['Rooms'] as &$room) {
-                            // Apply commission to all potential price fields
-                            if (isset($room['TotalFare'])) {
-                                $room['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['TotalFare']);
-                            }
-                            if (isset($room['Price']['PublishedPrice'])) {
-                                $room['Price']['PublishedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['PublishedPrice']);
-                            }
-                            if (isset($room['Price']['OfferedPrice'])) {
-                                $room['Price']['OfferedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['OfferedPrice']);
-                            }
-                            if (isset($room['Price']['Amount'])) {
-                                $room['Price']['Amount'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['Amount']);
-                            }
-                            if (isset($room['Rate']['Amount'])) {
-                                $room['Rate']['Amount'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Rate']['Amount']);
-                            }
-                        }
-                        unset($room);
-                    }
+            // Construct TBO-compatible response for frontend
+            // Since AvailabilityService might combine rooms from multiple hotels, we group them back
+            $hotelResults = [];
+            $roomsByHotel = [];
+            
+            foreach ($availability->rooms as $room) {
+                // Determine hotel code (usually passed in BookingCode or TBO response)
+                // In search results, TBO rooms usually have a HotelCode or we can infer it
+                $hCode = $room['HotelCode'] ?? $hotelCodes; // Fallback to requested code if singular
+                if (!isset($roomsByHotel[$hCode])) {
+                    $roomsByHotel[$hCode] = [];
                 }
-                unset($hotel);
+                $roomsByHotel[$hCode][] = $room;
             }
 
-            // Log response for debugging
-            Log::info('Hotel search response', [
-                'status_code' => $response['Status']['Code'] ?? 'unknown',
-                'hotels_count' => isset($response['Hotels']) ? count($response['Hotels']) : 0,
-                'cached' => Cache::has($cacheKey),
+            foreach ($roomsByHotel as $hCode => $hRooms) {
+                $hotelResults[] = [
+                    'HotelCode' => $hCode,
+                    'Currency' => $availability->currency,
+                    'Rooms' => $hRooms
+                ];
+            }
+
+            return response()->json([
+                'Status' => [
+                    'Code' => 200,
+                    'Description' => 'Successful',
+                ],
+                'HotelResult' => $hotelResults
             ]);
-
-            // TBO API manages room inventory, but we add a local safety layer
-            // to handle Stale Cache, Slow Updates, and Pending Payments
-            return response()->json($response);
         } catch (\Exception $e) {
             Log::error('Failed to search hotels: '.$e->getMessage());
 
@@ -266,6 +204,7 @@ class HotelController extends Controller
 
     public function getCityHotels($cityCode)
     {
+        set_time_limit(180);
         try {
             // Get current page from request
             $page = (int) request('page', 1);
@@ -310,8 +249,6 @@ class HotelController extends Controller
             $allLightweightHotels = Cache::remember($cacheKey, 86400, function () use ($cityCode, $language) {
                 try {
                     // Fetch lightweight list (IsDetailedResponse=false)
-                    // We fetch multiple pages to ensure we get all potential hotels
-                    // But since it's lightweight, it's much faster
                     $response = $this->hotelApi->getAllCityHotels($cityCode, false, $language);
 
                     $hotels = $response['Hotels'] ?? [];
@@ -320,7 +257,6 @@ class HotelController extends Controller
                     }
 
                     // Update local DB with hotels count for popularity tracking (Self-Learning)
-                    // We catch exceptions to prevent breaking the flow if DB update fails
                     if (! empty($hotels)) {
                         try {
                             City::where('code', $cityCode)->update(['hotels_count' => count($hotels)]);
@@ -341,19 +277,26 @@ class HotelController extends Controller
             // AVAILABLE SEARCH (TBO) - User filter
             // -------------------------------------------------------------------------
             // If request has Date + Pax info, we MUST filter by actual availability from TBO
-            $checkIn = request('CheckIn');
-            $checkOut = request('CheckOut');
+            $checkIn = request('CheckIn') ?? request('check_in');
+            $checkOut = request('CheckOut') ?? request('check_out');
+
+            Log::info('getCityHotels: Request parameters', [
+                'CheckIn' => $checkIn,
+                'CheckOut' => $checkOut,
+                'PaxRooms' => request('PaxRooms'),
+                'all_params' => request()->all(),
+            ]);
 
             // Parse PaxRooms
             $paxRooms = request('PaxRooms');
 
             // Backward Compatibility / Fallback
-            if (empty($paxRooms) && request('adults')) {
+            if (empty($paxRooms)) {
                 $paxRooms = [
                     [
-                        'Adults' => (int) request('adults'),
-                        'Children' => (int) request('children', 0),
-                        'ChildrenAges' => [],
+                        'Adults' => (int) (request('PaxRooms.0.Adults') ?? request('adults') ?? 1),
+                        'Children' => (int) (request('PaxRooms.0.Children') ?? request('children') ?? 0),
+                        'ChildrenAges' => request('PaxRooms.0.ChildrenAges') ?? request('children_ages') ?? [],
                     ],
                 ];
             }
@@ -370,26 +313,22 @@ class HotelController extends Controller
                         $childrenAges = [];
                     }
 
-                    // Cast ages to integers and clamp to 0-17
+                    // Cast ages to integers and clamp to 0-12
                     $childrenAges = array_map(function ($age) {
                         $ageInt = (int) $age;
 
-                        return max(0, min(17, $ageInt));
+                        return max(0, min(12, $ageInt));
                     }, $childrenAges);
 
                     // strict sync: Children count MUST match ChildrenAges length
-                    // If mismatch, prioritize ChildrenAges array
                     if ($children > count($childrenAges)) {
-                        // Pad with default age 0 if missing
                         for ($i = count($childrenAges); $i < $children; $i++) {
                             $childrenAges[] = 0;
                         }
                     } elseif ($children < count($childrenAges)) {
-                        // Truncate if too many
                         $childrenAges = array_slice($childrenAges, 0, $children);
                     }
 
-                    // Final Clean Room Object
                     $cleanedPaxRooms[] = [
                         'Adults' => $adults,
                         'Children' => $children,
@@ -406,251 +345,68 @@ class HotelController extends Controller
                     $outDate = \Carbon\Carbon::parse($checkOut);
                     $today = \Carbon\Carbon::today();
 
+                    Log::info('getCityHotels: Availability search params', [
+                        'checkIn' => $checkIn,
+                        'checkOut' => $checkOut,
+                        'paxRooms' => $paxRooms,
+                        'inDate' => $inDate->toDateString(),
+                        'outDate' => $outDate->toDateString(),
+                        'today' => $today->toDateString(),
+                    ]);
+
                     if ($outDate->lte($inDate)) {
                         Log::warning('Search skipped: CheckOut must be after CheckIn');
-                        $allLightweightHotels = []; // Return empty or handle error
+                        $allLightweightHotels = [];
                     } elseif ($inDate->lt($today)) {
                         Log::warning('Search skipped: CheckIn cannot be in the past');
-                        // $allLightweightHotels = []; // Optional: strict fail
                     } else {
                         Log::info('City Availability Search', ['city' => $cityCode, 'in' => $checkIn, 'out' => $checkOut, 'pax' => $paxRooms]);
 
-                        // 1. We have $allLightweightHotels from the city list
-                        if (! empty($allLightweightHotels)) {
-                            // 2. Extract codes (Limit to 50-100 to avoid API overflow/timeouts)
-                            // TBO Search allows multiple codes, but performance degrades.
-                            // Let's take the top 50 hotels (which are usually the most relevant if sorted,
-                            // or just the first 50 found) to check availability.
-                            // If we want more, we'd need complex background processing or pagination of SEARCH itself.
-                            $candidateHotels = array_slice($allLightweightHotels, 0, 50);
-                            $candidateCodes = array_column($candidateHotels, 'HotelCode');
-                            $codesString = implode(',', $candidateCodes);
+                        // Filter by availability using AvailabilityService (City Search)
+                        try {
+                            $availabilityService = app(\App\Services\Hotel\AvailabilityService::class);
+                            
+                            // 1. Get all codes from our city hotels list
+                            $hotelCodes = array_column($allLightweightHotels, 'HotelCode');
+                            
+                            if (!empty($hotelCodes)) {
+                                // 2. Fetch available hotels using BATCH call
+                                $availableHotelsMap = $availabilityService->checkBatchAvailability(
+                                    $hotelCodes,
+                                    $checkIn,
+                                    $checkOut,
+                                    $paxRooms,
+                                    request('GuestNationality', 'SA'),
+                                    false // Lightweight mode
+                                );
 
-                            if (! empty($codesString)) {
-                                try {
-                                    $searchData = [
-                                        'CheckIn' => $checkIn,
-                                        'CheckOut' => $checkOut,
-                                        'HotelCodes' => $codesString,
-                                        'GuestNationality' => 'AE',
-                                        'PaxRooms' => $paxRooms,
-                                        'ResponseTime' => 20,
-                                        'IsDetailedResponse' => false, // We just need availability status, not full details yet
-                                        'Filters' => [
-                                            'Refundable' => false, // Don't restrict
-                                            'NoOfRooms' => 1,
-                                            'MealType' => 'All',
-                                        ],
-                                    ];
-
-                                    // Call TBO Search
-                                    // We use a different cache key for AVAILABILITY search
-                                    $searchCacheKey = 'avail_search_'.md5(json_encode($searchData));
-                                    $searchResponse = Cache::remember($searchCacheKey, 300, function () use ($searchData) { // 5 mins cache
-                                        return $this->hotelApi->searchHotel($searchData);
-                                    });
-
-                                    $availabilityMap = [];
-                                    if (isset($searchResponse['Status']['Code']) && $searchResponse['Status']['Code'] == 200) {
-                                        $results = $searchResponse['HotelResult'] ?? [];
-                                        foreach ($results as $res) {
-                                            $code = $res['HotelCode'] ?? '';
-                                            if ($code) {
-                                                $availabilityMap[$code] = [
-                                                    'price' => $res['MinHotelPrice']['TotalPrice'] ?? 0,
-                                                    'currency' => $res['MinHotelPrice']['Currency'] ?? 'USD',
-                                                ];
-                                            }
+                                // 3. STRICT FILTERING: Only keep hotels found in TBO with Price > 0
+                                $filteredByAvailability = [];
+                                foreach ($allLightweightHotels as $hotel) {
+                                    $hotelCode = (string)$hotel['HotelCode'];
+                                    
+                                    if (isset($availableHotelsMap[$hotelCode])) {
+                                        $result = $availableHotelsMap[$hotelCode];
+                                        if ($result->isAvailable() && $result->minPrice > 0) {
+                                            $hotel['MinPrice'] = $result->minPrice;
+                                            $hotel['Currency'] = $result->currency;
+                                            $hotel['IsSearchResult'] = true;
+                                            $filteredByAvailability[] = $hotel;
                                         }
                                     }
-
-                                    // 3. Filter the main list and merge real-time price
-                                    $filteredByAvailability = [];
-                                    foreach ($allLightweightHotels as $h) {
-                                        if (isset($availabilityMap[$h['HotelCode']])) {
-                                            $basePrice = (float) $availabilityMap[$h['HotelCode']]['price'];
-                                            $h['MinPrice'] = \App\Helpers\CommissionHelper::applyCommission($basePrice);
-                                            $h['Currency'] = $availabilityMap[$h['HotelCode']]['currency'];
-                                            $filteredByAvailability[] = $h;
-                                        }
-                                    }
-
-                                    // Log results
-                                    Log::info('Availability Filter: Checked '.count($candidateCodes).', Found '.count($availabilityMap));
-
-                                    // Replace the list
-                                    $allLightweightHotels = $filteredByAvailability;
-
-                                } catch (\Exception $e) {
-                                    Log::error('Availability Search Failed: '.$e->getMessage());
-                                    // Fallback: Do we show all or none?
-                                    // Usually show all with a warning, or just ignore failure and show list (safer).
                                 }
+
+                                Log::info('Search Filter Complete: found '.count($filteredByAvailability).' available hotels out of '.count($allLightweightHotels));
+                                $allLightweightHotels = $filteredByAvailability;
                             }
-                        } // End if (!empty($allLightweightHotels))
-
-                    } // End else (valid dates)
-                } catch (\Exception $e) {
-                    Log::warning('Date parsing error: '.$e->getMessage());
-                }
-            } // End if ($checkIn && ...)
-            // -------------------------------------------------------------------------
-            // AVAILABLE SEARCH (TBO) - User filter
-            // -------------------------------------------------------------------------
-            // If request has Date + Pax info, we MUST filter by actual availability from TBO
-            $checkIn = request('CheckIn');
-            $checkOut = request('CheckOut');
-
-            // Parse PaxRooms
-            $paxRooms = request('PaxRooms');
-
-            // Backward Compatibility / Fallback
-            if (empty($paxRooms) && request('adults')) {
-                $paxRooms = [
-                    [
-                        'Adults' => (int) request('adults'),
-                        'Children' => (int) request('children', 0),
-                        'ChildrenAges' => [],
-                    ],
-                ];
-            }
-
-            // Ensure correct structure for API with strict validation
-            if (is_array($paxRooms)) {
-                $cleanedPaxRooms = [];
-                foreach ($paxRooms as $room) {
-                    $adults = filter_var($room['Adults'] ?? 1, FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
-                    $children = filter_var($room['Children'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['default' => 0, 'min_range' => 0]]);
-
-                    $childrenAges = $room['ChildrenAges'] ?? [];
-                    if (! is_array($childrenAges)) {
-                        $childrenAges = [];
-                    }
-
-                    // Cast ages to integers and clamp to 0-17
-                    $childrenAges = array_map(function ($age) {
-                        $ageInt = (int) $age;
-
-                        return max(0, min(17, $ageInt));
-                    }, $childrenAges);
-
-                    // strict sync: Children count MUST match ChildrenAges length
-                    // If mismatch, prioritize ChildrenAges array
-                    if ($children > count($childrenAges)) {
-                        // Pad with default age 0 if missing
-                        for ($i = count($childrenAges); $i < $children; $i++) {
-                            $childrenAges[] = 0;
+                        } catch (\Exception $e) {
+                            Log::error('City Availability Search Failed: '.$e->getMessage());
                         }
-                    } elseif ($children < count($childrenAges)) {
-                        // Truncate if too many
-                        $childrenAges = array_slice($childrenAges, 0, $children);
                     }
-
-                    // Final Clean Room Object
-                    $cleanedPaxRooms[] = [
-                        'Adults' => $adults,
-                        'Children' => $children,
-                        'ChildrenAges' => $childrenAges,
-                    ];
-                }
-                $paxRooms = $cleanedPaxRooms;
-            }
-
-            if ($checkIn && $checkOut && ! empty($paxRooms)) {
-                // Validate Dates
-                try {
-                    $inDate = \Carbon\Carbon::parse($checkIn);
-                    $outDate = \Carbon\Carbon::parse($checkOut);
-                    $today = \Carbon\Carbon::today();
-
-                    if ($outDate->lte($inDate)) {
-                        Log::warning('Search skipped: CheckOut must be after CheckIn');
-                        $allLightweightHotels = []; // Return empty or handle error
-                    } elseif ($inDate->lt($today)) {
-                        Log::warning('Search skipped: CheckIn cannot be in the past');
-                        // $allLightweightHotels = []; // Optional: strict fail
-                    } else {
-                        Log::info('City Availability Search', ['city' => $cityCode, 'in' => $checkIn, 'out' => $checkOut, 'pax' => $paxRooms]);
-
-                        // 1. We have $allLightweightHotels from the city list
-                        if (! empty($allLightweightHotels)) {
-                            // 2. Extract codes (Limit to 50-100 to avoid API overflow/timeouts)
-                            // TBO Search allows multiple codes, but performance degrades.
-                            // Let's take the top 50 hotels (which are usually the most relevant if sorted,
-                            // or just the first 50 found) to check availability.
-                            // If we want more, we'd need complex background processing or pagination of SEARCH itself.
-                            $candidateHotels = array_slice($allLightweightHotels, 0, 50);
-                            $candidateCodes = array_column($candidateHotels, 'HotelCode');
-                            $codesString = implode(',', $candidateCodes);
-
-                            if (! empty($codesString)) {
-                                try {
-                                    $searchData = [
-                                        'CheckIn' => $checkIn,
-                                        'CheckOut' => $checkOut,
-                                        'HotelCodes' => $codesString,
-                                        'GuestNationality' => 'AE',
-                                        'PaxRooms' => $paxRooms,
-                                        'ResponseTime' => 20,
-                                        'IsDetailedResponse' => false, // We just need availability status, not full details yet
-                                        'Filters' => [
-                                            'Refundable' => false, // Don't restrict
-                                            'NoOfRooms' => 1,
-                                            'MealType' => 'All',
-                                        ],
-                                    ];
-
-                                    // Call TBO Search
-                                    // We use a different cache key for AVAILABILITY search
-                                    $searchCacheKey = 'avail_search_'.md5(json_encode($searchData));
-                                    $searchResponse = Cache::remember($searchCacheKey, 300, function () use ($searchData) { // 5 mins cache
-                                        return $this->hotelApi->searchHotel($searchData);
-                                    });
-
-                                    $availabilityMap = [];
-                                    if (isset($searchResponse['Status']['Code']) && $searchResponse['Status']['Code'] == 200) {
-                                        $results = $searchResponse['HotelResult'] ?? [];
-                                        foreach ($results as $res) {
-                                            $code = $res['HotelCode'] ?? '';
-                                            if ($code) {
-                                                $availabilityMap[$code] = [
-                                                    'price' => $res['MinHotelPrice']['TotalPrice'] ?? 0,
-                                                    'currency' => $res['MinHotelPrice']['Currency'] ?? 'USD',
-                                                ];
-                                            }
-                                        }
-                                    }
-
-                                    // 3. Filter the main list and merge real-time price
-                                    $filteredByAvailability = [];
-                                    foreach ($allLightweightHotels as $h) {
-                                        if (isset($availabilityMap[$h['HotelCode']])) {
-                                            $basePrice = (float) $availabilityMap[$h['HotelCode']]['price'];
-                                            $h['MinPrice'] = \App\Helpers\CommissionHelper::applyCommission($basePrice);
-                                            $h['Currency'] = $availabilityMap[$h['HotelCode']]['currency'];
-                                            $filteredByAvailability[] = $h;
-                                        }
-                                    }
-
-                                    // Log results
-                                    Log::info('Availability Filter: Checked '.count($candidateCodes).', Found '.count($availabilityMap));
-
-                                    // Replace the list
-                                    $allLightweightHotels = $filteredByAvailability;
-
-                                } catch (\Exception $e) {
-                                    Log::error('Availability Search Failed: '.$e->getMessage());
-                                    // Fallback: Do we show all or none?
-                                    // Usually show all with a warning, or just ignore failure and show list (safer).
-                                }
-                            }
-                        } // End if (!empty($allLightweightHotels))
-
-                    } // End else (valid dates)
                 } catch (\Exception $e) {
                     Log::warning('Date parsing error: '.$e->getMessage());
                 }
-            } // End if ($checkIn && ...)
+            }
             // -------------------------------------------------------------------------
 
             // STRICT FILTERING
@@ -821,10 +577,9 @@ class HotelController extends Controller
 
     public function getAllHotels()
     {
+        set_time_limit(180);
         try {
             $request = request();
-            // Standard execution time is enough for partial load
-            set_time_limit(120);
 
             // OPTIMIZED CITY FETCHING: Fetch more cities but process them incrementally
             $allCityCodes = City::whereNotNull('code')
@@ -842,7 +597,7 @@ class HotelController extends Controller
             // User requested ~500 hotels initially.
             // Assuming avg 10-15 hotels per city, 40 cities * 15 = 600.
             // We'll also increase max hotels per city in the API call below.
-            $initialBatchSize = 40; 
+            $initialBatchSize = 40;
             $initialCityCodes = array_slice($allCityCodes, 0, $initialBatchSize);
             $remainingCityCodes = array_slice($allCityCodes, $initialBatchSize);
 
@@ -851,7 +606,7 @@ class HotelController extends Controller
 
             if (! empty($initialCityCodes)) {
                 // Cache key for the initial batch
-                $cacheKey = 'hotels_initial_batch_v2_' . $language . '_' . md5(json_encode($initialCityCodes));
+                $cacheKey = 'hotels_initial_batch_v2_'.$language.'_'.md5(json_encode($initialCityCodes));
                 $hotels = Cache::get($cacheKey);
 
                 if (! $hotels) {
@@ -890,25 +645,170 @@ class HotelController extends Controller
                 }
 
                 // Apply robust Hotel Name Translation if Arabic
-                if ($language === 'ar' && !empty($hotels)) {
+                if ($language === 'ar' && ! empty($hotels)) {
                     $translator = new \App\Services\HotelTranslationService;
                     $hotels = $translator->translateHotels($hotels);
                 }
-
-                // Apply commission to hotel prices
-                foreach ($hotels as &$hotel) {
-                    if (isset($hotel['MinPrice'])) {
-                        $hotel['MinPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $hotel['MinPrice']);
-                    } elseif (isset($hotel['StartPrice'])) {
-                        $hotel['StartPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $hotel['StartPrice']);
-                    }
-                }
-                unset($hotel);
             }
 
+            // -------------------------------------------------------------------------
+            // AVAILABILITY FILTER - If user provides dates, filter hotels
+            // -------------------------------------------------------------------------
+            $checkIn = request('CheckIn');
+            $checkOut = request('CheckOut');
+            $paxRooms = request('PaxRooms');
+
+            // If no dates provided, use today to tomorrow (1 night)
+            // If no dates provided, use tomorrow to day after tomorrow (1 night)
+            $isDefaultDates = false;
+            if (empty($checkIn) || empty($checkOut)) {
+                $checkIn = \Carbon\Carbon::tomorrow()->format('Y-m-d');
+                $checkOut = \Carbon\Carbon::tomorrow()->addDay()->format('Y-m-d');
+                $isDefaultDates = true;
+            }
+
+            // Backward Compatibility
+            if (empty($paxRooms) && request('adults')) {
+                $paxRooms = [
+                    [
+                        'Adults' => (int) request('adults'),
+                        'Children' => (int) request('children', 0),
+                        'ChildrenAges' => [],
+                    ],
+                ];
+            }
+
+            // If no PaxRooms provided, default to 1 room with 2 adults
+            if (empty($paxRooms)) {
+                $paxRooms = [
+                    [
+                        'Adults' => 2,
+                        'Children' => 0,
+                        'ChildrenAges' => [],
+                    ],
+                ];
+            }
+
+            // Clean PaxRooms
+            if (is_array($paxRooms)) {
+                $cleanedPaxRooms = [];
+                foreach ($paxRooms as $room) {
+                    $adults = filter_var($room['Adults'] ?? 1, FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
+                    $children = filter_var($room['Children'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['default' => 0, 'min_range' => 0]]);
+                    $childrenAges = $room['ChildrenAges'] ?? [];
+                    if (! is_array($childrenAges)) {
+                        $childrenAges = [];
+                    }
+                    $childrenAges = array_map(function ($age) {
+                        return max(0, min(12, (int) $age));
+                    }, $childrenAges);
+                    if ($children > count($childrenAges)) {
+                        for ($i = count($childrenAges); $i < $children; $i++) {
+                            $childrenAges[] = 0;
+                        }
+                    } elseif ($children < count($childrenAges)) {
+                        $childrenAges = array_slice($childrenAges, 0, $children);
+                    }
+                    $cleanedPaxRooms[] = [
+                        'Adults' => $adults,
+                        'Children' => $children,
+                        'ChildrenAges' => $childrenAges,
+                    ];
+                }
+                $paxRooms = $cleanedPaxRooms;
+            }
+
+            if ($checkIn && $checkOut && ! empty($paxRooms) && ! empty($hotels)) {
+                try {
+                    $inDate = \Carbon\Carbon::parse($checkIn);
+                    $outDate = \Carbon\Carbon::parse($checkOut);
+                    $today = \Carbon\Carbon::today();
+
+                    if ($outDate->gt($inDate) && $inDate->gte($today)) {
+                        Log::info('All Hotels Availability Search', ['in' => $checkIn, 'out' => $checkOut, 'pax' => $paxRooms, 'total_hotels' => count($hotels)]);
+
+                        // Limit to first 100 hotels for performance
+                        $hotelsToCheck = array_slice($hotels, 0, 100);
+
+                        // Process hotels in batches of 50
+                        $batchSize = 50;
+                        $hotelBatches = array_chunk($hotelsToCheck, $batchSize);
+                        $availableHotels = [];
+
+                        // Use AvailabilityService for consistent availability checking
+                        $availabilityService = app(\App\Services\Hotel\AvailabilityService::class);
+
+                        foreach ($hotelBatches as $batchIndex => $batch) {
+                            $batchCodes = array_column($batch, 'HotelCode');
+
+                            if (! empty($batchCodes)) {
+                                try {
+                                    // Check availability for this batch
+                                    $availabilityResults = $availabilityService->checkBatchAvailability(
+                                        $batchCodes,
+                                        $checkIn,
+                                        $checkOut,
+                                        $paxRooms,
+                                        request('GuestNationality', 'SA'),
+                                        false // Lightweight mode (Standard Search)
+                                    );
+
+                                    // Merge availability into hotel data
+                                    foreach ($batch as $hotel) {
+                                        $hotelCode = $hotel['HotelCode'];
+                                        $result = $availabilityResults[$hotelCode] ?? null;
+
+                                        if ($result && $result->isAvailable()) {
+                                            $hotel['MinPrice'] = $result->minPrice;
+                                            $hotel['Currency'] = $result->currency;
+                                            $availableHotels[] = $hotel;
+                                        }
+                                    }
+                                } catch (\Exception $e) {
+                                    Log::error('Batch '.$batchIndex.' Availability Search Failed: '.$e->getMessage());
+                                }
+                            }
+
+                            // Add small delay between batches to avoid overwhelming API
+                            if ($batchIndex < count($hotelBatches) - 1) {
+                                usleep(100000); // 100ms delay
+                            }
+                        }
+
+                        Log::info('Availability Filter Complete', ['checked' => count($hotels), 'available' => count($availableHotels), 'is_default' => $isDefaultDates]);
+
+                        if ($isDefaultDates) {
+                            // ENRICH ONLY: Merge prices into original $hotels list, but keep all hotels.
+                            $priceMap = [];
+                            foreach ($availableHotels as $availItem) {
+                                $priceMap[$availItem['HotelCode']] = [
+                                    'MinPrice' => $availItem['MinPrice'],
+                                    'Currency' => $availItem['Currency'],
+                                ];
+                            }
+
+                            foreach ($hotels as &$originalHotel) {
+                                if (isset($priceMap[$originalHotel['HotelCode']])) {
+                                    $originalHotel['MinPrice'] = $priceMap[$originalHotel['HotelCode']]['MinPrice'];
+                                    $originalHotel['Currency'] = $priceMap[$originalHotel['HotelCode']]['Currency'];
+                                }
+                            }
+                            unset($originalHotel);
+                            // $hotels remains with all items, just some have prices.
+                        } else {
+                            // STRICT FILTER: Only show what is available.
+                            $hotels = $availableHotels;
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Date parsing error in getAllHotels: '.$e->getMessage());
+                }
+            }
+            // -------------------------------------------------------------------------
+
             return view('Web.hotels', [
-                'hotels' => $hotels, 
-                'allHotelsJson' => json_encode($hotels), 
+                'hotels' => $hotels,
+                'allHotelsJson' => json_encode($hotels),
                 'remainingCityCodes' => array_values($remainingCityCodes), // Pass remaining codes to view
                 'cities' => [],
                 'countries' => [],
@@ -935,16 +835,16 @@ class HotelController extends Controller
     {
         try {
             $cityCodes = $request->input('cityCodes', []);
-            if (empty($cityCodes) || !is_array($cityCodes)) {
+            if (empty($cityCodes) || ! is_array($cityCodes)) {
                 return response()->json(['hotels' => []]);
             }
 
             $language = app()->getLocale();
             $apiLang = $language === 'ar' ? 'ar' : 'en';
-            
+
             // Cache key for this specific batch of cities
-            $cacheKey = 'hotels_batch_' . $language . '_' . md5(json_encode($cityCodes));
-            
+            $cacheKey = 'hotels_batch_'.$language.'_'.md5(json_encode($cityCodes));
+
             $hotels = Cache::remember($cacheKey, 86400, function () use ($cityCodes, $apiLang) {
                 $response = $this->hotelApi->getHotelsFromMultipleCities(
                     $cityCodes,
@@ -953,18 +853,19 @@ class HotelController extends Controller
                     $apiLang,
                     1 // Max 1 page for speed
                 );
-                
+
                 $result = $response['Hotels'] ?? [];
-                if (!is_array($result)) {
+                if (! is_array($result)) {
                     $result = json_decode(json_encode($result), true);
                 }
+
                 return $result;
             });
 
             // Translation
-            if ($language === 'ar' && !empty($hotels)) {
-                 $translator = new \App\Services\HotelTranslationService;
-                 $hotels = $translator->translateHotels($hotels);
+            if ($language === 'ar' && ! empty($hotels)) {
+                $translator = new \App\Services\HotelTranslationService;
+                $hotels = $translator->translateHotels($hotels);
             }
 
             // Commission
@@ -980,13 +881,71 @@ class HotelController extends Controller
             return response()->json(['hotels' => $hotels]);
 
         } catch (\Exception $e) {
-            Log::error('Failed to load more hotels: ' . $e->getMessage());
-             return response()->json(['error' => $e->getMessage()], 500);
+            Log::error('Failed to load more hotels: '.$e->getMessage());
+
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getBatchMinPrices(Request $request)
+    {
+        try {
+            $hotelIds = $request->input('hotel_ids');
+            if (empty($hotelIds) || ! is_array($hotelIds)) {
+                return response()->json([]);
+            }
+
+            $checkIn = $request->input('check_in', $request->input('CheckIn'));
+            $checkOut = $request->input('check_out', $request->input('CheckOut'));
+            $paxRooms = $request->input('pax_rooms', $request->input('PaxRooms'));
+
+            // Default dates if not provided
+            if (! $checkIn || ! $checkOut) {
+                $checkIn = \Carbon\Carbon::tomorrow()->format('Y-m-d');
+                $checkOut = \Carbon\Carbon::tomorrow()->addDay()->format('Y-m-d');
+            }
+
+            // Default pax rooms if not provided
+            if (empty($paxRooms)) {
+                $paxRooms = [
+                    [
+                        'Adults' => 2,
+                        'Children' => 0,
+                        'ChildrenAges' => [],
+                    ],
+                ];
+            }
+
+            // Use AvailabilityService (single source of truth)
+            $availabilityService = app(\App\Services\Hotel\AvailabilityService::class);
+            
+            $availabilityResults = $availabilityService->checkBatchAvailability(
+                $hotelIds,
+                $checkIn,
+                $checkOut,
+                $paxRooms,
+                $request->input('GuestNationality', 'SA'),
+                false // Lightweight mode (Standard Search)
+            );
+
+            // Convert to response format
+            $results = [];
+            foreach ($availabilityResults as $hotelId => $result) {
+                $results[$hotelId] = $result->toArray();
+            }
+
+            return response()->json($results);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch batch min prices: '.$e->getMessage());
+
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
     public function show($id)
     {
+        set_time_limit(180);
         try {
             $request = request();
             $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
@@ -1031,7 +990,7 @@ class HotelController extends Controller
             if (empty($paxRooms)) {
                 $paxRooms = [
                     [
-                        'Adults' => (int) $request->input('guests', $request->input('adults', 1)),
+                        'Adults' => (int) $request->input('guests', $request->input('adults', 2)),
                         'Children' => (int) $request->input('children', 0),
                         'ChildrenAges' => [],
                     ],
@@ -1053,6 +1012,7 @@ class HotelController extends Controller
                     // Cast ages to integers and clamp to 0-12 (matching client requirements)
                     $childrenAges = array_map(function ($age) {
                         $ageInt = (int) $age;
+
                         return max(0, min(12, $ageInt));
                     }, $childrenAges);
 
@@ -1073,10 +1033,10 @@ class HotelController extends Controller
                 $paxRooms = $cleanedPaxRooms;
             }
 
-            // Set default dates if missing
+            // Set default dates if missing (Unified with listing page)
             if (empty($checkIn) || empty($checkOut)) {
-                $checkIn = Carbon::now()->addDay()->format('Y-m-d');
-                $checkOut = Carbon::now()->addDays(2)->format('Y-m-d');
+                $checkIn = \Carbon\Carbon::tomorrow()->format('Y-m-d');
+                $checkOut = \Carbon\Carbon::tomorrow()->addDay()->format('Y-m-d');
             }
 
             // Calculate total guests for display
@@ -1085,100 +1045,30 @@ class HotelController extends Controller
                 $guestsCount += ($room['Adults'] ?? 1) + ($room['Children'] ?? 0);
             }
 
+
             if ($checkIn && $checkOut) {
                 try {
-                    $searchData = [
-                        'CheckIn' => $checkIn,
-                        'CheckOut' => $checkOut,
-                        'HotelCodes' => $id,
-                        'GuestNationality' => 'SA', // Use SA for consistency with frontend search
-                        'PaxRooms' => $paxRooms,
-                        'ResponseTime' => 20,
-                        'IsDetailedResponse' => true,
-                        'Filters' => [
-                            'Refundable' => true, // Changed to true to match Postman/expectations
-                            'NoOfRooms' => count($paxRooms), // Request actual number of rooms
-                            'MealType' => 'All',
-                        ],
-                    ];
-
-                    // Fetch availability for this specific hotel
-                    $searchResponse = $this->hotelApi->searchHotel($searchData); // Uses 'Search' endpoint
-
-                    // Log the raw response for debugging
-                    Log::info("Hotel Availability Response for ID {$id}:", ['status' => $searchResponse['Status']['Code'] ?? 'unknown', 'count' => count($searchResponse['HotelResult'] ?? [])]);
-
-                    if (isset($searchResponse['Status']['Code']) && $searchResponse['Status']['Code'] == 200) {
-                        if (! empty($searchResponse['HotelResult']) && is_array($searchResponse['HotelResult'])) {
-                            // TBO returns a list of hotels, we expect one since we searched by ID
-                            $availableRooms = $searchResponse['HotelResult'][0]['Rooms'] ?? [];
-                        } elseif (! empty($searchResponse['Hotels']) && is_array($searchResponse['Hotels'])) {
-                            // Fallback for different response structures
-                            $availableRooms = $searchResponse['Hotels'][0]['Rooms'] ?? [];
-                        }
-
-                        // Filter rooms based on LOCAL bookings (Safety Layer)
-                        // 1. Filter CONFIRMED: Normal bookings
-                        // 2. Filter PENDING: Payment in progress
-                        if (! empty($availableRooms)) {
-                            // Count bookings that should reduce availability (CONFIRMED + PENDING)
-                            $reservedRoomCounts = \App\Models\HotelBooking::where('hotel_code', $id)
-                                ->whereIn('booking_status', [
-                                    \App\Constants\BookingStatus::CONFIRMED,
-                                    \App\Constants\BookingStatus::PENDING,
-                                ])
-                                ->where(function ($query) use ($checkIn, $checkOut) {
-                                    $query->where('check_in', '<', $checkOut)
-                                        ->where('check_out', '>', $checkIn);
-                                })
-                                ->selectRaw('room_name, COUNT(*) as reserved_count')
-                                ->groupBy('room_name')
-                                ->pluck('reserved_count', 'room_name')
-                                ->toArray();
-
-                            // Only filter if there are reserved books
-                            if (! empty($reservedRoomCounts)) {
-                                // Group rooms by name
-                                $roomsByName = [];
-                                foreach ($availableRooms as $room) {
-                                    $roomName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
-                                    if (! isset($roomsByName[$roomName])) {
-                                        $roomsByName[$roomName] = [];
-                                    }
-                                    $roomsByName[$roomName][] = $room;
-                                }
-
-                                // For each room type, reduce by the number Reserved
-                                $filteredRooms = [];
-                                foreach ($roomsByName as $roomName => $rooms) {
-                                    $tboAvailableCount = count($rooms);
-                                    $reservedCount = $reservedRoomCounts[$roomName] ?? 0;
-                                    $actuallyAvailableCount = max(0, $tboAvailableCount - $reservedCount);
-
-                                    // Add only the actually available rooms
-                                    for ($i = 0; $i < $actuallyAvailableCount; $i++) {
-                                        if (isset($rooms[$i])) {
-                                            $filteredRooms[] = $rooms[$i];
-                                        }
-                                    }
-
-                                    if ($reservedCount > 0) {
-                                        Log::info('Hotel details - Room availability adjusted (Confirmed+Pending)', [
-                                            'hotel' => $id,
-                                            'room_type' => $roomName,
-                                            'tbo_count' => $tboAvailableCount,
-                                            'reserved_count' => $reservedCount,
-                                            'showing_count' => $actuallyAvailableCount,
-                                        ]);
-                                    }
-                                }
-
-                                $availableRooms = $filteredRooms;
-                            }
-                        }
-                    } else {
-                        Log::warning("Availability check failed for Hotel ID {$id}: ".($searchResponse['Status']['Description'] ?? 'Unknown error'));
-                    }
+                    // Use AvailabilityService (single source of truth)
+                    $availabilityService = app(\App\Services\Hotel\AvailabilityService::class);
+                    
+                    $availability = $availabilityService->checkAvailability(
+                        $id,
+                        $checkIn,
+                        $checkOut,
+                        $paxRooms,
+                        $request->input('GuestNationality', 'SA')
+                    );
+                    
+                    // Extract available rooms
+                    $availableRooms = $availability->rooms;
+                    $currency = $availability->currency;
+                    
+                    Log::info("Hotel details - Availability check complete", [
+                        'hotel_id' => $id,
+                        'status' => $availability->status,
+                        'rooms_count' => count($availableRooms),
+                        'min_price' => $availability->minPrice
+                    ]);
 
                 } catch (\Exception $e) {
                     Log::error('Error fetching room availability: '.$e->getMessage());
@@ -1221,30 +1111,7 @@ class HotelController extends Controller
                 }
             }
 
-            // Apply commission to room prices
-            if (! empty($availableRooms)) {
-                $commissionPercentage = \App\Helpers\CommissionHelper::getCommissionPercentage();
-                foreach ($availableRooms as &$room) {
-                    // Apply commission to all potential price fields
-                    if (isset($room['TotalFare'])) {
-                        $room['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['TotalFare']);
-                    }
-                    if (isset($room['Price']['PublishedPrice'])) {
-                        $room['Price']['PublishedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['PublishedPrice']);
-                    }
-                    if (isset($room['Price']['OfferedPrice'])) {
-                        $room['Price']['OfferedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['OfferedPrice']);
-                    }
-                    if (isset($room['Price']['Amount'])) {
-                        $room['Price']['Amount'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Price']['Amount']);
-                    }
-                    if (isset($room['Rate']['Amount'])) {
-                        $room['Rate']['Amount'] = \App\Helpers\CommissionHelper::applyCommission((float) $room['Rate']['Amount']);
-                    }
-                }
-                unset($room); // Break reference
-                Log::info("Applied {$commissionPercentage}% commission to " . count($availableRooms) . " rooms for hotel {$id}");
-            }
+
 
             // Log response for debugging
             // Log::info('Hotel details response', [
@@ -1276,20 +1143,40 @@ class HotelController extends Controller
 
     public function reservation(Request $request)
     {
+        set_time_limit(180);
         try {
             $hotelId = $request->input('hotel_id') ?? session('_old_input.hotel_id');
             $bookingCode = $request->input('booking_code') ?? session('_old_input.booking_code');
             $checkIn = $request->input('CheckIn', $request->input('check_in')) ?? session('_old_input.check_in');
             $checkOut = $request->input('CheckOut', $request->input('check_out')) ?? session('_old_input.check_out');
-            
+
             $paxRooms = $request->input('PaxRooms');
             if (empty($paxRooms)) {
-                $guests = $request->input('guests', session('_old_input.guests', 1));
+                $guests = $request->input('guests', session('_old_input.guests', 2));
                 $paxRooms = [[
                     'Adults' => (int) $guests,
                     'Children' => 0,
                     'ChildrenAges' => [],
                 ]];
+            }
+
+            // Sync PaxRooms structure with unified logic
+            if (is_array($paxRooms)) {
+                $cleanedPaxRooms = [];
+                foreach ($paxRooms as $room) {
+                    $adults = filter_var($room['Adults'] ?? 1, FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
+                    $children = filter_var($room['Children'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['default' => 0, 'min_range' => 0]]);
+                    $childrenAges = $room['ChildrenAges'] ?? [];
+                    if (!is_array($childrenAges)) $childrenAges = [];
+                    $childrenAges = array_map(fn($age) => max(0, min(12, (int)$age)), $childrenAges);
+                    if ($children > count($childrenAges)) {
+                        for ($i = count($childrenAges); $i < $children; $i++) $childrenAges[] = 0;
+                    } elseif ($children < count($childrenAges)) {
+                        $childrenAges = array_slice($childrenAges, 0, $children);
+                    }
+                    $cleanedPaxRooms[] = ['Adults' => $adults, 'Children' => $children, 'ChildrenAges' => $childrenAges];
+                }
+                $paxRooms = $cleanedPaxRooms;
             }
 
             // Sync guests count for display
@@ -1299,10 +1186,10 @@ class HotelController extends Controller
             }
 
             // More robust validation - check for null, empty string, or missing values
-            $hasHotelId = !empty($hotelId) && $hotelId !== '';
-            $hasCheckIn = !empty($checkIn) && $checkIn !== '';
-            $hasCheckOut = !empty($checkOut) && $checkOut !== '';
-            $hasBookingCode = !empty($bookingCode) && $bookingCode !== '';
+            $hasHotelId = ! empty($hotelId) && $hotelId !== '';
+            $hasCheckIn = ! empty($checkIn) && $checkIn !== '';
+            $hasCheckOut = ! empty($checkOut) && $checkOut !== '';
+            $hasBookingCode = ! empty($bookingCode) && $bookingCode !== '';
 
             // Log the validation for debugging
             Log::info('Reservation validation', [
@@ -1317,15 +1204,15 @@ class HotelController extends Controller
             ]);
 
             // Only redirect if critical data is missing
-            if (!$hasHotelId || !$hasCheckIn || !$hasCheckOut) {
+            if (! $hasHotelId || ! $hasCheckIn || ! $hasCheckOut) {
                 Log::warning('Reservation validation failed - missing required data', [
                     'hotel_id' => $hotelId,
                     'check_in' => $checkIn,
-                    'check_out' => $checkOut
+                    'check_out' => $checkOut,
                 ]);
-                
+
                 // If hotelId is still missing, we can't show details, go to home or all hotels
-                if (!$hasHotelId) {
+                if (! $hasHotelId) {
                     return redirect()->route('all.hotels', ['locale' => app()->getLocale()])
                         ->with('error', __('Please select a hotel first'));
                 }
@@ -1345,57 +1232,29 @@ class HotelController extends Controller
                 Log::error('Failed to fetch hotel details for reservation: '.$e->getMessage());
             }
 
-            // Search for room details using booking_code
+            // Search for room details using AvailabilityService (Single Source of Truth)
             if ($bookingCode && $checkIn && $checkOut) {
                 try {
-                    $searchData = [
-                        'CheckIn' => $checkIn,
-                        'CheckOut' => $checkOut,
-                        'HotelCodes' => $hotelId,
-                        'GuestNationality' => 'SA',
-                        'PaxRooms' => $paxRooms,
-                        'ResponseTime' => 18,
-                        'IsDetailedResponse' => true,
-                        'Filters' => [
-                            'Refundable' => true,
-                        'NoOfRooms' => count($paxRooms),
-                        'MealType' => 'All',
-                    ],
-                    ];
+                    $availabilityService = app(\App\Services\Hotel\AvailabilityService::class);
+                    $availability = $availabilityService->checkAvailability(
+                        $hotelId,
+                        $checkIn,
+                        $checkOut,
+                        $paxRooms,
+                        $request->input('GuestNationality', 'SA')
+                    );
 
-                    $searchResponse = $this->hotelApi->searchHotel($searchData);
-
-                    // Find the room with matching booking_code
-                    if (isset($searchResponse['HotelResult']) && is_array($searchResponse['HotelResult'])) {
-                        foreach ($searchResponse['HotelResult'] as $hotel) {
-                            if (isset($hotel['Rooms']) && is_array($hotel['Rooms'])) {
-                                foreach ($hotel['Rooms'] as $room) {
-                                    if (isset($room['BookingCode']) && $room['BookingCode'] === $bookingCode) {
-                                        $roomData = $room;
-                                        $roomData['Currency'] = $hotel['Currency'] ?? 'USD';
-                                        
-                                        // CRITICAL: Apply commission to roomData immediately so the view shows the correct price
-                                        if (isset($roomData['TotalFare'])) {
-                                            $roomData['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission((float) $roomData['TotalFare']);
-                                        }
-                                        if (isset($roomData['Price']['PublishedPrice'])) {
-                                            $roomData['Price']['PublishedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $roomData['Price']['PublishedPrice']);
-                                        }
-                                        if (isset($roomData['Price']['OfferedPrice'])) {
-                                            $roomData['Price']['OfferedPrice'] = \App\Helpers\CommissionHelper::applyCommission((float) $roomData['Price']['OfferedPrice']);
-                                        }
-                                        if (isset($roomData['Price']['Amount'])) {
-                                            $roomData['Price']['Amount'] = \App\Helpers\CommissionHelper::applyCommission((float) $roomData['Price']['Amount']);
-                                        }
-                                        
-                                        break 2;
-                                    }
-                                }
+                    if ($availability->isAvailable()) {
+                        foreach ($availability->rooms as $room) {
+                            if (isset($room['BookingCode']) && $room['BookingCode'] === $bookingCode) {
+                                $roomData = $room;
+                                $roomData['Currency'] = $availability->currency;
+                                break;
                             }
                         }
                     }
                 } catch (\Exception $e) {
-                    Log::error('Failed to fetch room details: '.$e->getMessage());
+                    Log::error('Failed to fetch room details using AvailabilityService: '.$e->getMessage());
                 }
             }
 
@@ -1472,6 +1331,7 @@ class HotelController extends Controller
 
     public function review(ReservationReviewRequest $request)
     {
+        set_time_limit(180);
         try {
             $hotelId = $request->input('hotel_id');
             $bookingCode = $request->input('booking_code');
@@ -1545,9 +1405,9 @@ class HotelController extends Controller
                         'IsDetailedResponse' => true,
                         'Filters' => [
                             'Refundable' => true,
-                        'NoOfRooms' => count($paxRooms),
-                        'MealType' => 'All',
-                    ],
+                            'NoOfRooms' => count($paxRooms),
+                            'MealType' => 'All',
+                        ],
                     ];
 
                     $searchResponse = $this->hotelApi->searchHotel($searchData);
@@ -1565,13 +1425,13 @@ class HotelController extends Controller
                                         $foundRoom = $room;
                                         break 2;
                                     }
- 
+
                                     // Secondary match: Room Name + Inclusion (Better for same names)
-                                    if (!$foundRoom) {
+                                    if (! $foundRoom) {
                                         $currentRoomName = is_array($room['Name']) ? ($room['Name'][0] ?? '') : ($room['Name'] ?? '');
                                         $requestedInclusion = $request->input('inclusion');
                                         $currentInclusion = $room['Inclusion'] ?? '';
-                                        
+
                                         if ($requestedRoomName && $currentRoomName === $requestedRoomName) {
                                             // If inclusion matches, it's definitely the one
                                             if ($requestedInclusion && $currentInclusion === $requestedInclusion) {
@@ -1591,7 +1451,7 @@ class HotelController extends Controller
                             // CRITICAL: Apply commission to roomData ONLY ONCE after the search loop finishes
                             // We use PublishedPrice as the base if available, otherwise TotalFare
                             $basePrice = (float) ($foundRoom['Price']['PublishedPrice'] ?? $foundRoom['TotalFare'] ?? 0);
-                            
+
                             $roomData = $foundRoom;
                             $roomData['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission($basePrice);
                             $roomData['Currency'] = $searchResponse['HotelResult'][0]['Currency'] ?? 'USD';
@@ -1625,7 +1485,7 @@ class HotelController extends Controller
                                 $bookingCode = $preBookResponse['BookingCode'];
                                 $roomData['BookingCode'] = $bookingCode;
                             }
-                            
+
                             // TBO returns the BASE price in PreBook. We apply commission to it.
                             if (isset($preBookResponse['HotelResult'][0]['Rooms'][0]['TotalFare'])) {
                                 $basePrice = (float) $preBookResponse['HotelResult'][0]['Rooms'][0]['TotalFare'];
@@ -1648,7 +1508,7 @@ class HotelController extends Controller
 
                             Log::info('PreBook successful in review step', [
                                 'booking_code' => $bookingCode,
-                                'commissioned_price' => $roomData['TotalFare'] ?? 'unchanged'
+                                'commissioned_price' => $roomData['TotalFare'] ?? 'unchanged',
                             ]);
                         } else {
                             $errorMsg = $preBookResponse['Status']['Description'] ?? 'Room no longer available';

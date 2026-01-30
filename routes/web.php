@@ -62,6 +62,7 @@ Route::group([
     Route::post('/hotel/search', [HotelController::class, 'search'])->name('hotel.search');
     Route::get('/hotels', [HotelController::class, 'getAllHotels'])->name('all.hotels');
     Route::post('/hotels/load-more', [HotelController::class, 'loadMoreHotels'])->name('hotels.load-more');
+    Route::post('/hotels/min-prices', [HotelController::class, 'getBatchMinPrices'])->name('hotels.min-prices');
 
     // Hotel Details with Rooms
     Route::get('/hotel/{id}', [HotelController::class, 'show'])->name('hotel.details');

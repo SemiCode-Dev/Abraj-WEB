@@ -31,7 +31,7 @@ class HotelApiService
             \Log::debug("TBO API Request to $endpoint", ['url' => $url, 'payload' => $payload]);
         }
 
-        $response = Http::timeout(60) 
+        $response = Http::timeout(50) 
             ->retry(1, 200) 
             ->withBasicAuth($this->username, $this->password)
             ->withHeaders([
@@ -49,9 +49,9 @@ class HotelApiService
 
     public function searchHotel(array $data)
     {
-        // Validate required fields
-        if (empty($data['HotelCodes'])) {
-            throw new \InvalidArgumentException('HotelCodes cannot be null or empty');
+        // Validate required fields: either HotelCodes or CityCode must be present
+        if (empty($data['HotelCodes']) && empty($data['CityCode'])) {
+            throw new \InvalidArgumentException('Either HotelCodes or CityCode must be provided');
         }
 
         if (empty($data['CheckIn']) || empty($data['CheckOut'])) {
@@ -61,7 +61,6 @@ class HotelApiService
         $payload = [
             'CheckIn' => $data['CheckIn'],
             'CheckOut' => $data['CheckOut'],
-            'HotelCodes' => (string) $data['HotelCodes'], // Ensure it's a string
             'GuestNationality' => $data['GuestNationality'] ?? 'SA',
             'PaxRooms' => $data['PaxRooms'] ?? [
                 [
@@ -74,11 +73,19 @@ class HotelApiService
             'IsDetailedResponse' => $data['IsDetailedResponse'] ?? true,
             'Language' => $data['Language'] ?? (app()->getLocale() === 'ar' ? 'ar' : 'en'),
             'Filters' => $data['Filters'] ?? [
-                'Refundable' => true,
-                'NoOfRooms' => 0,
+                'Refundable' => false,
+                'NoOfRooms' => 1,
                 'MealType' => 'All',
             ],
         ];
+
+        if (!empty($data['HotelCodes'])) {
+            $payload['HotelCodes'] = (string) $data['HotelCodes'];
+        }
+
+        if (!empty($data['CityCode'])) {
+            $payload['CityCode'] = (string) $data['CityCode'];
+        }
 
         // Debug logging for TBO API requests/responses (only in debug mode)
         if (config('app.debug')) {
@@ -90,7 +97,7 @@ class HotelApiService
         if (config('app.debug')) {
             \Log::debug('TBO API Search Response', [
                 'status_code' => $response['Status']['Code'] ?? 'unknown',
-                'hotels_count' => isset($response['Hotels']) ? count($response['Hotels']) : 0,
+                'hotels_count' => count($response['Hotels'] ?? $response['HotelResult'] ?? []),
             ]);
         }
         

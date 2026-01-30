@@ -23,6 +23,7 @@ class PaymentController extends Controller
 
     public function apsCallback(Request $request)
     {
+        set_time_limit(180);
         $data = $request->all();
 
         return $this->paymentService->apsCallback($data);

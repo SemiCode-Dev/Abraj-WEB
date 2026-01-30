@@ -278,17 +278,82 @@
                                         </div>
 
                                         <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                                            <div>
-                                                <div class="flex items-baseline">
-                                                    <span class="text-3xl font-extrabold text-orange-600">
-                                                        {{ $hotel['MinPrice'] ?? ($hotel['StartPrice'] ?? '') }}
-                                                    </span>
-                                                    <span
-                                                        class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">
-                                                        {{ $hotel['Currency'] ?? 'USD' }}
-                                                    </span>
+                                            <div class="price-container">
+                                                <div class="live-price-wrapper"
+                                                    data-hotel-id="{{ $hotel['HotelCode'] }}">
+                                                    @php
+                                                        $checkIn = request('check_in', request('CheckIn'));
+                                                        $checkOut = request('check_out', request('CheckOut'));
+                                                        $hasPrice = isset($hotel['MinPrice']) && $hotel['MinPrice'] > 0;
+                                                        $currency = $hotel['Currency'] ?? 'USD';
+                                                        $hasSearchDates = $checkIn && $checkOut;
+                                                        $isSearchResult = $hotel['IsSearchResult'] ?? false;
+
+                                                        $nights = 0;
+                                                        if ($hasSearchDates) {
+                                                            try {
+                                                                $in = \Carbon\Carbon::parse($checkIn);
+                                                                $out = \Carbon\Carbon::parse($checkOut);
+                                                                $nights = $in->diffInDays($out);
+                                                            } catch (\Exception $e) {
+                                                            }
+                                                        }
+                                                    @endphp
+
+                                                    @if ($hasPrice)
+                                                        {{-- Show price directly from backend --}}
+                                                        <div class="price-content">
+                                                            @if ($isSearchResult && $nights > 0)
+                                                                <div
+                                                                    class="text-[10px] tracking-wider text-gray-400 font-bold mb-1">
+                                                                    {{ __('Total for') }} {{ $nights }}
+                                                                    {{ $nights > 1 ? __('nights') : __('night') }}
+                                                                </div>
+                                                            @endif
+                                                            <div class="flex items-baseline">
+                                                                <span
+                                                                    class="text-3xl font-extrabold text-orange-600 amount">{{ number_format($hotel['MinPrice'], 2) }}</span>
+                                                                <span
+                                                                    class="text-gray-500 text-sm currency {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">{{ $currency }}</span>
+                                                            </div>
+                                                        </div>
+                                                    @else
+                                                        @if ($hasSearchDates)
+                                                            {{-- Loading Skeleton for AJAX fetch --}}
+                                                            <div
+                                                                class="price-skeleton h-8 w-max min-w-[100px] bg-gray-100 animate-pulse rounded-lg flex items-center px-3">
+                                                                <div class="h-4 w-12 bg-gray-200 rounded"></div>
+                                                                <div class="h-3 w-8 bg-gray-200 rounded ml-2"></div>
+                                                            </div>
+                                                        @else
+                                                            {{-- Show the "No available rooms" by default, AJAX will replace it if price is found --}}
+                                                            <div
+                                                                class="text-xs text-red-500 font-bold italic no-availability-msg">
+                                                                {{ app()->getLocale() == 'ar' ? 'لا يوجد غرف متاحة حالياً' : 'No available rooms currently' }}
+                                                            </div>
+                                                            {{-- Invisible pulse loader so JS knows we are still trying --}}
+                                                            <div
+                                                                class="price-skeleton h-1 w-8 bg-gray-50 animate-pulse rounded opacity-0">
+                                                            </div>
+                                                        @endif
+
+                                                        {{-- Live Price Value (Initially Hidden) --}}
+                                                        <div class="price-content hidden">
+                                                            <div class="flex items-baseline">
+                                                                <span
+                                                                    class="text-3xl font-extrabold text-orange-600 amount"></span>
+                                                                <span
+                                                                    class="text-gray-500 text-sm currency {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}"></span>
+                                                            </div>
+                                                        </div>
+
+                                                        {{-- No Availability Message (Initially Hidden) --}}
+                                                        <div
+                                                            class="no-availability-msg hidden text-red-500 font-bold text-sm">
+                                                            {{ __('No rooms available.') }}
+                                                        </div>
+                                                    @endif
                                                 </div>
-                                                {{-- <div class="text-xs text-gray-400">/ {{ __('per night') }} • {{ __('including taxes') }}</div> --}}
                                             </div>
                                             <a href="{{ route('hotel.details', array_merge(['id' => $hotel['HotelCode'] ?? 1, 'locale' => app()->getLocale()], request()->only(['CheckIn', 'CheckOut', 'PaxRooms', 'check_in', 'check_out']))) }}"
                                                 class="bg-gradient-to-r from-orange-600 to-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg">
@@ -345,6 +410,90 @@
         const loadMoreRoute = '{{ route('hotels.load-more') }}';
         const csrfToken = '{{ csrf_token() }}';
         let isFetching = false;
+
+        // Live Pricing Configuration
+        const minPricesRoute = '{{ route('hotels.min-prices') }}';
+        const searchParams = {
+            check_in: '{{ request('CheckIn', request('check_in')) }}',
+            check_out: '{{ request('CheckOut', request('check_out')) }}',
+            pax_rooms: @json(request('PaxRooms', []))
+        };
+        const fetchedPriceIds = new Set();
+
+        async function fetchLivePrices() {
+            if (!searchParams.check_in || !searchParams.check_out) {
+                document.querySelectorAll('.price-skeleton').forEach(el => el.classList.add('hidden'));
+                return;
+            }
+
+            // Collect IDs of visible hotel cards that haven't been fetched yet
+            const visibleWrappers = Array.from(document.querySelectorAll('.live-price-wrapper:not(.price-fetched)'))
+                .filter(el => {
+                    const card = el.closest('.hotel-card');
+                    return card && card.style.display !== 'none' && el.querySelector('.price-skeleton') !== null;
+                });
+
+            const idsToFetch = visibleWrappers.map(el => el.dataset.hotelId);
+
+            if (idsToFetch.length === 0) return;
+
+            // Mark as fetching to avoid duplicate calls
+            idsToFetch.forEach(id => {
+                const wrappers = document.querySelectorAll(`.live-price-wrapper[data-hotel-id="${id}"]`);
+                wrappers.forEach(w => w.classList.add('price-fetched'));
+            });
+
+            try {
+                const response = await fetch(minPricesRoute, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({
+                        hotel_ids: idsToFetch,
+                        CheckIn: searchParams.check_in,
+                        CheckOut: searchParams.check_out,
+                        PaxRooms: searchParams.pax_rooms
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    idsToFetch.forEach(id => {
+                        const wrappers = document.querySelectorAll(
+                            `.live-price-wrapper[data-hotel-id="${id}"]`);
+                        const info = data[id];
+
+                        wrappers.forEach(wrapper => {
+                            const skeleton = wrapper.querySelector('.price-skeleton');
+                            const content = wrapper.querySelector('.price-content');
+                            const noAvail = wrapper.querySelector('.no-availability-msg');
+
+                            if (skeleton) skeleton.classList.add('hidden');
+
+                            if (info && info.status === 'available') {
+                                if (noAvail) noAvail.classList.add('hidden');
+                                if (content) {
+                                    content.classList.remove('hidden');
+                                    const amountEl = content.querySelector('.amount');
+                                    const currencyEl = content.querySelector('.currency');
+                                    if (amountEl) amountEl.textContent = info.amount;
+                                    if (currencyEl) currencyEl.textContent = info.currency;
+                                }
+                            } else {
+                                if (content) content.classList.add('hidden');
+                                if (noAvail) noAvail.classList.remove('hidden');
+                            }
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to fetch live prices:', error);
+                // Revert "price-fetched" class for retry if needed, or keep for stability
+            }
+        }
 
 
         // Hotel Filtering and Pagination Logic
@@ -446,6 +595,9 @@
             filteredHotels.forEach((card, index) => {
                 if (index >= startIndex && index < endIndex) card.style.display = '';
             });
+
+            // Trigger live price fetching for the newly visible hotels
+            fetchLivePrices();
         }
 
         function updatePagination() {
@@ -786,10 +938,21 @@
                         </div>
 
                         <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                            <div>
-                                <div class="flex items-baseline">
-                                    <span class="text-3xl font-extrabold text-orange-600">${price}</span>
-                                    <span class="text-gray-500 text-sm ${isAr ? 'mr-2' : 'ml-2'}">${currency}</span>
+                            <div class="price-container">
+                                <div class="live-price-wrapper" data-hotel-id="${hotel.HotelCode || hotel.Code}">
+                                    <div class="price-skeleton h-8 w-max min-w-[100px] bg-gray-100 animate-pulse rounded-lg flex items-center px-3">
+                                        <div class="h-4 w-12 bg-gray-200 rounded"></div>
+                                        <div class="h-3 w-8 bg-gray-200 rounded ml-2"></div>
+                                    </div>
+                                    <div class="price-content hidden">
+                                        <div class="flex items-baseline">
+                                            <span class="text-3xl font-extrabold text-orange-600 amount"></span>
+                                            <span class="text-gray-500 text-sm currency ${isAr ? 'mr-2' : 'ml-2'}"></span>
+                                        </div>
+                                    </div>
+                                    <div class="no-availability-msg hidden text-red-500 font-bold text-sm">
+                                        {{ __('No rooms available.') }}
+                                    </div>
                                 </div>
                             </div>
                              <a href="/${currentLocale}/hotel/${hotel.HotelCode || hotel.Code}${window.location.search}"

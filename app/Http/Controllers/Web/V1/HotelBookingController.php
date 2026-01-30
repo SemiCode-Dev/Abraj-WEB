@@ -24,6 +24,7 @@ class HotelBookingController extends Controller
      */
     public function store(Request $request)
     {
+        set_time_limit(180);
         Log::info('Hotel Booking Store Request received', $request->all());
         try {
             $validated = $request->validate([
