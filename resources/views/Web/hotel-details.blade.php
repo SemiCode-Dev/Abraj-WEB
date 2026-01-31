@@ -199,8 +199,9 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #d9480f;
         }
+
         .header-details {
-            background:#06063d;
+            background: #06063d;
         }
     </style>
 @endpush
@@ -1297,17 +1298,6 @@
             const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (86400000));
             const perNight = nights > 0 ? (price / nights).toFixed(2) : price.toFixed(2);
             const currency = room.Currency || 'USD';
-
-            // Serialize PaxRooms for the link
-            let paxParams = '';
-            rooms.forEach((r, rIdx) => {
-                paxParams += `&PaxRooms[${rIdx}][Adults]=${r.adults}&PaxRooms[${rIdx}][Children]=${r.children}`;
-                if (r.childrenAges && r.childrenAges.length > 0) {
-                    r.childrenAges.forEach((age, aIdx) => {
-                        paxParams += `&PaxRooms[${rIdx}][ChildrenAges][${aIdx}]=${age}`;
-                    });
-                }
-            });
 
             // Serialize PaxRooms for the link
             let paxParams = '';
