@@ -1164,6 +1164,11 @@ class HotelController extends Controller
                         for ($i = count($childrenAges); $i < $children; $i++) $childrenAges[] = 0;
                     } elseif ($children < count($childrenAges)) {
                         $childrenAges = array_slice($childrenAges, 0, $children);
+                    }
+                    $cleanedPaxRooms[] = ['Adults' => $adults, 'Children' => $children, 'ChildrenAges' => $childrenAges];
+                }
+                $paxRooms = $cleanedPaxRooms;
+            }
             // Sync guests count for display
             $guests = 0;
             foreach ($paxRooms as $room) {
