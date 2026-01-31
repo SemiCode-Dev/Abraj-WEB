@@ -204,7 +204,7 @@ class HotelApiService
     {
         $allHotels = [];
         // Chunk city codes to avoid overwhelming the API or exceeding connection limits
-        $chunks = array_chunk($cityCodes, 5); // Optimization: Reduced from 10 to 5
+        $chunks = array_chunk($cityCodes, 10);
 
         foreach ($chunks as $chunk) {
             try {
@@ -213,7 +213,7 @@ class HotelApiService
                     foreach ($chunk as $cityCode) {
                         $requests[] = $pool->asJson()
                             ->withBasicAuth($this->username, $this->password)
-                            ->timeout(60) // Optimization: Increased from 20s to 60s
+                            ->timeout(20)
                             ->post(rtrim($this->baseUrl, '/').'/TBOHotelCodeList', [
                                 'CityCode' => (string)$cityCode,
                                 'IsDetailedResponse' => $detailed ? 'true' : 'false',
