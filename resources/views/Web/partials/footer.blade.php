@@ -100,12 +100,15 @@
 
                 <div
                     class="flex items-center justify-center space-x-6 {{ app()->getLocale() === 'ar' ? 'space-x-reverse' : '' }} mt-6">
-                    <img src="{{ asset('images/footer/visa.png') }}" alt="Visa" loading="lazy"
-                        class="h-10 w-auto transition duration-300">
-                    <img src="{{ asset('images/footer/mastercard.png') }}" alt="Mastercard" loading="lazy"
-                        class="h-12 w-auto transition duration-300">
-                    <img src="{{ asset('images/footer/apple-pay.png') }}" alt="Apple Pay" loading="lazy"
-                        class="h-12 w-auto transition duration-300 dark:invert">
+                    <div class="flex items-center justify-center" title="Visa">
+                        <i class="fab fa-cc-visa text-4xl text-gray-900 dark:text-gray-100 transition duration-300"></i>
+                    </div>
+                    <div class="flex items-center justify-center" title="Mastercard">
+                        <i class="fab fa-cc-mastercard text-4xl text-gray-900 dark:text-gray-100 transition duration-300"></i>
+                    </div>
+                    <div class="flex items-center justify-center" title="Apple Pay">
+                        <i class="fab fa-cc-apple-pay text-4xl text-gray-900 dark:text-gray-100 transition duration-300"></i>
+                    </div>
                 </div>
             </div>
         </div>

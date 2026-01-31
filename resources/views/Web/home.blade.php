@@ -711,29 +711,41 @@
     </section>
 
     <!-- Flash Deals with Countdown -->
-    <section id="offers" class="py-16 bg-gradient-to-br from-orange-50 via-red-50 to-pink-50">
+    <section id="offers" class="py-16 bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between mb-8">
                 <div>
-                    <h2 class="text-4xl font-extrabold text-gray-900 mb-2">{{ __('Flash Deals') }}</h2>
-                    <p class="text-gray-600">
+                    <h2 class="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{{ __('Flash Deals') }}</h2>
+                    <p class="text-gray-600 dark:text-gray-300">
                         {{ __('Limited time offers - Book before it\'s too late!') }}</p>
                 </div>
-                <div class="hidden md:flex items-center bg-white px-6 py-3 rounded-full shadow-lg">
-                    <i class="fas fa-clock text-red-600 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
-                    <span class="text-sm font-bold text-gray-700">{{ __('Ends in') }}</span>
-                    <span class="text-xl font-bold text-red-600 mr-3" id="countdown">23:45:12</span>
+                <div class="hidden md:flex items-center bg-white dark:bg-gray-700 px-6 py-3 rounded-full shadow-lg">
+                    <i class="fas fa-clock text-red-600 dark:text-red-400 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                    <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{ __('Ends in') }}</span>
+                    <span class="text-xl font-bold text-red-600 dark:text-red-400 mr-3" id="countdown">23:45:12</span>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 @foreach ($hotels as $hotel)
                     <div
-                        class="group relative bg-white @if ($loop->first) dark:bg-gray-800 @endif rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                        class="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                         <div class="relative h-56 overflow-hidden">
-                            <img src="{{ $hotel['ImageUrls'][0]['ImageUrl'] ?? 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}"
-                                alt="فندق"
-                                class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                            @php
+                                $hotelImage = null;
+                                if (isset($hotel['ImageUrls']) && is_array($hotel['ImageUrls']) && !empty($hotel['ImageUrls'][0]['ImageUrl'])) {
+                                    $hotelImage = $hotel['ImageUrls'][0]['ImageUrl'];
+                                } elseif (isset($hotel['Image']) && !empty($hotel['Image'])) {
+                                    $hotelImage = $hotel['Image'];
+                                } elseif (isset($hotel['Images']) && is_array($hotel['Images']) && !empty($hotel['Images'][0])) {
+                                    $hotelImage = is_array($hotel['Images'][0]) ? ($hotel['Images'][0]['ImageUrl'] ?? null) : $hotel['Images'][0];
+                                }
+                                $defaultHotelImage = asset('images/default.jpg');
+                            @endphp
+                            <img src="{{ $hotelImage ?? $defaultHotelImage }}"
+                                alt="{{ $hotel['HotelName'] ?? 'فندق' }}"
+                                class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                                onerror="this.onerror=null; this.src='{{ $defaultHotelImage }}';">
                             <div
                                 class="absolute top-0 right-0 bg-gradient-to-br from-red-600 to-pink-600 text-white px-4 py-2 rounded-bl-2xl font-bold text-lg shadow-lg">
                                 -40%
@@ -747,11 +759,11 @@
                         <div class="p-6">
                             <div class="flex items-center justify-between mb-3">
                                 <h3
-                                    class="text-xl font-bold text-gray-900 @if ($loop->first) dark:text-gray-100 @endif">
+                                    class="text-xl font-bold text-gray-900 dark:text-white">
                                     {{ Str::limit($hotel['HotelName'], 15) }}
                                 </h3>
-                                <div class="flex items-center bg-yellow-100 px-2 py-1 rounded-lg">
-                                    <i class="fas fa-star text-yellow-500 text-xs ml-1"></i>
+                                <div class="flex items-center bg-yellow-100 dark:bg-yellow-900/30 px-2 py-1 rounded-lg">
+                                    <i class="fas fa-star text-yellow-500 dark:text-yellow-400 text-xs ml-1"></i>
                                     @php
                                         $stars = [
                                             'FiveStar' => 5,
@@ -762,11 +774,11 @@
                                         ];
                                         $count = $stars[$hotel['HotelRating']] ?? 5;
                                     @endphp
-                                    <span class="text-xs font-bold text-gray-900">{{ $count }}</span>
+                                    <span class="text-xs font-bold text-gray-900 dark:text-gray-100">{{ $count }}</span>
                                 </div>
                             </div>
                             <div
-                                class="flex items-center text-xs text-gray-600 @if ($loop->first) dark:text-gray-300 @endif mb-4">
+                                class="flex items-center text-xs text-gray-600 dark:text-gray-300 mb-4">
                                 <i class="fas fa-map-marker-alt ml-1"></i>
                                 <span>{{ Str::limit($hotel['Address'], 30) }}</span>
                             </div>
@@ -787,11 +799,11 @@
     </section>
 
     <!-- Popular Destinations - Enhanced & Random Global Cities -->
-    <section id="destinations" class="py-16 bg-white overflow-hidden">
+    <section id="destinations" class="py-16 bg-white dark:bg-gray-900 overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-4xl font-extrabold text-gray-900 mb-3">{{ __('Popular Destinations') }}</h2>
-                <p class="text-gray-600 text-lg">{{ __('Discover the best tourist destinations with the best prices') }}
+                <h2 class="text-4xl font-extrabold text-gray-900 dark:text-white mb-3">{{ __('Popular Destinations') }}</h2>
+                <p class="text-gray-600 dark:text-gray-300 text-lg">{{ __('Discover the best tourist destinations with the best prices') }}
                 </p>
             </div>
 
@@ -865,21 +877,21 @@
 
 
     <!-- Featured Hotels - Premium Design -->
-    <section id="hotels" class="py-16 bg-gradient-to-b from-gray-50 to-white">
+    <section id="hotels" class="py-16 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between mb-12">
                 <div>
-                    <h2 class="text-4xl font-extrabold text-gray-900 mb-2">{{ __('Featured Hotels') }}</h2>
-                    <p class="text-gray-600">{{ __('Choose from the best recommended hotels') }}</p>
+                    <h2 class="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{{ __('Featured Hotels') }}</h2>
+                    <p class="text-gray-600 dark:text-gray-300">{{ __('Choose from the best recommended hotels') }}</p>
                 </div>
                 <div class="hidden md:flex gap-2">
-                    <button
-                        class="px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold">{{ __('All') }}</button>
-                    <button class="px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-100">5
+                    <button id="filter-all"
+                        class="px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold transition-all">{{ __('All') }}</button>
+                    <button id="filter-5star" class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">5
                         {{ __('stars') }}</button>
-                    <button class="px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-100">4
+                    <button id="filter-4star" class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">4
                         {{ __('stars') }}</button>
-                    <button class="px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-100">3
+                    <button id="filter-3star" class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">3
                         {{ __('stars') }}</button>
                 </div>
             </div>
@@ -888,30 +900,43 @@
             <div class="relative">
                 <!-- Slider Wrapper -->
                 <div class="hotels-slider-wrapper overflow-hidden">
-                    <div class="hotels-slider-track py-12 flex gap-6 transition-transform duration-500 ease-in-out"
+                    <div class="hotels-slider-track py-12 transition-transform duration-500 ease-in-out"
                         style="transform: translateX(0);">
                         <!-- Hotel 1 -->
                         @foreach ($hotels2 as $hotel2)
+                            @php
+                                $stars = [
+                                    'FiveStar' => 5,
+                                    'FourStar' => 4,
+                                    'ThreeStar' => 3,
+                                    'TwoStar' => 2,
+                                    'OneStar' => 1,
+                                ];
+                                $starCount = $stars[$hotel2['HotelRating']] ?? 5;
+                            @endphp
                             <div
-                                class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
+                                class="hotel-card-item bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group"
+                                data-star-rating="{{ $starCount }}">
                                 <div class="relative h-64 overflow-hidden">
-                                    <img src="{{ $hotel2['ImageUrls'][0]['ImageUrl'] ?? 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}"
-                                        alt="فندق"
-                                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                                    @php
+                                        $hotel2Image = null;
+                                        if (isset($hotel2['ImageUrls']) && is_array($hotel2['ImageUrls']) && !empty($hotel2['ImageUrls'][0]['ImageUrl'])) {
+                                            $hotel2Image = $hotel2['ImageUrls'][0]['ImageUrl'];
+                                        } elseif (isset($hotel2['Image']) && !empty($hotel2['Image'])) {
+                                            $hotel2Image = $hotel2['Image'];
+                                        } elseif (isset($hotel2['Images']) && is_array($hotel2['Images']) && !empty($hotel2['Images'][0])) {
+                                            $hotel2Image = is_array($hotel2['Images'][0]) ? ($hotel2['Images'][0]['ImageUrl'] ?? null) : $hotel2['Images'][0];
+                                        }
+                                        $defaultHotelImage = asset('images/default.jpg');
+                                    @endphp
+                                    <img src="{{ $hotel2Image ?? $defaultHotelImage }}"
+                                        alt="{{ $hotel2['HotelName'] ?? 'فندق' }}"
+                                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                                        onerror="this.onerror=null; this.src='{{ $defaultHotelImage }}';">
                                     <div class="absolute top-4 left-4 flex gap-2">
                                         <div
-                                            class="bg-white px-3 py-1 rounded-full text-sm font-bold text-gray-900 shadow-lg">
-                                            @php
-                                                $stars = [
-                                                    'FiveStar' => 5,
-                                                    'FourStar' => 4,
-                                                    'ThreeStar' => 3,
-                                                    'TwoStar' => 2,
-                                                    'OneStar' => 1,
-                                                ];
-                                                $count = $stars[$hotel2['HotelRating']] ?? 5;
-                                            @endphp
-                                            <i class="fas fa-star text-yellow-500 ml-1"></i> {{ $count }}
+                                            class="bg-white dark:bg-gray-700 px-3 py-1 rounded-full text-sm font-bold text-gray-900 dark:text-white shadow-lg">
+                                            <i class="fas fa-star text-yellow-500 dark:text-yellow-400 ml-1"></i> {{ $starCount }}
                                         </div>
                                         <div
                                             class="bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
@@ -921,7 +946,7 @@
                                         </div>
                                     </div>
                                     <div
-                                        class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-semibold text-gray-900">
+                                        class="absolute bottom-4 right-4 bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-semibold text-gray-900 dark:text-white">
                                         <i class="fas fa-images {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                         {{ __('photos') }}
                                     </div>
@@ -929,29 +954,29 @@
                                 <div class="p-6">
                                     <div class="flex items-start justify-between mb-3">
                                         <div>
-                                            <h3 class="text-xl font-bold text-gray-900 mb-1">{{ $hotel2['HotelName'] }}
+                                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">{{ $hotel2['HotelName'] }}
                                             </h3>
-                                            <p class="text-gray-600 text-sm flex items-center">
-                                                <i class="fas fa-map-marker-alt text-orange-600 ml-1 text-xs"></i>
+                                            <p class="text-gray-600 dark:text-gray-300 text-sm flex items-center">
+                                                <i class="fas fa-map-marker-alt text-orange-600 dark:text-orange-400 ml-1 text-xs"></i>
                                                 {{ $hotel2['CityName'] }}, {{ $hotel2['CountryName'] }}
                                             </p>
                                         </div>
                                     </div>
 
                                     <div class="flex flex-wrap gap-2 mb-4">
-                                        <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
+                                        <span class="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-lg font-semibold">
                                             <i
                                                 class="fas fa-wifi {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                             {{ __('WiFi') }}
                                         </span>
                                         <span
-                                            class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
+                                            class="px-2 py-1 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-lg font-semibold">
                                             <i
                                                 class="fas fa-swimming-pool {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                             {{ __('Pool') }}
                                         </span>
                                         <span
-                                            class="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
+                                            class="px-2 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs rounded-lg font-semibold">
                                             <i
                                                 class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                             {{ __('Restaurant') }}
@@ -960,18 +985,18 @@
 
                                     <div class="flex items-center justify-between mb-4">
                                         <div class="flex items-center">
-                                            <div class="flex text-yellow-500 text-sm ml-2">
-                                                @for ($i = 0; $i < $count; $i++)
+                                            <div class="flex text-yellow-500 dark:text-yellow-400 text-sm ml-2">
+                                                @for ($i = 0; $i < $starCount; $i++)
                                                     <i class="fas fa-star"></i>
                                                 @endfor
 
                                             </div>
-                                            <span class="text-sm text-gray-500">({{ $count }}
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">({{ $starCount }}
                                                 {{ __('reviews') }})</span>
                                         </div>
                                     </div>
 
-                                    <div class="flex items-center justify-end pt-4 border-t border-gray-200">
+                                    <div class="flex items-center justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
                                         <a href="#"
                                             class="bg-gradient-to-r from-orange-600 to-orange-600 px-6 py-2 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg force-button-text w-full text-center">
                                             {{ __('Book Now') }}
@@ -983,17 +1008,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Navigation Arrows -->
-            <button
-                class="hotels-slider-prev absolute {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-orange-600 text-gray-700 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 -translate-x-1/2 {{ app()->getLocale() === 'ar' ? 'translate-x-1/2' : '' }}"
-                aria-label="{{ __('Previous') }}" type="button">
-                <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} text-xl"></i>
-            </button>
-            <button
-                class="hotels-slider-next absolute {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-orange-600 text-gray-700 hover:text-white p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 translate-x-1/2 {{ app()->getLocale() === 'ar' ? '-translate-x-1/2' : '' }}"
-                aria-label="{{ __('Next') }}" type="button">
-                <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} text-xl"></i>
-            </button>
         </div>
         </div>
     </section>
@@ -1057,7 +1071,7 @@
             <div class="relative">
                 <!-- Slider Wrapper -->
                 <div class="testimonials-slider-wrapper overflow-hidden pb-12">
-                    <div class="testimonials-slider-track flex gap-8 transition-transform duration-500 ease-in-out"
+                    <div class="testimonials-slider-track transition-transform duration-500 ease-in-out"
                         style="transform: translateX(0);">
                         <!-- Review 1 - Featured Style -->
                         <div
@@ -1487,13 +1501,14 @@
             padding-bottom: 20px;
             will-change: transform;
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            gap: 1.5rem;
         }
 
         .hotels-slider-track>div,
         .testimonials-slider-track>div {
             flex: 0 0 100%;
             min-width: 0;
-            padding: 15px;
+            padding: 0;
             box-sizing: border-box;
         }
 
@@ -1501,7 +1516,7 @@
 
             .hotels-slider-track>div,
             .testimonials-slider-track>div {
-                flex: 0 0 50%;
+                flex: 0 0 calc(50% - 0.75rem);
             }
         }
 
@@ -1509,7 +1524,7 @@
 
             .hotels-slider-track>div,
             .testimonials-slider-track>div {
-                flex: 0 0 33.333%;
+                flex: 0 0 calc(33.333% - 1rem);
             }
         }
 
@@ -1750,92 +1765,53 @@
             }
         })();
 
-        // Hotels Slider Functionality
+        // Hotels Star Filter Functionality
         (function() {
-            const hotelsTrack = document.querySelector('.hotels-slider-track');
-            const hotelsPrev = document.querySelector('.hotels-slider-prev');
-            const hotelsNext = document.querySelector('.hotels-slider-next');
-            if (!hotelsTrack || !hotelsPrev || !hotelsNext) return;
+            const filterAll = document.getElementById('filter-all');
+            const filter5Star = document.getElementById('filter-5star');
+            const filter4Star = document.getElementById('filter-4star');
+            const filter3Star = document.getElementById('filter-3star');
+            const hotelCards = document.querySelectorAll('.hotel-card-item');
 
-            const hotelsItems = hotelsTrack.querySelectorAll('> div');
-            let hotelsCurrentIndex = 0;
-            const hotelsItemsPerView = () => {
-                if (window.innerWidth >= 1024) return 3;
-                if (window.innerWidth >= 768) return 2;
-                return 1;
-            };
-            const hotelsMaxIndex = Math.max(0, hotelsItems.length - hotelsItemsPerView());
+            function filterHotels(starRating) {
+                hotelCards.forEach(card => {
+                    const cardRating = parseInt(card.getAttribute('data-star-rating'));
+                    if (starRating === 'all' || cardRating === starRating) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
 
-            function updateHotelsSlider() {
-                const itemsPerView = hotelsItemsPerView();
-                const maxIndex = Math.max(0, hotelsItems.length - itemsPerView);
-                const translateX = -(hotelsCurrentIndex * (100 / itemsPerView));
-                const isRTL = document.documentElement.dir === 'rtl';
+                // Update active button styles
+                [filterAll, filter5Star, filter4Star, filter3Star].forEach(btn => {
+                    if (btn) {
+                        btn.classList.remove('bg-orange-600', 'text-white');
+                        btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-200');
+                    }
+                });
 
-                hotelsTrack.style.transform = `translateX(${isRTL ? -translateX : translateX}%)`;
-
-                hotelsPrev.style.opacity = hotelsCurrentIndex === 0 ? '0.5' : '1';
-                hotelsPrev.style.pointerEvents = hotelsCurrentIndex === 0 ? 'none' : 'auto';
-                hotelsNext.style.opacity = hotelsCurrentIndex >= maxIndex ? '0.5' : '1';
-                hotelsNext.style.pointerEvents = hotelsCurrentIndex >= maxIndex ? 'none' : 'auto';
+                const activeButton = starRating === 'all' ? filterAll : 
+                                   starRating === 5 ? filter5Star : 
+                                   starRating === 4 ? filter4Star : filter3Star;
+                if (activeButton) {
+                    activeButton.classList.remove('bg-white', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-200');
+                    activeButton.classList.add('bg-orange-600', 'text-white');
+                }
             }
 
-            hotelsPrev.addEventListener('click', () => {
-                if (hotelsCurrentIndex > 0) {
-                    hotelsCurrentIndex--;
-                    updateHotelsSlider();
-                }
-            });
-
-            hotelsNext.addEventListener('click', () => {
-                const itemsPerView = hotelsItemsPerView();
-                const maxIndex = Math.max(0, hotelsItems.length - itemsPerView);
-                if (hotelsCurrentIndex < maxIndex) {
-                    hotelsCurrentIndex++;
-                    updateHotelsSlider();
-                }
-            });
-
-            // Touch/Swipe support
-            let hotelsTouchStartX = 0;
-            let hotelsTouchEndX = 0;
-            const SWIPE_THRESHOLD = 50;
-
-            hotelsTrack.addEventListener('touchstart', (e) => {
-                hotelsTouchStartX = e.touches[0].clientX;
-            }, {
-                passive: true
-            });
-
-            hotelsTrack.addEventListener('touchend', (e) => {
-                hotelsTouchEndX = e.changedTouches[0].clientX;
-                const diff = hotelsTouchStartX - hotelsTouchEndX;
-                const isRTL = document.documentElement.dir === 'rtl';
-
-                if (Math.abs(diff) > SWIPE_THRESHOLD) {
-                    if ((diff > 0 && !isRTL) || (diff < 0 && isRTL)) {
-                        hotelsNext.click();
-                    } else {
-                        hotelsPrev.click();
-                    }
-                }
-            }, {
-                passive: true
-            });
-
-            // Responsive update
-            let hotelsResizeTimeout;
-            window.addEventListener('resize', () => {
-                clearTimeout(hotelsResizeTimeout);
-                hotelsResizeTimeout = setTimeout(() => {
-                    const itemsPerView = hotelsItemsPerView();
-                    hotelsCurrentIndex = Math.min(hotelsCurrentIndex, Math.max(0, hotelsItems.length -
-                        itemsPerView));
-                    updateHotelsSlider();
-                }, 250);
-            });
-
-            updateHotelsSlider();
+            if (filterAll) {
+                filterAll.addEventListener('click', () => filterHotels('all'));
+            }
+            if (filter5Star) {
+                filter5Star.addEventListener('click', () => filterHotels(5));
+            }
+            if (filter4Star) {
+                filter4Star.addEventListener('click', () => filterHotels(4));
+            }
+            if (filter3Star) {
+                filter3Star.addEventListener('click', () => filterHotels(3));
+            }
         })();
 
         // Testimonials Slider Functionality
@@ -1857,10 +1833,22 @@
             function updateTestimonialsSlider() {
                 const itemsPerView = testimonialsItemsPerView();
                 const maxIndex = Math.max(0, testimonialsItems.length - itemsPerView);
-                const translateX = -(testimonialsCurrentIndex * (100 / itemsPerView));
-                const isRTL = document.documentElement.dir === 'rtl';
-
-                testimonialsTrack.style.transform = `translateX(${isRTL ? -translateX : translateX}%)`;
+                
+                // Calculate translation based on item width + gap
+                if (testimonialsItems.length > 0 && testimonialsTrack) {
+                    const firstItem = testimonialsItems[0];
+                    const itemWidth = firstItem.offsetWidth;
+                    const gap = 32; // 2rem = 32px (gap-8)
+                    const translateX = -(testimonialsCurrentIndex * (itemWidth + gap));
+                    const isRTL = document.documentElement.dir === 'rtl';
+                    
+                    testimonialsTrack.style.transform = `translateX(${isRTL ? -translateX : translateX}px)`;
+                } else {
+                    // Fallback to percentage if items not available
+                    const translateX = -(testimonialsCurrentIndex * (100 / itemsPerView));
+                    const isRTL = document.documentElement.dir === 'rtl';
+                    testimonialsTrack.style.transform = `translateX(${isRTL ? -translateX : translateX}%)`;
+                }
 
                 testimonialsPrev.style.opacity = testimonialsCurrentIndex === 0 ? '0.5' : '1';
                 testimonialsPrev.style.pointerEvents = testimonialsCurrentIndex === 0 ? 'none' : 'auto';

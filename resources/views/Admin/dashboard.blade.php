@@ -11,13 +11,6 @@
         <p class="text-gray-600 dark:text-gray-400">{{ __('Welcome back! Here\'s what\'s happening today.') }}</p>
     </div>
 
-    <!-- Action Buttons -->
-    <div class="flex items-center justify-end gap-3 mb-6">
-        <button class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2">
-            <i class="fas fa-download"></i>{{ __('Export') }}
-        </button>
-    </div>
-
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Total Users -->
@@ -32,40 +25,40 @@
             <div class="text-blue-100 text-sm">{{ __('Total Users') }}</div>
         </div>
 
-        <!-- Admins -->
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition duration-300">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                    <i class="fas fa-user-shield text-2xl"></i>
-                </div>
-                <span class="text-sm bg-white/20 px-3 py-1 rounded-full">{{ __('Admin') }}</span>
-            </div>
-            <div class="text-3xl font-bold mb-1">{{ $adminCount }}</div>
-            <div class="text-purple-100 text-sm">{{ __('Administrators') }}</div>
-        </div>
-
-        <!-- Regular Users -->
+        <!-- Total Revenue -->
         <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition duration-300">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                    <i class="fas fa-user text-2xl"></i>
+                    <i class="fas fa-dollar-sign text-2xl"></i>
                 </div>
-                <span class="text-sm bg-white/20 px-3 py-1 rounded-full">{{ __('Users') }}</span>
+                <span class="text-sm bg-white/20 px-3 py-1 rounded-full">{{ __('Total') }}</span>
             </div>
-            <div class="text-3xl font-bold mb-1">{{ $totalUsers - $adminCount }}</div>
-            <div class="text-green-100 text-sm">{{ __('Regular Users') }}</div>
+            <div class="text-3xl font-bold mb-1">{{ number_format($totalRevenue, 2) }} {{ __('SAR') }}</div>
+            <div class="text-green-100 text-sm">{{ __('Total Revenue') }}</div>
         </div>
 
-        <!-- Verified Users -->
+        <!-- Total Bookings -->
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-2xl"></i>
+                </div>
+                <span class="text-sm bg-white/20 px-3 py-1 rounded-full">{{ __('Total') }}</span>
+            </div>
+            <div class="text-3xl font-bold mb-1">{{ $totalBookings }}</div>
+            <div class="text-purple-100 text-sm">{{ __('Total Bookings') }}</div>
+        </div>
+
+        <!-- Total User Reports -->
         <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition duration-300">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                    <i class="fas fa-check-circle text-2xl"></i>
+                    <i class="fas fa-exclamation-triangle text-2xl"></i>
                 </div>
-                <span class="text-sm bg-white/20 px-3 py-1 rounded-full">{{ __('Verified') }}</span>
+                <span class="text-sm bg-white/20 px-3 py-1 rounded-full">{{ __('Total') }}</span>
             </div>
-            <div class="text-3xl font-bold mb-1">{{ $users->total() }}</div>
-            <div class="text-orange-100 text-sm">{{ __('On This Page') }}</div>
+            <div class="text-3xl font-bold mb-1">{{ $totalReports }}</div>
+            <div class="text-orange-100 text-sm">{{ __('User Reports') }}</div>
         </div>
     </div>
 

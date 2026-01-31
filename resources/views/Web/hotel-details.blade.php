@@ -270,45 +270,45 @@
     </section>
 
     <!-- Hotel Images Gallery -->
-    <section class="py-8 bg-white">
+    <section class="py-8 bg-white dark:bg-gray-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             @php
                 $hotel = $hotelDetails['HotelDetails'][0] ?? null;
                 $images = [];
-                if ($hotel && isset($hotel['Images']) && is_array($hotel['Images'])) {
-                    // Images is an array of URLs
-                    foreach ($hotel['Images'] as $imgUrl) {
-                        $images[] = ['ImageUrl' => $imgUrl];
+                
+                // Check all possible image sources (not using elseif to check all)
+                if ($hotel) {
+                    // Check ImageUrls first (most common format)
+                    if (isset($hotel['ImageUrls']) && is_array($hotel['ImageUrls']) && !empty($hotel['ImageUrls'])) {
+                        foreach ($hotel['ImageUrls'] as $img) {
+                            $imgUrl = is_array($img) ? ($img['ImageUrl'] ?? '') : $img;
+                            if (!empty($imgUrl)) {
+                                $images[] = is_array($img) ? $img : ['ImageUrl' => $imgUrl];
+                            }
+                        }
                     }
-                } elseif ($hotel && isset($hotel['Image']) && !empty($hotel['Image'])) {
-                    // Single Image field
-                    $images[] = ['ImageUrl' => $hotel['Image']];
-                } elseif ($hotel && isset($hotel['ImageUrls']) && is_array($hotel['ImageUrls'])) {
-                    $images = $hotel['ImageUrls'];
+                    
+                    // Check Images array if ImageUrls didn't provide images
+                    if (empty($images) && isset($hotel['Images']) && is_array($hotel['Images']) && !empty($hotel['Images'])) {
+                        foreach ($hotel['Images'] as $imgUrl) {
+                            if (!empty($imgUrl)) {
+                                $images[] = ['ImageUrl' => is_array($imgUrl) ? ($imgUrl['ImageUrl'] ?? '') : $imgUrl];
+                            }
+                        }
+                    }
+                    
+                    // Check single Image field if still no images
+                    if (empty($images) && isset($hotel['Image']) && !empty($hotel['Image'])) {
+                        $images[] = ['ImageUrl' => $hotel['Image']];
+                    }
                 }
-                // Default images if none from API
-                if (empty($images)) {
+                
+                // Only add default image if NO valid images found from API
+                $defaultHotelImage = asset('images/default.jpg');
+                $hasValidImages = !empty($images);
+                if (!$hasValidImages) {
                     $images = [
-                        [
-                            'ImageUrl' =>
-                                'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-                        ],
-                        [
-                            'ImageUrl' =>
-                                'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-                        ],
-                        [
-                            'ImageUrl' =>
-                                'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-                        ],
-                        [
-                            'ImageUrl' =>
-                                'https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-                        ],
-                        [
-                            'ImageUrl' =>
-                                'https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-                        ],
+                        ['ImageUrl' => $defaultHotelImage]
                     ];
                 }
             @endphp
@@ -316,18 +316,26 @@
                 @foreach ($images as $index => $image)
                     @php
                         $imageUrl = $image['ImageUrl'] ?? (is_string($image) ? $image : '');
+                        // Only use default if we have no valid images AND this URL is empty
+                        if (empty($imageUrl) && !$hasValidImages) {
+                            $imageUrl = $defaultHotelImage;
+                        }
                     @endphp
-                    @if ($index == 0)
-                        <div class="md:col-span-2 md:row-span-2 cursor-pointer"
-                            onclick="openImageModal({{ $index }})">
-                            <img src="{{ $imageUrl }}" alt="{{ $hotel['HotelName'] ?? 'فندق' }}"
-                                class="w-full h-[400px] object-cover rounded-2xl hover:opacity-90 transition">
-                        </div>
-                    @elseif($index < 5)
-                        <div class="cursor-pointer" onclick="openImageModal({{ $index }})">
-                            <img src="{{ $imageUrl }}" alt="{{ $hotel['HotelName'] ?? 'فندق' }}"
-                                class="w-full h-48 object-cover rounded-2xl hover:opacity-90 transition">
-                        </div>
+                    @if (!empty($imageUrl))
+                        @if ($index == 0)
+                            <div class="md:col-span-2 md:row-span-2 cursor-pointer"
+                                onclick="openImageModal({{ $index }})">
+                                <img src="{{ $imageUrl }}" alt="{{ $hotel['HotelName'] ?? 'فندق' }}"
+                                    class="w-full h-[400px] object-cover rounded-2xl hover:opacity-90 transition"
+                                    onerror="this.onerror=null; this.src='{{ $defaultHotelImage }}';">
+                            </div>
+                        @elseif($index < 5)
+                            <div class="cursor-pointer" onclick="openImageModal({{ $index }})">
+                                <img src="{{ $imageUrl }}" alt="{{ $hotel['HotelName'] ?? 'فندق' }}"
+                                    class="w-full h-48 object-cover rounded-2xl hover:opacity-90 transition"
+                                    onerror="this.onerror=null; this.src='{{ $defaultHotelImage }}';">
+                            </div>
+                        @endif
                     @endif
                 @endforeach
             </div>
@@ -369,34 +377,34 @@
     </div>
 
     <!-- Hotel Info & Rooms -->
-    <section class="py-8 bg-gray-50">
+    <section class="py-8 bg-gray-50 dark:bg-gray-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Hotel Details -->
                 <div class="lg:col-span-2">
                     <!-- Description -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ __('About the Hotel') }}</h2>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">{{ __('About the Hotel') }}</h2>
                         @php
                             $hotel = $hotelDetails['HotelDetails'][0] ?? null;
                         @endphp
                         @if ($hotel && isset($hotel['Description']))
-                            <div class="text-gray-700 leading-relaxed">
+                            <div class="text-gray-700 dark:text-gray-300 leading-relaxed">
                                 {!! $hotel['Description'] !!}
                             </div>
                         @else
-                            <p class="text-gray-700 leading-relaxed mb-4">
+                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
                                 {{ __('Hotel Description 1') }}
                             </p>
-                            <p class="text-gray-700 leading-relaxed">
+                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
                                 {{ __('Hotel Description 2') }}
                             </p>
                         @endif
                     </div>
 
                     <!-- Amenities -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ __('Facilities and Services') }}</h2>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">{{ __('Facilities and Services') }}</h2>
                         @php
                             $hotel = $hotelDetails['HotelDetails'][0] ?? null;
                             $facilities = $hotel['HotelFacilities'] ?? [];
@@ -410,21 +418,21 @@
                                     <div
                                         class="flex items-center facility-item {{ $index >= $showLimit ? 'hidden' : '' }}">
                                         <i
-                                            class="fas fa-check-circle text-orange-600 text-lg {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
-                                        <span class="text-gray-700">{{ $facility }}</span>
+                                            class="fas fa-check-circle text-orange-600 dark:text-orange-400 text-lg {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
+                                        <span class="text-gray-700 dark:text-gray-300">{{ $facility }}</span>
                                     </div>
                                 @endforeach
                             </div>
                             @if ($hasMore)
                                 <div class="mt-4 text-center">
                                     <button type="button" id="showMoreFacilities"
-                                        class="text-orange-600 hover:text-orange-700 font-semibold transition">
+                                        class="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-semibold transition">
                                         <i
                                             class="fas fa-chevron-down {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
                                         {{ __('Show More') }} ({{ $totalFacilities - $showLimit }} {{ __('more') }})
                                     </button>
                                     <button type="button" id="showLessFacilities"
-                                        class="text-orange-600 hover:text-orange-700 font-semibold transition hidden">
+                                        class="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-semibold transition hidden">
                                         <i
                                             class="fas fa-chevron-up {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
                                         {{ __('Show Less') }}
@@ -435,41 +443,41 @@
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 <div class="flex items-center">
                                     <i
-                                        class="fas fa-wifi text-orange-600 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
-                                    <span class="text-gray-700">{{ __('Free WiFi') }}</span>
+                                        class="fas fa-wifi text-orange-600 dark:text-orange-400 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">{{ __('Free WiFi') }}</span>
                                 </div>
                                 <div class="flex items-center">
                                     <i
-                                        class="fas fa-swimming-pool text-orange-600 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
-                                    <span class="text-gray-700">{{ __('Pool') }}</span>
+                                        class="fas fa-swimming-pool text-orange-600 dark:text-orange-400 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">{{ __('Pool') }}</span>
                                 </div>
                                 <div class="flex items-center">
                                     <i
-                                        class="fas fa-utensils text-orange-600 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
-                                    <span class="text-gray-700">{{ __('Restaurant') }}</span>
+                                        class="fas fa-utensils text-orange-600 dark:text-orange-400 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">{{ __('Restaurant') }}</span>
                                 </div>
                                 <div class="flex items-center">
                                     <i
-                                        class="fas fa-spa text-orange-600 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
-                                    <span class="text-gray-700">{{ __('Spa') }}</span>
+                                        class="fas fa-spa text-orange-600 dark:text-orange-400 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">{{ __('Spa') }}</span>
                                 </div>
                                 <div class="flex items-center">
                                     <i
-                                        class="fas fa-dumbbell text-orange-600 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
-                                    <span class="text-gray-700">{{ __('Gym') }}</span>
+                                        class="fas fa-dumbbell text-orange-600 dark:text-orange-400 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">{{ __('Gym') }}</span>
                                 </div>
                                 <div class="flex items-center">
                                     <i
-                                        class="fas fa-parking text-orange-600 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
-                                    <span class="text-gray-700">{{ __('Parking') }}</span>
+                                        class="fas fa-parking text-orange-600 dark:text-orange-400 text-xl {{ app()->getLocale() === 'ar' ? 'ml-3' : 'mr-3' }}"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">{{ __('Parking') }}</span>
                                 </div>
                             </div>
                         @endif
                     </div>
 
                     <!-- Date Selection & Availability Check -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ __('Select Dates to View Availability') }}
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">{{ __('Select Dates to View Availability') }}
                         </h2>
 
                         <form id="availabilityForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -515,9 +523,9 @@
                                 <div id="calendarModal"
                                     class="absolute left-1/2 -translate-x-1/2 z-[40] hidden top-full mt-2 w-screen max-w-[90vw] md:w-auto">
                                     <div
-                                        class="bg-white rounded-3xl shadow-2xl p-6 border border-gray-100 w-full md:w-[850px] max-w-full overflow-hidden">
+                                        class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 border border-gray-100 dark:border-gray-700 w-full md:w-[850px] max-w-full overflow-hidden">
                                         <div id="calendarAnchor"></div>
-                                        <div class="p-3 border-t border-gray-100 flex justify-end">
+                                        <div class="p-3 border-t border-gray-100 dark:border-gray-700 flex justify-end">
                                             <button type="button" id="closeCalendar"
                                                 class="bg-orange-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-600 transition">
                                                 {{ __('Done') }}
@@ -581,11 +589,11 @@
                     </div>
 
                     <!-- Available Rooms -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ __('Available Rooms') }}</h2>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">{{ __('Available Rooms') }}</h2>
 
                         <div id="roomsContainer" class="space-y-6">
-                            <div id="noRoomsMessage" class="hidden text-center py-8 text-gray-500">
+                            <div id="noRoomsMessage" class="hidden text-center py-8 text-gray-500 dark:text-gray-400">
                                 <i class="fas fa-calendar-times text-4xl mb-4"></i>
                                 <p class="text-lg">{{ __('No rooms available for selected dates') }}</p>
                                 <p class="text-sm mt-2">{{ __('Please select check-in and check-out dates') }}</p>
@@ -595,24 +603,29 @@
                                 @if (isset($availableRooms) && count($availableRooms) > 0)
                                     @foreach ($availableRooms as $index => $room)
                                         <div
-                                            class="border-2 border-gray-200 rounded-2xl p-6 hover:border-orange-500 transition">
+                                            class="border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-6 hover:border-orange-500 dark:hover:border-orange-500 transition bg-white dark:bg-gray-800">
                                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                 <!-- Room Image -->
                                                 <div class="relative h-48 md:h-full min-h-[200px]">
-                                                    <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                                        alt="غرفة" class="w-full h-full object-cover rounded-xl">
+                                                    @php
+                                                        $defaultHotelImage = asset('images/default.jpg');
+                                                    @endphp
+                                                    <img src="{{ $defaultHotelImage }}"
+                                                        alt="غرفة" 
+                                                        class="w-full h-full object-cover rounded-xl"
+                                                        onerror="this.onerror=null; this.src='{{ $defaultHotelImage }}';">
                                                 </div>
 
                                                 <!-- Room Details -->
                                                 <div class="md:col-span-2">
                                                     <div class="flex items-start justify-between mb-3">
                                                         <div>
-                                                            <h3 class="text-xl font-bold text-gray-900 mb-2">
+                                                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
                                                                 {{ is_array($room['Name']) ? $room['Name'][0] : $room['Name'] }}
                                                             </h3>
                                                             <div class="flex flex-wrap gap-2 mb-3">
                                                                 <span
-                                                                    class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg">
+                                                                    class="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-lg">
                                                                     <i
                                                                         class="fas fa-bed {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                                                     {{ __('Room') }}
@@ -620,7 +633,7 @@
                                                                 @if (isset($room['Amenities']))
                                                                     @foreach (array_slice($room['Amenities'] ?? [], 0, 3) as $amenity)
                                                                         <span
-                                                                            class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg">
+                                                                            class="px-2 py-1 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-lg">
                                                                             <i
                                                                                 class="fas fa-check {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                                                             {{ $amenity }}
@@ -632,18 +645,18 @@
                                                     </div>
 
                                                     <div
-                                                        class="flex items-center justify-between pt-4 border-t border-gray-200">
+                                                        class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                                                         <div>
                                                             <div class="flex items-baseline">
-                                                                <span class="text-3xl font-extrabold text-orange-600">
+                                                                <span class="text-3xl font-extrabold text-orange-600 dark:text-orange-400">
                                                                     {{ $room['TotalFare'] ?? ($room['Price']['PublishedPrice'] ?? 0) }}
                                                                 </span>
                                                                 <span
-                                                                    class="text-gray-500 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">
+                                                                    class="text-gray-500 dark:text-gray-400 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">
                                                                     {{ isset($currency) ? $currency : request('currency', 'USD') }}
                                                                 </span>
                                                             </div>
-                                                            <div class="text-xs text-gray-400">/ {{ __('Total Price') }}
+                                                            <div class="text-xs text-gray-400 dark:text-gray-500">/ {{ __('Total Price') }}
                                                                 • {{ __('including taxes') }}</div>
                                                         </div>
                                                         <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&booking_code={{ $room['BookingCode'] ?? '' }}&check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}"
@@ -656,7 +669,7 @@
                                         </div>
                                     @endforeach
                                 @else
-                                    <div class="text-center py-8 text-gray-500">
+                                    <div class="text-center py-8 text-gray-500 dark:text-gray-400">
                                         <i class="fas fa-calendar-times text-4xl mb-4"></i>
                                         <p class="text-lg">{{ __('No rooms available for selected dates') }}</p>
                                     </div>
@@ -672,8 +685,8 @@
                 <div class="lg:col-span-1">
                     <div class="sticky top-24 space-y-6">
                         <!-- Hotel Quick Info -->
-                        <div class="bg-white rounded-2xl shadow-lg p-6">
-                            <h3 class="text-xl font-bold text-gray-900 mb-6">{{ __('Hotel Information') }}</h3>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">{{ __('Hotel Information') }}</h3>
                             @php
                                 $hotel = $hotelDetails['HotelDetails'][0] ?? null;
                             @endphp
@@ -681,12 +694,12 @@
                                 <!-- Location -->
                                 <div class="flex items-start">
                                     <div
-                                        class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-map-marker-alt text-orange-600"></i>
+                                        class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-map-marker-alt text-orange-600 dark:text-orange-400"></i>
                                     </div>
                                     <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
-                                        <div class="font-semibold text-gray-900 mb-1">{{ __('Location') }}</div>
-                                        <p class="text-sm text-gray-600">
+                                        <div class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Location') }}</div>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300">
                                             @if ($hotel && isset($hotel['Address']))
                                                 {{ $hotel['Address'] }}@if (isset($hotel['PinCode']))
                                                     , {{ $hotel['PinCode'] }}
@@ -708,19 +721,19 @@
                                 <!-- Rating -->
                                 <div class="flex items-start">
                                     <div
-                                        class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-star text-orange-600"></i>
+                                        class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-star text-orange-600 dark:text-orange-400"></i>
                                     </div>
                                     <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
-                                        <div class="font-semibold text-gray-900 mb-1">{{ __('Rating') }}</div>
+                                        <div class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Rating') }}</div>
                                         <div class="flex items-center">
                                             <div
-                                                class="flex text-yellow-500 text-sm {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}">
+                                                class="flex text-yellow-500 dark:text-yellow-400 text-sm {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}">
                                                 @for ($i = 0; $i < ($hotel['HotelRating'] ?? 5); $i++)
                                                     <i class="fas fa-star"></i>
                                                 @endfor
                                             </div>
-                                            <span class="text-sm text-gray-600">{{ $hotel['HotelRating'] ?? '4.8' }}
+                                            <span class="text-sm text-gray-600 dark:text-gray-300">{{ $hotel['HotelRating'] ?? '4.8' }}
                                                 @if (isset($hotel['HotelRating']))
                                                     {{ __('Stars') }}
                                                 @endif
@@ -733,13 +746,13 @@
                                 @if ($hotel && (isset($hotel['CheckInTime']) || isset($hotel['CheckOutTime'])))
                                     <div class="flex items-start">
                                         <div
-                                            class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <i class="fas fa-clock text-orange-600"></i>
+                                            class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-clock text-orange-600 dark:text-orange-400"></i>
                                         </div>
                                         <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
-                                            <div class="font-semibold text-gray-900 mb-1">
+                                            <div class="font-semibold text-gray-900 dark:text-white mb-1">
                                                 {{ __('Check-in / Check-out') }}</div>
-                                            <p class="text-sm text-gray-600">
+                                            <p class="text-sm text-gray-600 dark:text-gray-300">
                                                 {{ __('Check-in') }}: {{ $hotel['CheckInTime'] ?? '2:00 PM' }}<br>
                                                 {{ __('Check-out') }}: {{ $hotel['CheckOutTime'] ?? '12:00 PM' }}
                                             </p>
@@ -753,47 +766,47 @@
                         </div>
 
                         <!-- Hotel Policies -->
-                        <div class="bg-white rounded-2xl shadow-lg p-6">
-                            <h3 class="text-xl font-bold text-gray-900 mb-6">{{ __('Hotel Policies') }}</h3>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">{{ __('Hotel Policies') }}</h3>
 
                             <div class="space-y-4">
                                 <!-- Cancellation Policy -->
-                                <div class="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                                <div class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
                                     <div class="flex items-start">
                                         <i
-                                            class="fas fa-check-circle text-orange-600 text-lg {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }} mt-1"></i>
+                                            class="fas fa-check-circle text-orange-600 dark:text-orange-400 text-lg {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }} mt-1"></i>
                                         <div>
-                                            <div class="font-semibold text-orange-900 mb-1 text-sm">
+                                            <div class="font-semibold text-orange-900 dark:text-orange-200 mb-1 text-sm">
                                                 {{ __('Free Cancellation') }}</div>
-                                            <div class="text-xs text-orange-700">
+                                            <div class="text-xs text-orange-700 dark:text-orange-300">
                                                 {{ __('You can cancel for free up to 24 hours before arrival') }}</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Payment Policy -->
-                                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
                                     <div class="flex items-start">
                                         <i
-                                            class="fas fa-credit-card text-blue-600 text-lg {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }} mt-1"></i>
+                                            class="fas fa-credit-card text-blue-600 dark:text-blue-400 text-lg {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }} mt-1"></i>
                                         <div>
-                                            <div class="font-semibold text-blue-900 mb-1 text-sm">
+                                            <div class="font-semibold text-blue-900 dark:text-blue-200 mb-1 text-sm">
                                                 {{ __('Payment Policy') }}</div>
-                                            <div class="text-xs text-blue-700">
+                                            <div class="text-xs text-blue-700 dark:text-blue-300">
                                                 {{ __('Pay at the hotel or online payment available') }}</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Pet Policy -->
-                                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                                <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-4">
                                     <div class="flex items-start">
                                         <i
-                                            class="fas fa-paw text-gray-600 text-lg {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }} mt-1"></i>
+                                            class="fas fa-paw text-gray-600 dark:text-gray-400 text-lg {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }} mt-1"></i>
                                         <div>
-                                            <div class="font-semibold text-gray-900 mb-1 text-sm">{{ __('Pet Policy') }}
+                                            <div class="font-semibold text-gray-900 dark:text-white mb-1 text-sm">{{ __('Pet Policy') }}
                                             </div>
-                                            <div class="text-xs text-gray-700">{{ __('Pets are not allowed') }}</div>
+                                            <div class="text-xs text-gray-700 dark:text-gray-300">{{ __('Pets are not allowed') }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -801,8 +814,8 @@
                         </div>
 
                         <!-- Contact Hotel -->
-                        <div class="bg-white rounded-2xl shadow-lg p-6">
-                            <h3 class="text-xl font-bold text-gray-900 mb-6">{{ __('Contact Hotel') }}</h3>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">{{ __('Contact Hotel') }}</h3>
                             @php
                                 $hotel = $hotelDetails['HotelDetails'][0] ?? null;
                             @endphp
@@ -811,14 +824,14 @@
                                 @if ($hotel && isset($hotel['PhoneNumber']))
                                     <div class="flex items-start">
                                         <div
-                                            class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <i class="fas fa-phone text-orange-600"></i>
+                                            class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-phone text-orange-600 dark:text-orange-400"></i>
                                         </div>
                                         <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
-                                            <div class="font-semibold text-gray-900 mb-1">{{ __('Phone') }}</div>
-                                            <p class="text-sm text-gray-600">
+                                            <div class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Phone') }}</div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300">
                                                 <a href="tel:{{ $hotel['PhoneNumber'] }}"
-                                                    class="hover:text-orange-600">{{ $hotel['PhoneNumber'] }}</a>
+                                                    class="hover:text-orange-600 dark:hover:text-orange-400">{{ $hotel['PhoneNumber'] }}</a>
                                             </p>
                                         </div>
                                     </div>
@@ -828,14 +841,14 @@
                                 @if ($hotel && isset($hotel['Email']))
                                     <div class="flex items-start">
                                         <div
-                                            class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <i class="fas fa-envelope text-orange-600"></i>
+                                            class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-envelope text-orange-600 dark:text-orange-400"></i>
                                         </div>
                                         <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
-                                            <div class="font-semibold text-gray-900 mb-1">{{ __('Email') }}</div>
-                                            <p class="text-sm text-gray-600">
+                                            <div class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Email') }}</div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300">
                                                 <a href="mailto:{{ $hotel['Email'] }}"
-                                                    class="hover:text-orange-600 break-all">{{ $hotel['Email'] }}</a>
+                                                    class="hover:text-orange-600 dark:hover:text-orange-400 break-all">{{ $hotel['Email'] }}</a>
                                             </p>
                                         </div>
                                     </div>
@@ -859,15 +872,31 @@
         @php
             $hotel = $hotelDetails['HotelDetails'][0] ?? null;
             $apiImages = [];
-            if ($hotel && isset($hotel['Images']) && is_array($hotel['Images'])) {
-                // Images is an array of URLs
-                $apiImages = array_slice($hotel['Images'], 0, 5);
-            } elseif ($hotel && isset($hotel['Image']) && !empty($hotel['Image'])) {
-                // Single Image field
-                $apiImages = [$hotel['Image']];
+            
+            // Check all possible image sources (not using elseif to check all)
+            if ($hotel) {
+                // Check ImageUrls first (most common format)
+                if (isset($hotel['ImageUrls']) && is_array($hotel['ImageUrls']) && !empty($hotel['ImageUrls'])) {
+                    $apiImages = array_slice(array_map(function($img) {
+                        return is_array($img) ? ($img['ImageUrl'] ?? '') : $img;
+                    }, $hotel['ImageUrls']), 0, 5);
+                    $apiImages = array_filter($apiImages); // Remove empty values
+                }
+                
+                // Check Images array if ImageUrls didn't provide images
+                if (empty($apiImages) && isset($hotel['Images']) && is_array($hotel['Images']) && !empty($hotel['Images'])) {
+                    $apiImages = array_filter(array_slice($hotel['Images'], 0, 5));
+                }
+                
+                // Check single Image field if still no images
+                if (empty($apiImages) && isset($hotel['Image']) && !empty($hotel['Image'])) {
+                    $apiImages = [$hotel['Image']];
+                }
             }
-            $defaultImages = ['https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80', 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80', 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80', 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80', 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'];
-            $hotelImagesArray = !empty($apiImages) ? $apiImages : $defaultImages;
+            
+            $defaultHotelImage = asset('images/default.jpg');
+            // Only use default image if NO valid images found
+            $hotelImagesArray = !empty($apiImages) ? array_values($apiImages) : [$defaultHotelImage];
         @endphp
         const hotelImages = @json($hotelImagesArray);
 
@@ -1081,19 +1110,19 @@
                         <div class="flex-1">
                             <label class="block text-xs text-gray-500 mb-1">{{ __('Adults') }}</label>
                             <div class="flex items-center border border-gray-200 dark:border-gray-600 rounded-lg">
-                                <button type="button" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-l-lg decrease-adults" data-index="${index}">-</button>
+                                <button type="button" class="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg decrease-adults" data-index="${index}">-</button>
                                 <span class="flex-1 text-center text-sm font-bold text-gray-900 dark:text-white">${room.adults}</span>
-                                <button type="button" class="w-8 h-8 flex items-center justify-center text-orange-500 hover:bg-orange-50 rounded-r-lg increase-adults" data-index="${index}">+</button>
+                                <button type="button" class="w-8 h-8 flex items-center justify-center text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-r-lg increase-adults" data-index="${index}">+</button>
                             </div>
                         </div>
                         <div class="flex-1">
-                            <label class="block text-xs text-gray-500 mb-1">{{ __('Children') }}</label>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ __('Children') }}</label>
                             <div class="flex items-center border border-gray-200 dark:border-gray-600 rounded-lg">
-                                <button type="button" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-l-lg decrease-children" data-index="${index}">-</button>
+                                <button type="button" class="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg decrease-children" data-index="${index}">-</button>
                                 <span class="flex-1 text-center text-sm font-bold text-gray-900 dark:text-white">${room.children}</span>
-                                <button type="button" class="w-8 h-8 flex items-center justify-center text-orange-500 hover:bg-orange-50 rounded-r-lg increase-children" data-index="${index}">+</button>
+                                <button type="button" class="w-8 h-8 flex items-center justify-center text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-r-lg increase-children" data-index="${index}">+</button>
                             </div>
-                            <span class="text-[10px] text-gray-400 block mt-1 {{ app()->getLocale() == 'ar' ? 'text-right' : 'text-left' }}">
+                            <span class="text-[10px] text-gray-400 dark:text-gray-500 block mt-1 {{ app()->getLocale() == 'ar' ? 'text-right' : 'text-left' }}">
                                 {{ app()->getLocale() == 'ar' ? 'من 0 إلى 12 سنة' : 'From 0 to 12 years' }}
                             </span>
                         </div>
@@ -1181,7 +1210,7 @@
 
             if (!checkIn || !checkOut) {
                 availabilityMessage.textContent = '{{ __('Please select check-in and check-out dates') }}';
-                availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-red-50 text-red-600';
+                availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400';
                 availabilityMessage.classList.remove('hidden');
                 return;
             }
@@ -1202,7 +1231,7 @@
             if (roomsList) roomsList.innerHTML = '';
             if (noRoomsMessage) noRoomsMessage.classList.add('hidden');
             availabilityMessage.textContent = '{{ __('Searching for availability...') }}';
-            availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-blue-50 text-blue-600';
+            availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400';
             availabilityMessage.classList.remove('hidden');
 
             const searchData = {
@@ -1237,7 +1266,7 @@
             } catch (err) {
                 console.error(err);
                 availabilityMessage.textContent = '{{ __('No rooms available for these dates.') }}';
-                availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-gray-100 text-gray-600';
+                availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
                 if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
                 if (roomsList) roomsList.classList.add('hidden');
             } finally {
@@ -1267,7 +1296,7 @@
                 if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
                 if (roomsList) roomsList.classList.add('hidden');
                 availabilityMessage.textContent = '{{ __('No rooms available.') }}';
-                availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-gray-100 text-gray-600';
+                availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
                 return;
             }
 
@@ -1281,7 +1310,7 @@
             });
 
             availabilityMessage.textContent = `{{ __('Found') }} ${allRooms.length} {{ __('Available Rooms') }}`;
-            availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-green-50 text-green-600';
+            availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400';
 
             // Update summary
             const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (86400000));
@@ -1291,13 +1320,14 @@
         function createRoomCard(room, index, checkIn, checkOut, guests) {
             const div = document.createElement('div');
             div.className =
-                'border-2 border-gray-100 rounded-2xl p-6 hover:border-orange-500 transition shadow-sm bg-white mb-6';
+                'border-2 border-gray-100 dark:border-gray-700 rounded-2xl p-6 hover:border-orange-500 dark:hover:border-orange-500 transition shadow-sm bg-white dark:bg-gray-800 mb-6';
 
             const roomName = room.Name?.[0] || room.Name || room.RoomName || `{{ __('Room') }} ${index+1}`;
             const price = parseFloat(room.TotalFare || room.Rate?.Amount || room.Price?.Amount || 0);
             const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (86400000));
             const perNight = nights > 0 ? (price / nights).toFixed(2) : price.toFixed(2);
             const currency = room.Currency || 'USD';
+            const defaultHotelImage = '{{ asset('images/default.jpg') }}';
 
             // Serialize PaxRooms for the link
             let paxParams = '';
@@ -1313,24 +1343,24 @@
             div.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="h-48 md:h-full">
-                        <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=400" class="w-full h-full object-cover rounded-xl shadow-inner">
+                        <img src="${defaultHotelImage}" class="w-full h-full object-cover rounded-xl shadow-inner" onerror="this.onerror=null; this.src='${defaultHotelImage}';">
                     </div>
                     <div class="md:col-span-2 flex flex-col justify-between">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-2">${roomName}</h3>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">${roomName}</h3>
                             <div class="flex flex-wrap gap-2 mb-4">
-                                <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg">${room.MealType || 'Room Only'}</span>
-                                ${room.IsRefundable ? '<span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-lg">{{ __('Refundable') }}</span>' : ''}
+                                <span class="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-lg">${room.MealType || 'Room Only'}</span>
+                                ${room.IsRefundable ? '<span class="px-2 py-1 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-lg">{{ __('Refundable') }}</span>' : ''}
                             </div>
                         </div>
-                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
                             <div>
                                 <div class="flex items-baseline">
-                                    <span class="text-3xl font-extrabold text-orange-600">${perNight}</span>
-                                    <span class="text-gray-500 text-sm ml-2">${currency}</span>
+                                    <span class="text-3xl font-extrabold text-orange-600 dark:text-orange-400">${perNight}</span>
+                                    <span class="text-gray-500 dark:text-gray-400 text-sm ml-2">${currency}</span>
                                 </div>
-                                <div class="text-xs text-gray-400">{{ __('per night') }}</div>
-                                ${nights > 1 ? `<div class="text-xs text-gray-500 mt-1">{{ __('Total') }}: ${price.toFixed(2)} ${currency}</div>` : ''}
+                                <div class="text-xs text-gray-400 dark:text-gray-500">{{ __('per night') }}</div>
+                                ${nights > 1 ? `<div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('Total') }}: ${price.toFixed(2)} ${currency}</div>` : ''}
                             </div>
                             <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&CheckIn=${checkIn}&CheckOut=${checkOut}&guests=${guests}${paxParams}&booking_code=${encodeURIComponent(room.BookingCode || '')}&total_fare=${price}&currency=${currency}&room_name=${encodeURIComponent(roomName)}"
                                class="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-700 transition shadow-lg">

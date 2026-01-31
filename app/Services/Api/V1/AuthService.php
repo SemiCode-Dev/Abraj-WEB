@@ -61,6 +61,7 @@ class AuthService
                 'password' => bcrypt($data['password']),
                 'phone' => $phone, // Clean number: 1141367100
                 'phone_country_code' => $countryCode, // With +: +20
+                'status' => 'active', // Default status is active
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             // Check for duplicate entry error code usually 1062

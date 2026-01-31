@@ -60,6 +60,19 @@
             position: relative;
             color: #cbd5e1;
             font-weight: 500;
+            width: 100%;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .admin-nav-link > span:not(.admin-badge) {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .admin-nav-link:hover {
@@ -95,10 +108,17 @@
         .admin-badge {
             margin-left: auto;
             background: rgba(255, 255, 255, 0.2);
-            padding: 2px 8px;
+            padding: 4px 8px;
             border-radius: 12px;
             font-size: 11px;
             font-weight: 600;
+            min-width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .admin-nav-link.active .admin-badge {
@@ -201,7 +221,7 @@
                         </div>
                         <div>
                             <div class="text-lg font-bold text-white">ABRAJ STAY</div>
-                            <div class="text-xs text-gray-400">Admin Dashboard</div>
+                            <div class="text-xs text-gray-400">{{ __('Admin Dashboard') }}</div>
                         </div>
                     </a>
                     <button id="sidebar-close" class="lg:hidden text-gray-400 hover:text-white transition p-2">
@@ -214,13 +234,13 @@
                     <a href="{{ route('admin.dashboard') }}"
                         class="admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                         <i class="fas fa-chart-line"></i>
-                        <span>Dashboard</span>
+                        <span>{{ __('Dashboard') }}</span>
                     </a>
 
-                    <a href="{{ route('admin.users') }}"
+                    <a href="{{ route('admin.users.index') }}"
                         class="admin-nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
                         <i class="fas fa-users"></i>
-                        <span>Users</span>
+                        <span>{{ __('Users') }}</span>
                     </a>
 
                     <!-- Bookings Section -->
@@ -253,30 +273,30 @@
                     <a href="{{ route('admin.transactions') }}"
                         class="admin-nav-link {{ request()->routeIs('admin.transactions*') ? 'active' : '' }}">
                         <i class="fas fa-credit-card"></i>
-                        <span>Transactions</span>
+                        <span>{{ __('Transactions') }}</span>
                     </a>
 
                     <a href="{{ route('admin.reviews') }}"
                         class="admin-nav-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}">
                         <i class="fas fa-star"></i>
-                        <span>Client Reviews</span>
+                        <span>{{ __('Client Reviews') }}</span>
                     </a>
 
                     <a href="{{ route('admin.reports') }}"
                         class="admin-nav-link {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <span>User Reports</span>
+                        <span>{{ __('User Reports') }}</span>
                         <span class="admin-badge">5</span>
                     </a>
 
                     <!-- Settings Section -->
                     <div class="pt-6 mt-6 border-t border-white/10">
-                        <div class="px-4 mb-3 sidebar-section-title">Settings</div>
+                        <div class="px-4 mb-3 sidebar-section-title">{{ __('Settings') }}</div>
 
                         <a href="{{ route('admin.settings') }}"
                             class="admin-nav-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                             <i class="fas fa-cog"></i>
-                            <span>Settings</span>
+                            <span>{{ __('Settings') }}</span>
                         </a>
                     </div>
                 </nav>
@@ -347,14 +367,14 @@
 
                         <!-- Page Title -->
                         <div class="hidden md:block">
-                            <h1 class="text-xl font-bold text-gray-900 dark:text-white">@yield('page-title', 'Dashboard')</h1>
+                            <h1 class="text-xl font-bold text-gray-900 dark:text-white">@yield('page-title', __('Dashboard'))</h1>
                         </div>
                     </div>
 
                     <!-- Center Section - Search -->
                     <div class="flex-1 max-w-2xl mx-8 hidden lg:block">
                         <div class="relative">
-                            <input type="text" placeholder="Search anything..."
+                                <input type="text" placeholder="{{ __('Search anything...') }}"
                                 class="admin-search w-full pl-10 pr-4 py-2.5 rounded-lg text-sm focus:outline-none">
                             <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                         </div>

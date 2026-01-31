@@ -4,6 +4,18 @@
 
 @section('content')
 <div class="space-y-6">
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-lg">
+            <i class="fas fa-check-circle {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ session('success') }}
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg">
+            <i class="fas fa-exclamation-circle {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ session('error') }}
+        </div>
+    @endif
+    
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -14,9 +26,9 @@
             <button class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <i class="fas fa-download {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('Export') }}
             </button>
-            <button class="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition shadow-lg">
+            <a href="{{ route('admin.users.create') }}" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition shadow-lg">
                 <i class="fas fa-plus {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('Add User') }}
-            </button>
+            </a>
         </div>
     </div>
 
@@ -73,31 +85,36 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ __('Search') }}</label>
-                <input type="text" placeholder="{{ __('Name, email, phone...') }}"
+                <input type="text" name="search" id="searchInput" placeholder="{{ __('Name, email, phone...') }}"
+                       value="{{ request('search') }}"
                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
             </div>
             <div>
                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ __('Status') }}</label>
-                <select class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                    <option>{{ __('All Status') }}</option>
-                    <option>{{ __('Active') }}</option>
-                    <option>{{ __('Inactive') }}</option>
-                    <option>{{ __('Suspended') }}</option>
+                <select name="status" id="statusFilter" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                    <option value="all" {{ request('status') === 'all' || !request('status') ? 'selected' : '' }}>{{ __('All Status') }}</option>
+                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>{{ __('Active') }}</option>
+                    <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
+                    <option value="blocked" {{ request('status') === 'blocked' ? 'selected' : '' }}>{{ __('Blocked') }}</option>
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ __('Role') }}</label>
-                <select class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                    <option>{{ __('All Roles') }}</option>
-                    <option>{{ __('Customer') }}</option>
-                    <option>{{ __('Admin') }}</option>
-                    <option>{{ __('Manager') }}</option>
+                <select name="role" id="roleFilter" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                    <option value="all" {{ request('role') === 'all' || !request('role') ? 'selected' : '' }}>{{ __('All Roles') }}</option>
+                    <option value="client" {{ request('role') === 'client' ? 'selected' : '' }}>{{ __('Client') }}</option>
+                    <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>{{ __('Admin') }}</option>
                 </select>
             </div>
             <div class="flex items-end">
-                <button class="w-full px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition">
-                    {{ __('Apply Filters') }}
-                </button>
+                <form method="GET" action="{{ route('admin.users.index') }}" class="w-full" id="filterForm">
+                    <input type="hidden" name="search" id="searchInputHidden" value="{{ request('search') }}">
+                    <input type="hidden" name="role" id="roleFilterHidden" value="{{ request('role', 'all') }}">
+                    <input type="hidden" name="status" id="statusFilterHidden" value="{{ request('status', 'all') }}">
+                    <button type="submit" class="w-full px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition">
+                        {{ __('Apply Filters') }}
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -136,7 +153,7 @@
                                 @endif
                                 <div>
                                     <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ $user->name }}</div>
-                                    <div class="text-xs text-gray-500 dark:text-gray-400">ID: #US-{{ str_pad($user->id, 3, '0', STR_PAD_LEFT) }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('ID') }}: #US-{{ str_pad($user->id, 3, '0', STR_PAD_LEFT) }}</div>
                                 </div>
                             </div>
                         </td>
@@ -144,35 +161,63 @@
                             <span class="text-sm text-gray-900 dark:text-white">{{ $user->email }}</span>
                         </td>
                         <td class="py-4 px-6">
-                            <span class="text-sm text-gray-900 dark:text-white">{{ $user->phone ?? 'N/A' }}</span>
+                            <span class="text-sm text-gray-900 dark:text-white">{{ $user->phone ?? __('N/A') }}</span>
                         </td>
                         <td class="py-4 px-6">
-                            <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-semibold">{{ __('Customer') }}</span>
-                        </td>
-                        <td class="py-4 px-6">
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">0</span>
-                        </td>
-                        <td class="py-4 px-6">
-                            @if($user->email_verified_at)
-                                <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-semibold">{{ __('Verified') }}</span>
+                            @if($user->is_admin)
+                                <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-semibold">{{ __('Admin') }}</span>
                             @else
-                                <span class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-semibold">{{ __('Pending') }}</span>
+                                <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-semibold">{{ __('Client') }}</span>
+                            @endif
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ __('Bookings') }}: 0</span>
+                        </td>
+                        <td class="py-4 px-6">
+                            @if($user->status === 'active')
+                                <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-semibold">{{ __('Active') }}</span>
+                            @elseif($user->status === 'inactive')
+                                <span class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-semibold">{{ __('Inactive') }}</span>
+                            @elseif($user->status === 'blocked')
+                                <span class="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-semibold">{{ __('Blocked') }}</span>
+                            @else
+                                <span class="px-3 py-1 bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400 rounded-full text-xs font-semibold">{{ __('Unknown') }}</span>
                             @endif
                         </td>
                         <td class="py-4 px-6">
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ $user->created_at->format('Y-m-d') }}</span>
+                            <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">{{ $user->created_at->diffForHumans() }}</div>
                         </td>
                         <td class="py-4 px-6">
                             <div class="flex items-center gap-2">
-                                <button class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition" title="{{ __('View') }}">
+                                <a href="{{ route('admin.users.show', $user) }}" 
+                                   class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition" 
+                                   title="{{ __('View') }}">
                                     <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="p-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition" title="{{ __('Edit') }}">
+                                </a>
+                                <a href="{{ route('admin.users.edit', $user) }}" 
+                                   class="p-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition" 
+                                   title="{{ __('Edit') }}">
                                     <i class="fas fa-edit"></i>
+                                </a>
+                                <button onclick="toggleUserStatus({{ $user->id }})" 
+                                        class="p-2 {{ $user->status === 'active' ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400' }} hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition" 
+                                        title="{{ $user->status === 'active' ? __('Deactivate') : __('Activate') }}">
+                                    <i class="fas fa-{{ $user->status === 'active' ? 'pause' : 'play' }}"></i>
                                 </button>
-                                <button class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition" title="{{ __('Suspend') }}">
-                                    <i class="fas fa-ban"></i>
-                                </button>
+                                @if($user->status !== 'blocked')
+                                    <button onclick="blockUser({{ $user->id }})" 
+                                            class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition" 
+                                            title="{{ __('Block') }}">
+                                        <i class="fas fa-ban"></i>
+                                    </button>
+                                @else
+                                    <button onclick="toggleUserStatus({{ $user->id }})" 
+                                            class="p-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition" 
+                                            title="{{ __('Unblock') }}">
+                                        <i class="fas fa-unlock"></i>
+                                    </button>
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -210,5 +255,76 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    // Filter form submission
+    document.getElementById('filterForm')?.addEventListener('submit', function(e) {
+        const searchValue = document.getElementById('searchInput').value;
+        const roleValue = document.getElementById('roleFilter').value;
+        const statusValue = document.getElementById('statusFilter').value;
+        
+        document.getElementById('searchInputHidden').value = searchValue;
+        document.getElementById('roleFilterHidden').value = roleValue;
+        document.getElementById('statusFilterHidden').value = statusValue;
+    });
+
+    // Toggle user status (active/inactive)
+    function toggleUserStatus(userId) {
+        if (!confirm('{{ __('Are you sure you want to change this user\'s status?') }}')) {
+            return;
+        }
+
+        fetch(`/{{ app()->getLocale() }}/admin/users/${userId}/toggle-status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || '{{ __('An error occurred') }}');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('{{ __('An error occurred') }}');
+        });
+    }
+
+    // Block user
+    function blockUser(userId) {
+        if (!confirm('{{ __('Are you sure you want to block this user?') }}')) {
+            return;
+        }
+
+        fetch(`/{{ app()->getLocale() }}/admin/users/${userId}/block`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || '{{ __('An error occurred') }}');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('{{ __('An error occurred') }}');
+        });
+    }
+</script>
+@endpush
 @endsection
 

@@ -25,6 +25,7 @@ class User extends Authenticatable
         'phone_country_code',
         'image',
         'is_admin',
+        'status',
     ];
 
     /**
@@ -46,4 +47,44 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin === true || $this->is_admin === 1;
+    }
+
+    /**
+     * Check if user is client
+     */
+    public function isClient(): bool
+    {
+        return !$this->isAdmin();
+    }
+
+    /**
+     * Check if user is active
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    /**
+     * Check if user is blocked
+     */
+    public function isBlocked(): bool
+    {
+        return $this->status === 'blocked';
+    }
+
+    /**
+     * Check if user is inactive
+     */
+    public function isInactive(): bool
+    {
+        return $this->status === 'inactive';
+    }
 }

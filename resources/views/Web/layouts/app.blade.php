@@ -34,7 +34,7 @@
     <a href="https://wa.me/966533991801?text={{ app()->getLocale() === 'ar' ? 'مرحباً، أريد الاستفسار عن حجز فندق' : 'Hello, I would like to inquire about hotel booking' }}"
         target="_blank"
         class="fixed {{ app()->getLocale() === 'ar' ? 'bottom-6 left-6' : 'bottom-6 right-6' }} z-50 bg-green-500 hover:bg-green-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 group">
-        <i class="fab fa-whatsapp text-xl"></i>
+        <i class="fab fa-whatsapp text-3xl"></i>
         <span
             class="absolute {{ app()->getLocale() === 'ar' ? 'right-full mr-3' : 'left-full ml-3' }} transform -translate-y-1/2 bg-gray-900 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
             {{ __('Contact us on WhatsApp') }}
@@ -49,58 +49,62 @@
 
     <!-- Login/Register Modal -->
     <div id="authModal"
-        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center overflow-y-auto">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 my-8 relative"
+        class="fixed inset-0 bg-black bg-opacity-50 z-[1100] hidden flex items-start justify-center overflow-y-auto pt-20 md:pt-28 px-0 sm:px-4 pb-4">
+        <div class="bg-white dark:bg-gray-800 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-4xl w-full mx-0 sm:mx-auto relative max-h-[calc(100vh-5rem-1rem)] md:max-h-[calc(100vh-7rem-2rem)] overflow-y-auto animate-slide-down"
             id="modalContent">
             <!-- Close Button -->
             <button onclick="closeAuthModal()"
-                class="absolute top-4 {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} text-gray-400 hover:text-gray-600 transition">
-                <i class="fas fa-times text-2xl"></i>
+                class="absolute top-2 sm:top-2 {{ app()->getLocale() === 'ar' ? 'left-3 sm:left-4' : 'right-3 sm:right-4' }} transition z-20 bg-white dark:bg-gray-800 rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700 group shadow-md">
+                <!-- SVG icon for better cross-theme support -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 dark:text-gray-300 group-hover:text-gray-600 dark:group-hover:text-gray-100">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
             </button>
 
             <!-- Tabs -->
-            <div class="flex border-b border-gray-200">
+            <div class="flex border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10 rounded-t-2xl sm:rounded-t-2xl">
                 <button id="loginTab" onclick="switchTab('login')"
-                    class="flex-1 px-6 py-4 text-center font-semibold text-orange-500 border-b-2 border-orange-500">
+                    class="flex-1 px-3 sm:px-6 py-3 sm:py-4 text-center text-sm sm:text-base font-semibold text-orange-500 border-b-2 border-orange-500 transition-colors">
                     {{ __('Login') }}
                 </button>
                 <button id="registerTab" onclick="switchTab('register')"
-                    class="flex-1 px-6 py-4 text-center font-semibold text-gray-500 hover:text-orange-500 transition">
+                    class="flex-1 px-3 sm:px-6 py-3 sm:py-4 text-center text-sm sm:text-base font-semibold text-gray-500 dark:text-gray-400 hover:text-orange-500 transition-colors">
                     {{ __('Register') }}
                 </button>
             </div>
 
             <!-- Login Form -->
-            <div id="loginForm" class="p-6 max-w-md mx-auto">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">{{ __('Welcome Back') }}</h2>
-                <form onsubmit="handleLogin(event)">
+            <div id="loginForm" class="p-3 sm:p-6 md:p-6 max-w-md mx-auto w-full">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 text-center">{{ __('Welcome Back') }}</h2>
+                <form onsubmit="handleLogin(event)" class="w-full">
                     <div class="mb-4">
-                        <label class="block text-gray-700 font-semibold mb-2">{{ __('Email') }}</label>
+                        <label class="block text-gray-700 dark:text-gray-200 font-semibold mb-2 text-sm sm:text-base">{{ __('Email') }}</label>
                         <input type="email" required name="email"
-                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
+                            class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-400 text-sm sm:text-base transition-all">
                     </div>
-                    <div class="mb-6">
-                        <label class="block text-gray-700 font-semibold mb-2">{{ __('Password') }}</label>
+                    <div class="mb-4 sm:mb-6">
+                        <label class="block text-gray-700 dark:text-gray-200 font-semibold mb-2 text-sm sm:text-base">{{ __('Password') }}</label>
                         <input type="password" required name="password"
-                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
+                            class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-400 text-sm sm:text-base transition-all">
                     </div>
                     <div
-                        class="flex items-center justify-between mb-6 {{ app()->getLocale() === 'ar' ? 'flex-row-reverse' : '' }}">
-                        <label class="flex items-center">
-                            <input type="checkbox" class="w-4 h-4 text-orange-500 rounded">
+                        class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6 {{ app()->getLocale() === 'ar' ? 'sm:flex-row-reverse' : '' }}">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" class="w-4 h-4 text-orange-500 rounded focus:ring-orange-500 cursor-pointer">
                             <span
-                                class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-sm text-gray-600">{{ __('Remember Me') }}</span>
+                                class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-xs sm:text-sm text-gray-600 dark:text-gray-300">{{ __('Remember Me') }}</span>
                         </label>
                         <a href="#"
-                            class="text-sm text-orange-500 hover:underline">{{ __('Forgot Password?') }}</a>
+                            class="text-xs sm:text-sm text-orange-500 hover:underline transition-colors">{{ __('Forgot Password?') }}</a>
                     </div>
                     <button type="submit" id="loginBtn"
-                        class="w-full mt-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition shadow-lg flex items-center justify-center gap-2">
+                        class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-2.5 sm:py-3 rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base">
 
                         <span class="btn-text">{{ __('Login') }}</span>
 
                         <!-- Loader -->
-                        <svg class="btn-loader hidden animate-spin h-5 w-5 text-white"
+                        <svg class="btn-loader hidden animate-spin h-4 w-4 sm:h-5 sm:w-5 text-white"
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                 stroke-width="4"></circle>
@@ -112,14 +116,14 @@
                     </button>
 
                 </form>
-                <div class="mt-6 text-center">
-                    <p class="text-gray-600">{{ __('Or') }}</p>
-                    <div class="flex gap-4 justify-center mt-4">
-                        {{-- <button class="w-12 h-12 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">
+                <div class="mt-4 sm:mt-6 text-center">
+                    <p class="text-gray-600 dark:text-gray-300 text-sm sm:text-base mb-3 sm:mb-4">{{ __('Or') }}</p>
+                    <div class="flex gap-3 sm:gap-4 justify-center">
+                        {{-- <button class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">
                             <i class="fab fa-facebook-f"></i>
                         </button> --}}
-                        <button class="w-12 h-12 bg-gray-800 text-white rounded-full hover:bg-gray-900 transition">
-                            <i class="fab fa-google"></i>
+                        <button class="w-10 h-10 sm:w-12 sm:h-12 bg-gray-800 dark:bg-gray-700 text-white rounded-full hover:bg-gray-900 dark:hover:bg-gray-600 transition flex items-center justify-center">
+                            <i class="fab fa-google text-base sm:text-lg"></i>
                         </button>
                     </div>
                 </div>
@@ -128,18 +132,18 @@
             <!-- Register Form -->
             <div id="registerForm" class="hidden">
                 <div
-                    class="grid grid-cols-1 md:grid-cols-2 gap-0 min-h-[500px] {{ app()->getLocale() === 'en' ? 'md:flex-row-reverse' : '' }}">
+                    class="grid grid-cols-1 md:grid-cols-2 gap-0 min-h-[400px] sm:min-h-[500px] {{ app()->getLocale() === 'en' ? 'md:flex-row-reverse' : '' }}">
                     <!-- Section 1 - Social Sign Up -->
                     <section
-                        class="p-8 flex flex-col items-center justify-center bg-gradient-to-br from-orange-50 via-orange-100 to-blue-50 {{ app()->getLocale() === 'ar' ? 'border-l md:border-l-0 md:border-r' : 'border-r md:border-r-0 md:border-l' }} border-gray-200">
+                        class="p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center bg-gradient-to-br from-orange-50 via-orange-100 to-blue-50 dark:from-gray-700 dark:via-gray-800 dark:to-gray-700 {{ app()->getLocale() === 'ar' ? 'border-l md:border-l-0 md:border-r' : 'border-r md:border-r-0 md:border-l' }} border-gray-200 dark:border-gray-700 order-2 md:order-1">
                         <div class="w-full max-w-sm">
-                            <h3 class="text-2xl font-bold text-gray-900 mb-3 text-center">{{ __('Sign Up With') }}</h3>
-                            <p class="text-gray-600 text-sm mb-8 text-center">
+                            <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3 text-center">{{ __('Sign Up With') }}</h3>
+                            <p class="text-gray-600 dark:text-gray-300 text-xs sm:text-sm mb-4 sm:mb-8 text-center">
                                 {{ __('Use your social account for quick registration') }}</p>
-                            <div class="w-full space-y-3">
+                            <div class="w-full space-y-2 sm:space-y-3">
                                 <button type="button"
-                                    class="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-300 text-gray-700 py-3.5 rounded-xl font-semibold hover:bg-gray-50 hover:border-orange-500 hover:text-orange-500 transition shadow-md">
-                                    <i class="fab fa-google text-xl text-red-600"></i>
+                                    class="w-full flex items-center justify-center gap-2 sm:gap-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2.5 sm:py-3.5 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-orange-500 hover:text-orange-500 transition-all shadow-md text-sm sm:text-base">
+                                    <i class="fab fa-google text-lg sm:text-xl text-red-600"></i>
                                     <span>{{ __('Sign up with Google') }}</span>
                                 </button>
                                 {{-- <button type="button"
@@ -162,60 +166,60 @@
                     </section>
 
                     <!-- Section 2 - Registration Form -->
-                    <section class="p-8 bg-white">
+                    <section class="p-4 sm:p-6 md:p-8 bg-white dark:bg-gray-800 order-1 md:order-2">
                         <div class="w-full max-w-md mx-auto">
-                            <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">
+                            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 text-center">
                                 {{ __('Create New Account') }}</h2>
-                            <form onsubmit="handleRegister(event)">
-                                <div class="space-y-4">
+                            <form onsubmit="handleRegister(event)" class="w-full">
+                                <div class="space-y-3 sm:space-y-4">
                                     <div>
                                         <label
-                                            class="block text-gray-700 font-semibold mb-2">{{ __('Full Name') }}</label>
+                                            class="block text-gray-700 dark:text-gray-200 font-semibold mb-2 text-sm sm:text-base">{{ __('Full Name') }}</label>
                                         <input type="text" name="name" required
-                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
+                                            class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-400 text-sm sm:text-base transition-all">
                                     </div>
                                     <div>
                                         <label
-                                            class="block text-gray-700 font-semibold mb-2">{{ __('Email') }}</label>
+                                            class="block text-gray-700 dark:text-gray-200 font-semibold mb-2 text-sm sm:text-base">{{ __('Email') }}</label>
                                         <input type="email" name="email" required
-                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
+                                            class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-400 text-sm sm:text-base transition-all">
                                     </div>
                                     <div class="intl-tel-input-container">
                                         <label
-                                            class="block text-gray-700 font-semibold mb-2">{{ __('Phone') }}</label>
+                                            class="block text-gray-700 dark:text-gray-200 font-semibold mb-2 text-sm sm:text-base">{{ __('Phone') }}</label>
                                         <input type="tel" id="reg_phone" name="phone" required maxlength="15"
-                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
+                                            class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-400 text-sm sm:text-base transition-all">
                                         <input type="hidden" name="phone_country_code" id="reg_phone_country_code">
                                     </div>
                                     <div>
                                         <label
-                                            class="block text-gray-700 font-semibold mb-2">{{ __('Password') }}</label>
+                                            class="block text-gray-700 dark:text-gray-200 font-semibold mb-2 text-sm sm:text-base">{{ __('Password') }}</label>
                                         <input type="password" name="password" required
-                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900">
+                                            class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 dark:text-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-400 text-sm sm:text-base transition-all">
                                     </div>
                                 </div>
 
                                 <!-- Terms and Submit -->
-                                <div class="mt-6">
+                                <div class="mt-4 sm:mt-6">
                                     <label
-                                        class="flex items-start {{ app()->getLocale() === 'ar' ? 'flex-row-reverse' : '' }}">
-                                        <input type="checkbox" required class="w-4 h-4 text-orange-500 rounded mt-1">
+                                        class="flex items-start {{ app()->getLocale() === 'ar' ? 'flex-row-reverse' : '' }} cursor-pointer">
+                                        <input type="checkbox" required class="w-4 h-4 text-orange-500 rounded mt-1 focus:ring-orange-500 cursor-pointer">
                                         <span
-                                            class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-sm text-gray-600">{{ __('I agree to') }}
+                                            class="{{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }} text-xs sm:text-sm text-gray-600 dark:text-gray-300">{{ __('I agree to') }}
                                             <a href="#"
-                                                class="text-orange-500 hover:underline">{{ __('Terms and Conditions') }}</a>
+                                                class="text-orange-500 hover:underline transition-colors">{{ __('Terms and Conditions') }}</a>
                                             {{ __('and') }} <a href="#"
-                                                class="text-orange-500 hover:underline">{{ __('Privacy Policy') }}</a></span>
+                                                class="text-orange-500 hover:underline transition-colors">{{ __('Privacy Policy') }}</a></span>
                                     </label>
                                 </div>
 
                                 <button type="submit" id="registerBtn"
-                                    class="w-full mt-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition shadow-lg flex items-center justify-center gap-2">
+                                    class="w-full mt-4 sm:mt-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-2.5 sm:py-3 rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base">
 
                                     <span class="btn-text">{{ __('Register') }}</span>
 
                                     <!-- Loader -->
-                                    <svg class="btn-loader hidden animate-spin h-5 w-5 text-white"
+                                    <svg class="btn-loader hidden animate-spin h-4 w-4 sm:h-5 sm:w-5 text-white"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10"
                                             stroke="currentColor" stroke-width="4"></circle>

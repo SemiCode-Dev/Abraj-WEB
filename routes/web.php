@@ -142,7 +142,16 @@ Route::prefix(LaravelLocalization::setLocale().'/admin')->name('admin.')->middle
 
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        Route::get('/users', [UsersController::class, 'index'])->name('users');
+        // Users Management
+        Route::get('/users', [UsersController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [UsersController::class, 'create'])->name('users.create');
+        Route::post('/users', [UsersController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}', [UsersController::class, 'show'])->name('users.show');
+        Route::get('/users/{user}/edit', [UsersController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
+        Route::patch('/users/{user}/toggle-status', [UsersController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::patch('/users/{user}/block', [UsersController::class, 'block'])->name('users.block');
 
         // Package Contacts
         Route::get('/package-contacts', [PackageContactController::class, 'index'])->name('package-contacts.index');

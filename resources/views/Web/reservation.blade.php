@@ -620,7 +620,7 @@
                             @php
                                 $hotel = $hotelDetails['HotelDetails'][0] ?? null;
                                 $roomImage =
-                                    'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80';
+                                    '{{ asset('images/default.jpg') }}';
                                 if ($hotel && isset($hotel['Image']) && !empty($hotel['Image'])) {
                                     $roomImage = $hotel['Image'];
                                 } elseif (

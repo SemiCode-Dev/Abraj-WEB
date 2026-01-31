@@ -69,9 +69,9 @@ class HomeController extends Controller
                         'Hotels' => [],
                     ];
                 } else {
-                    // Get very limited hotels from each city (only 3 per city for homepage speed)
+                    // Get all hotels from each city for Featured Hotels section (no limit per city, multiple pages)
                     $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
-                    $response = $this->hotelApi->getHotelsFromMultipleCities($cityCodes, true, 3, $language, 1);
+                    $response = $this->hotelApi->getHotelsFromMultipleCities($cityCodes, true, null, $language, 5);
 
                     // Apply robust Hotel Name Translation if Arabic
                     if ($language === 'ar') {
@@ -111,7 +111,8 @@ class HomeController extends Controller
 
         $hotels1 = array_slice($hotels, 0, 4);
 
-        $hotels2 = array_slice($hotels, 4, 3);
+        // Get all remaining hotels for Featured Hotels section (not limited to 3)
+        $hotels2 = array_slice($hotels, 4);
 
         // Use cache for cities query
         $cities = Cache::remember('homepage_cities', 3600, function () {
