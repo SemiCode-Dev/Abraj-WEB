@@ -250,7 +250,7 @@
                                                 @php
                                                     $fStr = json_encode($facilitiesLower);
                                                 @endphp
-                                                @if (str_contains($fStr, 'wifi') || str_contains($fStr, 'internet') || str_contains($fStr, 'wireless'))
+                                                @if (strpos($fStr, 'wifi') !== false || strpos($fStr, 'internet') !== false || strpos($fStr, 'wireless') !== false)
                                                     <span
                                                         class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
                                                         <i
@@ -258,7 +258,7 @@
                                                         {{ __('WiFi') }}
                                                     </span>
                                                 @endif
-                                                @if (str_contains($fStr, 'pool') || str_contains($fStr, 'swimming'))
+                                                @if (strpos($fStr, 'pool') !== false || strpos($fStr, 'swimming') !== false)
                                                     <span
                                                         class="px-3 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
                                                         <i
@@ -266,7 +266,7 @@
                                                         {{ __('Pool') }}
                                                     </span>
                                                 @endif
-                                                @if (str_contains($fStr, 'restaurant') || str_contains($fStr, 'dining'))
+                                                @if (strpos($fStr, 'restaurant') !== false || strpos($fStr, 'dining') !== false)
                                                     <span
                                                         class="px-3 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
                                                         <i
@@ -274,7 +274,7 @@
                                                         {{ __('Restaurant') }}
                                                     </span>
                                                 @endif
-                                                @if (str_contains($fStr, 'parking'))
+                                                @if (strpos($fStr, 'parking') !== false)
                                                     <span
                                                         class="px-3 py-1 bg-orange-50 text-orange-700 text-xs rounded-lg font-semibold">
                                                         <i
@@ -282,7 +282,7 @@
                                                         {{ __('Parking') }}
                                                     </span>
                                                 @endif
-                                                @if (str_contains($fStr, 'gym') || str_contains($fStr, 'fitness'))
+                                                @if (strpos($fStr, 'gym') !== false || strpos($fStr, 'fitness') !== false)
                                                     <span
                                                         class="px-3 py-1 bg-red-50 text-red-700 text-xs rounded-lg font-semibold">
                                                         <i
@@ -945,24 +945,24 @@
 
                             <div class="flex flex-wrap gap-2 mb-4">
                                 ${facilitiesJson.includes('wifi') || facilitiesJson.includes('internet') || facilitiesJson.includes('wireless') ? `
-                                    <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
-                                        <i class="fas fa-wifi ${isAr ? 'ml-1' : 'mr-1'}"></i> ${wifiText}
-                                    </span>` : ''}
+                                        <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
+                                            <i class="fas fa-wifi ${isAr ? 'ml-1' : 'mr-1'}"></i> ${wifiText}
+                                        </span>` : ''}
                                 
                                 ${facilitiesJson.includes('pool') || facilitiesJson.includes('swimming') ? `
-                                    <span class="px-3 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
-                                        <i class="fas fa-swimming-pool ${isAr ? 'ml-1' : 'mr-1'}"></i> ${poolText}
-                                    </span>` : ''}
+                                        <span class="px-3 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
+                                            <i class="fas fa-swimming-pool ${isAr ? 'ml-1' : 'mr-1'}"></i> ${poolText}
+                                        </span>` : ''}
 
                                 ${facilitiesJson.includes('restaurant') || facilitiesJson.includes('dining') ? `
-                                    <span class="px-3 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
-                                        <i class="fas fa-utensils ${isAr ? 'ml-1' : 'mr-1'}"></i> ${restaurantText}
-                                    </span>` : ''}
+                                        <span class="px-3 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
+                                            <i class="fas fa-utensils ${isAr ? 'ml-1' : 'mr-1'}"></i> ${restaurantText}
+                                        </span>` : ''}
 
                                 ${facilitiesJson.includes('parking') ? `
-                                    <span class="px-3 py-1 bg-orange-50 text-orange-700 text-xs rounded-lg font-semibold">
-                                        <i class="fas fa-parking ${isAr ? 'ml-1' : 'mr-1'}"></i> ${parkingText}
-                                    </span>` : ''}
+                                        <span class="px-3 py-1 bg-orange-50 text-orange-700 text-xs rounded-lg font-semibold">
+                                            <i class="fas fa-parking ${isAr ? 'ml-1' : 'mr-1'}"></i> ${parkingText}
+                                        </span>` : ''}
                             </div>
 
                             <div class="flex items-center mb-4">
