@@ -163,6 +163,8 @@ Route::prefix(LaravelLocalization::setLocale().'/admin')->name('admin.')->middle
         Route::get('/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index'])->name('bookings');
 
         Route::get('/transactions', [\App\Http\Controllers\Admin\TransactionController::class, 'index'])->name('transactions');
+        Route::post('/transactions/{booking}/cancel', [\App\Http\Controllers\Admin\TransactionController::class, 'cancel'])->name('transactions.cancel');
+        Route::post('/transactions/{booking}/refund', [\App\Http\Controllers\Admin\TransactionController::class, 'refund'])->name('transactions.refund');
         Route::get('/transactions/{booking}/report', [\App\Http\Controllers\Admin\TransactionController::class, 'downloadReport'])->name('transactions.report');
 
         Route::get('/reviews', function () {

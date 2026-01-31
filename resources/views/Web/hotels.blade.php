@@ -139,16 +139,41 @@
                             <span class="font-semibold">{{ __('Found') }}</span>
                             <span class="text-orange-600 font-bold">{{ count($hotels) ?? 0 }} {{ __('hotels') }}</span>
                         </div>
-                        <div class="flex items-center gap-4">
+                        <form method="GET" action="{{ url()->current() }}" class="flex items-center gap-4"
+                            onsubmit="return false;">
+                            <!-- Maintain existing filters -->
+                            @if (request('CheckIn'))
+                                <input type="hidden" name="CheckIn" value="{{ request('CheckIn') }}">
+                            @endif
+                            @if (request('CheckOut'))
+                                <input type="hidden" name="CheckOut" value="{{ request('CheckOut') }}">
+                            @endif
+                            @if (request('PaxRooms'))
+                                @foreach (request('PaxRooms', []) as $key => $room)
+                                    @foreach ($room as $k => $v)
+                                        @if (is_array($v))
+                                            @foreach ($v as $ik => $iv)
+                                                <input type="hidden"
+                                                    name="PaxRooms[{{ $key }}][{{ $k }}][{{ $ik }}]"
+                                                    value="{{ $iv }}">
+                                            @endforeach
+                                        @else
+                                            <input type="hidden"
+                                                name="PaxRooms[{{ $key }}][{{ $k }}]"
+                                                value="{{ $v }}">
+                                        @endif
+                                    @endforeach
+                                @endforeach
+                            @endif
+
                             <span class="text-gray-600 text-sm">{{ __('Sort by') }}:</span>
-                            <select
+                            <select id="sortSelect" onchange="sortHotels(this.value)"
                                 class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-gray-900">
-                                <option>{{ __('Most Popular') }}</option>
-                                <option>{{ __('Lowest Price') }}</option>
-                                <option>{{ __('Highest Price') }}</option>
-                                <option>{{ __('Highest Rating') }}</option>
+                                <option value="">{{ __('Default') }}</option>
+                                <option value="price_asc">{{ __('Lowest Price') }}</option>
+                                <option value="price_desc">{{ __('Highest Price') }}</option>
                             </select>
-                        </div>
+                        </form>
                     </div>
 
                     <!-- Hotels Grid -->
@@ -196,7 +221,9 @@
                             @endphp
                             <div class="hotel-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300"
                                 data-id="{{ $hotel['HotelCode'] }}" data-name="{{ strtolower($hotel['HotelName']) }}"
-                                data-rating="{{ $ratingNumber }}" data-facilities='{{ $facilitiesJson }}'>
+                                data-rating="{{ $ratingNumber }}" data-facilities='{{ $facilitiesJson }}'
+                                data-price="{{ $hotel['MinPrice'] ?? 0 }}"
+                                style="{{ $loop->index >= 12 ? 'display: none;' : '' }}">
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
                                     <!-- Hotel Image -->
                                     <div class="relative h-64 md:h-full max-h-[250px]">
@@ -220,30 +247,49 @@
                                             </div>
 
                                             <div class="flex flex-wrap gap-2 mb-4">
-                                                <span
-                                                    class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
-                                                    <i
-                                                        class="fas fa-wifi {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                                    {{ __('WiFi') }}
-                                                </span>
-                                                <span
-                                                    class="px-3 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
-                                                    <i
-                                                        class="fas fa-swimming-pool {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                                    {{ __('Pool') }}
-                                                </span>
-                                                <span
-                                                    class="px-3 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
-                                                    <i
-                                                        class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                                    {{ __('Restaurant') }}
-                                                </span>
-                                                <span
-                                                    class="px-3 py-1 bg-orange-50 text-orange-700 text-xs rounded-lg font-semibold">
-                                                    <i
-                                                        class="fas fa-parking {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
-                                                    {{ __('Parking') }}
-                                                </span>
+                                                @php
+                                                    $fStr = json_encode($facilitiesLower);
+                                                @endphp
+                                                @if (str_contains($fStr, 'wifi') || str_contains($fStr, 'internet') || str_contains($fStr, 'wireless'))
+                                                    <span
+                                                        class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
+                                                        <i
+                                                            class="fas fa-wifi {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                                        {{ __('WiFi') }}
+                                                    </span>
+                                                @endif
+                                                @if (str_contains($fStr, 'pool') || str_contains($fStr, 'swimming'))
+                                                    <span
+                                                        class="px-3 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
+                                                        <i
+                                                            class="fas fa-swimming-pool {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                                        {{ __('Pool') }}
+                                                    </span>
+                                                @endif
+                                                @if (str_contains($fStr, 'restaurant') || str_contains($fStr, 'dining'))
+                                                    <span
+                                                        class="px-3 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
+                                                        <i
+                                                            class="fas fa-utensils {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                                        {{ __('Restaurant') }}
+                                                    </span>
+                                                @endif
+                                                @if (str_contains($fStr, 'parking'))
+                                                    <span
+                                                        class="px-3 py-1 bg-orange-50 text-orange-700 text-xs rounded-lg font-semibold">
+                                                        <i
+                                                            class="fas fa-parking {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                                        {{ __('Parking') }}
+                                                    </span>
+                                                @endif
+                                                @if (str_contains($fStr, 'gym') || str_contains($fStr, 'fitness'))
+                                                    <span
+                                                        class="px-3 py-1 bg-red-50 text-red-700 text-xs rounded-lg font-semibold">
+                                                        <i
+                                                            class="fas fa-dumbbell {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
+                                                        {{ __('Gym') }}
+                                                    </span>
+                                                @endif
                                             </div>
 
                                             <div class="flex items-center mb-4">
@@ -400,7 +446,7 @@
 
         // Pagination Configuration
         const HOTELS_PER_PAGE = 12;
-        let currentPage = 1;
+        let currentPage = 1; /* RESTORED: from visibleCount */
         let filteredHotels = [];
         const isRTL = '{{ app()->getLocale() }}' === 'ar';
         const currentLocale = '{{ app()->getLocale() }}';
@@ -569,7 +615,7 @@
                 return show;
             });
 
-            // Reset to page 1 unless keepPage is true
+            // Reset pagination
             if (!keepPage) {
                 currentPage = 1;
             } else {
@@ -591,9 +637,14 @@
             const allHotelCards = document.querySelectorAll('.hotel-card');
             const startIndex = (currentPage - 1) * HOTELS_PER_PAGE;
             const endIndex = startIndex + HOTELS_PER_PAGE;
+
             allHotelCards.forEach(card => card.style.display = 'none');
+
+            // Show only hotels for current page
             filteredHotels.forEach((card, index) => {
-                if (index >= startIndex && index < endIndex) card.style.display = '';
+                if (index >= startIndex && index < endIndex) {
+                    card.style.display = '';
+                }
             });
 
             // Trigger live price fetching for the newly visible hotels
@@ -610,24 +661,21 @@
             // Gap-1 and px-1 keep it tight.
             paginationContainer.className = 'flex gap-1 items-center justify-center flex-wrap max-w-full px-1';
 
-            if (totalPages <= 1 && remainingCityCodes.length === 0) return;
+            if (totalPages <= 1) return;
 
             // Common class for compact buttons
             const commonClasses =
                 'px-2 py-1 md:px-3 md:py-1.5 border rounded-lg transition flex items-center whitespace-nowrap text-xs md:text-sm font-semibold shadow-sm';
 
-            // Previous Button (Appears on the right in RTL)
+            // Previous Button
             const prevBtn = document.createElement('button');
             prevBtn.className = currentPage === 1 ?
                 `${commonClasses} bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed` :
                 `${commonClasses} bg-white border-gray-300 text-gray-900 hover:bg-orange-50 hover:border-orange-600`;
             prevBtn.disabled = currentPage === 1;
-
-            // Match user image: [ السابق > ] (icon on right in RTL)
             prevBtn.innerHTML = isRTL ?
                 `{{ __('Previous') }} <i class="fas fa-chevron-right ml-1"></i>` :
                 `<i class="fas fa-chevron-left mr-1"></i> {{ __('Previous') }}`;
-
             prevBtn.onclick = () => {
                 if (currentPage > 1) {
                     currentPage--;
@@ -641,20 +689,30 @@
             };
             paginationContainer.appendChild(prevBtn);
 
-            // Page Numbers (Small padding for tight fit)
+            // Page Numbers
             const startPage = Math.max(1, currentPage - 2);
             const endPage = Math.min(totalPages, currentPage + 2);
 
-            const createSmallPageBtn = (num) => {
-                const btn = createPageButton(num);
+            const createPageBtn = (num) => {
+                const btn = document.createElement('button');
+                btn.textContent = num;
                 btn.className = num === currentPage ?
                     'px-2 py-1 md:px-3 md:py-1.5 bg-orange-600 text-white rounded-lg font-semibold text-xs md:text-sm' :
                     'px-2 py-1 md:px-3 md:py-1.5 bg-white border border-gray-300 rounded-lg text-gray-900 hover:bg-orange-50 hover:border-orange-600 transition text-xs md:text-sm';
+                btn.onclick = () => {
+                    currentPage = num;
+                    updateHotelDisplay();
+                    updatePagination();
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                };
                 return btn;
             };
 
             if (startPage > 1) {
-                paginationContainer.appendChild(createSmallPageBtn(1));
+                paginationContainer.appendChild(createPageBtn(1));
                 if (startPage > 2) {
                     const dots = document.createElement('span');
                     dots.className = 'px-0.5 text-gray-500 text-xs';
@@ -662,7 +720,7 @@
                     paginationContainer.appendChild(dots);
                 }
             }
-            for (let i = startPage; i <= endPage; i++) paginationContainer.appendChild(createSmallPageBtn(i));
+            for (let i = startPage; i <= endPage; i++) paginationContainer.appendChild(createPageBtn(i));
             if (endPage < totalPages) {
                 if (endPage < totalPages - 1) {
                     const dots = document.createElement('span');
@@ -670,21 +728,18 @@
                     dots.textContent = '...';
                     paginationContainer.appendChild(dots);
                 }
-                paginationContainer.appendChild(createSmallPageBtn(totalPages));
+                paginationContainer.appendChild(createPageBtn(totalPages));
             }
 
-            // Next Button (Appears to the left of pages in RTL)
+            // Next Button
             const nextBtn = document.createElement('button');
             nextBtn.className = currentPage === totalPages ?
                 `${commonClasses} bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed` :
                 `${commonClasses} bg-white border-gray-300 text-gray-900 hover:bg-orange-50 hover:border-orange-600`;
             nextBtn.disabled = currentPage === totalPages;
-
-            // Match user image: [ < التالي ] (icon on left in RTL)
             nextBtn.innerHTML = isRTL ?
                 `<i class="fas fa-chevron-left ml-1"></i> {{ __('Next') }}` :
                 `{{ __('Next') }} <i class="fas fa-chevron-right ml-1"></i>`;
-
             nextBtn.onclick = () => {
                 if (currentPage < totalPages) {
                     currentPage++;
@@ -697,32 +752,6 @@
                 }
             };
             paginationContainer.appendChild(nextBtn);
-
-            // NEW: Load More Button (Far left in RTL)
-            if (remainingCityCodes.length > 0) {
-                const loadMoreBtn = document.createElement('button');
-                loadMoreBtn.id = 'loadMoreBtn';
-                loadMoreBtn.className =
-                    `${commonClasses} bg-white border-gray-300 text-gray-900 hover:bg-orange-600 hover:text-white hover:border-orange-600`;
-                loadMoreBtn.innerHTML = `{{ __('Show More') }}`;
-                loadMoreBtn.onclick = fetchNextBatch;
-                paginationContainer.appendChild(loadMoreBtn);
-            }
-        }
-
-        function createPageButton(pageNum) {
-            const btn = document.createElement('button');
-            btn.textContent = pageNum;
-            btn.onclick = () => {
-                currentPage = pageNum;
-                updateHotelDisplay();
-                updatePagination();
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            };
-            return btn;
         }
 
         function updateHotelCount() {
@@ -849,6 +878,7 @@
                 data-id="${hotel.HotelCode}"
                 data-name="${hotel.HotelName.toLowerCase()}" 
                 data-rating="${ratingMap[hotel.HotelRating] || (parseInt(hotel.HotelRating) || 5)}"
+                data-price="${hotel.MinPrice || 0}"
                 data-facilities='${JSON.stringify((hotel.HotelFacilities || []).map(f => f.toLowerCase())).replace(/'/g, "&apos;")}'>
             ` + createHotelCardInner(hotel);
         }
@@ -914,18 +944,25 @@
                             </div>
 
                             <div class="flex flex-wrap gap-2 mb-4">
-                                <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
-                                    <i class="fas fa-wifi ${isAr ? 'ml-1' : 'mr-1'}"></i> ${wifiText}
-                                </span>
-                                <span class="px-3 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
-                                    <i class="fas fa-swimming-pool ${isAr ? 'ml-1' : 'mr-1'}"></i> ${poolText}
-                                </span>
-                                <span class="px-3 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
-                                    <i class="fas fa-utensils ${isAr ? 'ml-1' : 'mr-1'}"></i> ${restaurantText}
-                                </span>
-                                <span class="px-3 py-1 bg-orange-50 text-orange-700 text-xs rounded-lg font-semibold">
-                                    <i class="fas fa-parking ${isAr ? 'ml-1' : 'mr-1'}"></i> ${parkingText}
-                                </span>
+                                ${facilitiesJson.includes('wifi') || facilitiesJson.includes('internet') || facilitiesJson.includes('wireless') ? `
+                                    <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-semibold">
+                                        <i class="fas fa-wifi ${isAr ? 'ml-1' : 'mr-1'}"></i> ${wifiText}
+                                    </span>` : ''}
+                                
+                                ${facilitiesJson.includes('pool') || facilitiesJson.includes('swimming') ? `
+                                    <span class="px-3 py-1 bg-green-50 text-green-700 text-xs rounded-lg font-semibold">
+                                        <i class="fas fa-swimming-pool ${isAr ? 'ml-1' : 'mr-1'}"></i> ${poolText}
+                                    </span>` : ''}
+
+                                ${facilitiesJson.includes('restaurant') || facilitiesJson.includes('dining') ? `
+                                    <span class="px-3 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg font-semibold">
+                                        <i class="fas fa-utensils ${isAr ? 'ml-1' : 'mr-1'}"></i> ${restaurantText}
+                                    </span>` : ''}
+
+                                ${facilitiesJson.includes('parking') ? `
+                                    <span class="px-3 py-1 bg-orange-50 text-orange-700 text-xs rounded-lg font-semibold">
+                                        <i class="fas fa-parking ${isAr ? 'ml-1' : 'mr-1'}"></i> ${parkingText}
+                                    </span>` : ''}
                             </div>
 
                             <div class="flex items-center mb-4">
@@ -964,6 +1001,29 @@
                 </div>
             </div>
             `;
+        }
+
+        function sortHotels(order) {
+            const grid = document.getElementById('hotelsGrid');
+            if (!grid) return;
+
+            const cards = Array.from(grid.querySelectorAll('.hotel-card'));
+
+            if (order === 'price_asc') {
+                cards.sort((a, b) => parseFloat(a.dataset.price) - parseFloat(b.dataset.price));
+            } else if (order === 'price_desc') {
+                cards.sort((a, b) => parseFloat(b.dataset.price) - parseFloat(a.dataset.price));
+            } else {
+                // Default order (usually ID or random, tough to revert without index)
+                // We'll leave as is or basic sort
+                return;
+            }
+
+            // Re-append to grid
+            cards.forEach(card => grid.appendChild(card));
+
+            // Re-apply pagination logic (Show first 12, hide rest)
+            applyFiltersAndPagination(null, true);
         }
     </script>
 @endpush

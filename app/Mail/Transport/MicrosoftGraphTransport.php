@@ -5,16 +5,20 @@ namespace App\Mail\Transport;
 use GuzzleHttp\Client;
 use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\MessageConverter;
 
 class MicrosoftGraphTransport extends AbstractTransport
 {
     protected string $tenantId;
+
     protected string $clientId;
+
     protected string $clientSecret;
+
     protected string $fromEmail;
+
     protected ?string $accessToken = null;
+
     protected ?int $tokenExpiry = null;
 
     public function __construct(
@@ -24,7 +28,7 @@ class MicrosoftGraphTransport extends AbstractTransport
         string $fromEmail
     ) {
         parent::__construct();
-        
+
         $this->tenantId = $tenantId;
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
@@ -34,11 +38,11 @@ class MicrosoftGraphTransport extends AbstractTransport
     protected function doSend(SentMessage $message): void
     {
         $email = MessageConverter::toEmail($message->getOriginalMessage());
-        
+
         $token = $this->getAccessToken();
-        
-        $client = new Client();
-        
+
+        $client = new Client;
+
         // Build recipients
         $toRecipients = [];
         foreach ($email->getTo() as $address) {
@@ -46,30 +50,30 @@ class MicrosoftGraphTransport extends AbstractTransport
                 'emailAddress' => [
                     'address' => $address->getAddress(),
                     'name' => $address->getName() ?: $address->getAddress(),
-                ]
+                ],
             ];
         }
-        
+
         $ccRecipients = [];
         foreach ($email->getCc() as $address) {
             $ccRecipients[] = [
                 'emailAddress' => [
                     'address' => $address->getAddress(),
                     'name' => $address->getName() ?: $address->getAddress(),
-                ]
+                ],
             ];
         }
-        
+
         $bccRecipients = [];
         foreach ($email->getBcc() as $address) {
             $bccRecipients[] = [
                 'emailAddress' => [
                     'address' => $address->getAddress(),
                     'name' => $address->getName() ?: $address->getAddress(),
-                ]
+                ],
             ];
         }
-        
+
         // Build message payload
         $payload = [
             'message' => [
@@ -82,15 +86,15 @@ class MicrosoftGraphTransport extends AbstractTransport
             ],
             'saveToSentItems' => true,
         ];
-        
-        if (!empty($ccRecipients)) {
+
+        if (! empty($ccRecipients)) {
             $payload['message']['ccRecipients'] = $ccRecipients;
         }
-        
-        if (!empty($bccRecipients)) {
+
+        if (! empty($bccRecipients)) {
             $payload['message']['bccRecipients'] = $bccRecipients;
         }
-        
+
         // Send email via Graph API
         $response = $client->post(
             "https://graph.microsoft.com/v1.0/users/{$this->fromEmail}/sendMail",
@@ -102,9 +106,9 @@ class MicrosoftGraphTransport extends AbstractTransport
                 'json' => $payload,
             ]
         );
-        
+
         if ($response->getStatusCode() !== 202) {
-            throw new \Exception('Failed to send email via Microsoft Graph: ' . $response->getBody());
+            throw new \Exception('Failed to send email via Microsoft Graph: '.$response->getBody());
         }
     }
 
@@ -114,10 +118,10 @@ class MicrosoftGraphTransport extends AbstractTransport
         if ($this->accessToken && $this->tokenExpiry && time() < $this->tokenExpiry) {
             return $this->accessToken;
         }
-        
+
         // Get new token
-        $client = new Client();
-        
+        $client = new Client;
+
         $response = $client->post(
             "https://login.microsoftonline.com/{$this->tenantId}/oauth2/v2.0/token",
             [
@@ -129,12 +133,12 @@ class MicrosoftGraphTransport extends AbstractTransport
                 ],
             ]
         );
-        
+
         $data = json_decode($response->getBody(), true);
-        
+
         $this->accessToken = $data['access_token'];
         $this->tokenExpiry = time() + ($data['expires_in'] - 60); // Refresh 1 minute before expiry
-        
+
         return $this->accessToken;
     }
 

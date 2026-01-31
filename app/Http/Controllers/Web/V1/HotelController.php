@@ -577,7 +577,7 @@ class HotelController extends Controller
 
     public function getAllHotels()
     {
-        set_time_limit(180);
+        set_time_limit(600); // Increased timeout to handle 400 cities
         try {
             $request = request();
 
@@ -585,19 +585,17 @@ class HotelController extends Controller
             $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
                 ->orderBy('hotels_count', 'desc')
-                ->limit(400) // Increase limit as we will load them in batches
+                ->limit(400) // Reverted to 400 as requested
                 ->pluck('code')
                 ->toArray();
 
             if (empty($allCityCodes)) {
-                $allCityCodes = City::whereNotNull('code')->limit(30)->pluck('code')->toArray();
+                $allCityCodes = City::whereNotNull('code')->limit(10)->pluck('code')->toArray();
             }
 
             // Split into Initial Batch and Remaining
-            // User requested ~500 hotels initially.
-            // Assuming avg 10-15 hotels per city, 40 cities * 15 = 600.
-            // We'll also increase max hotels per city in the API call below.
-            $initialBatchSize = 40;
+            // User requested to load ALL hotels at once.
+            $initialBatchSize = 500; // Increased to cover all cities
             $initialCityCodes = array_slice($allCityCodes, 0, $initialBatchSize);
             $remainingCityCodes = array_slice($allCityCodes, $initialBatchSize);
 
@@ -727,8 +725,8 @@ class HotelController extends Controller
                     if ($outDate->gt($inDate) && $inDate->gte($today)) {
                         Log::info('All Hotels Availability Search', ['in' => $checkIn, 'out' => $checkOut, 'pax' => $paxRooms, 'total_hotels' => count($hotels)]);
 
-                        // Limit to first 100 hotels for performance
-                        $hotelsToCheck = array_slice($hotels, 0, 100);
+                        // Check ALL hotels for availability (no limit)
+                        $hotelsToCheck = $hotels;
 
                         // Process hotels in batches of 50
                         $batchSize = 50;
@@ -777,27 +775,18 @@ class HotelController extends Controller
 
                         Log::info('Availability Filter Complete', ['checked' => count($hotels), 'available' => count($availableHotels), 'is_default' => $isDefaultDates]);
 
-                        if ($isDefaultDates) {
-                            // ENRICH ONLY: Merge prices into original $hotels list, but keep all hotels.
-                            $priceMap = [];
-                            foreach ($availableHotels as $availItem) {
-                                $priceMap[$availItem['HotelCode']] = [
-                                    'MinPrice' => $availItem['MinPrice'],
-                                    'Currency' => $availItem['Currency'],
-                                ];
-                            }
+                        // STRICT FILTER: Only show what is available.
+                        $hotels = $availableHotels;
 
-                            foreach ($hotels as &$originalHotel) {
-                                if (isset($priceMap[$originalHotel['HotelCode']])) {
-                                    $originalHotel['MinPrice'] = $priceMap[$originalHotel['HotelCode']]['MinPrice'];
-                                    $originalHotel['Currency'] = $priceMap[$originalHotel['HotelCode']]['Currency'];
-                                }
-                            }
-                            unset($originalHotel);
-                            // $hotels remains with all items, just some have prices.
-                        } else {
-                            // STRICT FILTER: Only show what is available.
-                            $hotels = $availableHotels;
+                        // SORTING LOGIC
+                        if (request('sort') === 'price_asc') {
+                            usort($hotels, function ($a, $b) {
+                                return ($a['MinPrice'] ?? 0) <=> ($b['MinPrice'] ?? 0);
+                            });
+                        } elseif (request('sort') === 'price_desc') {
+                            usort($hotels, function ($a, $b) {
+                                return ($b['MinPrice'] ?? 0) <=> ($a['MinPrice'] ?? 0);
+                            });
                         }
                     }
                 } catch (\Exception $e) {
@@ -806,10 +795,15 @@ class HotelController extends Controller
             }
             // -------------------------------------------------------------------------
 
+            // Calculate pagination on the FILTERED list
+            $perPage = 12;
+            $totalHotels = count($hotels);
+            $totalPages = (int) ceil($totalHotels / $perPage);
+            
             return view('Web.hotels', [
                 'hotels' => $hotels,
                 'allHotelsJson' => json_encode($hotels),
-                'remainingCityCodes' => array_values($remainingCityCodes), // Pass remaining codes to view
+                'remainingCityCodes' => [], // We loaded everything
                 'cities' => [],
                 'countries' => [],
                 'selectedCountryCode' => 'ALL',

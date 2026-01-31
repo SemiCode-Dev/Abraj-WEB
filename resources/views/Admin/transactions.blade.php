@@ -159,7 +159,22 @@
                                     {{ isset($transaction->payment_details['payment_option']) ? $transaction->payment_details['payment_option'] : 'VISA' }}
                                 </td>
                                 <td class="py-4 px-6">
-                                    @if ($transaction->payment_status === 'failed' || $transaction->booking_status === 'failed')
+                                    @if ($transaction->booking_status === 'cancelled')
+                                        <div class="flex flex-col">
+                                            <span
+                                                class="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-semibold w-fit">Cancelled</span>
+                                            @if ($transaction->payment_status === 'paid')
+                                                <span class="text-[10px] text-green-500 mt-1 font-bold">Paid</span>
+                                            @elseif($transaction->payment_status === 'refunded')
+                                                <span class="text-[10px] text-blue-500 mt-1 font-bold">Refunded</span>
+                                            @elseif($transaction->payment_status === 'pending')
+                                                <span class="text-[10px] text-yellow-500 mt-1 font-bold">Pending
+                                                    Payment</span>
+                                            @else
+                                                <span class="text-[10px] text-red-500 mt-1 font-bold">Not Paid</span>
+                                            @endif
+                                        </div>
+                                    @elseif($transaction->payment_status === 'failed' || $transaction->booking_status === 'failed')
                                         <div class="flex flex-col">
                                             <span
                                                 class="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-semibold w-fit">Failed</span>
@@ -206,6 +221,29 @@
                                             title="Download Report">
                                             <i class="fas fa-download"></i>
                                         </a>
+                                        @if ($transaction->booking_status !== 'cancelled')
+                                            <form action="{{ route('admin.transactions.cancel', $transaction->id) }}"
+                                                method="POST"
+                                                onsubmit="return confirm('Are you sure you want to cancel this booking? This will NOT refund the payment, only update the status and notify the user.');">
+                                                @csrf
+                                                <button type="submit"
+                                                    class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition"
+                                                    title="Cancel Booking">
+                                                    <i class="fas fa-window-close"></i>
+                                                </button>
+                                            </form>
+                                        @elseif ($transaction->booking_status === 'cancelled' && $transaction->payment_status === 'paid')
+                                            <form action="{{ route('admin.transactions.refund', $transaction->id) }}"
+                                                method="POST"
+                                                onsubmit="return confirm('Mark this transaction as Refunded?');">
+                                                @csrf
+                                                <button type="submit"
+                                                    class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition"
+                                                    title="Mark as Refunded">
+                                                    <i class="fas fa-undo"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
