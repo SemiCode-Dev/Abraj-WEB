@@ -212,7 +212,7 @@ class AvailabilityService
                 'HotelCodes' => $hotelIds,
                 'GuestNationality' => $guestNationality,
                 'PaxRooms' => $paxRooms,
-                'ResponseTime' => $isDetailed ? 25 : 15, // Faster for standard checks
+                'ResponseTime' => $isDetailed ? 28 : 20, // Increased for better stability (was 25/15)
                 'IsDetailedResponse' => $isDetailed,
                 'Language' => $language,
                 'Filters' => [
@@ -223,7 +223,11 @@ class AvailabilityService
             ]);
 
             if (!isset($response['Status']['Code']) || $response['Status']['Code'] != 200) {
-                Log::warning('AvailabilityService Batch - API Error', ['status' => $response['Status']['Code'] ?? 'unknown']);
+                Log::warning('AvailabilityService Batch - API Error', [
+                    'status' => $response['Status']['Code'] ?? 'unknown',
+                    'codes_count' => count(explode(',', $hotelIds)),
+                    'codes_sample' => substr($hotelIds, 0, 50) . '...'
+                ]);
                 return [];
             }
 

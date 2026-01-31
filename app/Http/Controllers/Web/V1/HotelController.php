@@ -728,8 +728,8 @@ class HotelController extends Controller
                         // Check ALL hotels for availability (no limit)
                         $hotelsToCheck = $hotels;
 
-                        // Process hotels in batches of 50
-                        $batchSize = 50;
+                        // Process hotels in batches of 12 (Reduced from 50 to improve success rate)
+                        $batchSize = 12;
                         $hotelBatches = array_chunk($hotelsToCheck, $batchSize);
                         $availableHotels = [];
 

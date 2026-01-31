@@ -204,20 +204,16 @@ class HotelApiService
     {
         $allHotels = [];
         // Chunk city codes to avoid overwhelming the API or exceeding connection limits
-        $chunks = array_chunk($cityCodes, 5); // Reduced from 10 to 5 for better stability
+        $chunks = array_chunk($cityCodes, 5); // Optimization: Reduced from 10 to 5
 
-        foreach ($chunks as $index => $chunk) {
+        foreach ($chunks as $chunk) {
             try {
-                if (config('app.debug')) {
-                    Log::info("Fetching batch " . ($index + 1) . " of " . count($chunks) . " (Cities: " . count($chunk) . ")");
-                }
-
                 $responses = Http::pool(function (Pool $pool) use ($chunk, $detailed, $language) {
                     $requests = [];
                     foreach ($chunk as $cityCode) {
                         $requests[] = $pool->asJson()
                             ->withBasicAuth($this->username, $this->password)
-                            ->timeout(60) // Increased from 20s to 60s
+                            ->timeout(60) // Optimization: Increased from 20s to 60s
                             ->post(rtrim($this->baseUrl, '/').'/TBOHotelCodeList', [
                                 'CityCode' => (string)$cityCode,
                                 'IsDetailedResponse' => $detailed ? 'true' : 'false',
@@ -238,8 +234,6 @@ class HotelApiService
                             }
                             $allHotels = array_merge($allHotels, $hotels);
                         }
-                    } elseif ($response instanceof \Illuminate\Http\Client\Response) {
-                         Log::warning('Concurrent hotel fetch failed with status: ' . $response->status());
                     } elseif ($response instanceof \Exception) {
                         Log::warning('Concurrent hotel fetch exception: ' . $response->getMessage());
                     }
