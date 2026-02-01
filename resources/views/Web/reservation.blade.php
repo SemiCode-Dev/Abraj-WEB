@@ -619,8 +619,7 @@
                         <div class="mb-6 pb-6 border-b-2 border-gray-100">
                             @php
                                 $hotel = $hotelDetails['HotelDetails'][0] ?? null;
-                                $roomImage =
-                                    '{{ asset('images/default.jpg') }}';
+                                $roomImage =asset('images/default.jpg');
                                 if ($hotel && isset($hotel['Image']) && !empty($hotel['Image'])) {
                                     $roomImage = $hotel['Image'];
                                 } elseif (
