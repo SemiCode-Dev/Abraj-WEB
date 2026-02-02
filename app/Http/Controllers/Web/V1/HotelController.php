@@ -89,7 +89,7 @@ class HotelController extends Controller
             ];
 
             // Log request data for debugging
-            Log::info('Hotel search request', $data);
+            // Log::info('Hotel search request', $data);
 
 
             // Use AvailabilityService (single source of truth)
@@ -158,7 +158,7 @@ class HotelController extends Controller
     public function getHotels($cityCode)
     {
         try {
-            Log::info("getHotels: Fetching for CityCode: $cityCode");
+            // Log::info("getHotels: Fetching for CityCode: $cityCode");
 
             // Get all hotels from all pages
             $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
@@ -192,7 +192,7 @@ class HotelController extends Controller
                 return ! empty($hotel['HotelCode']);
             });
 
-            Log::info('getHotels: Returning '.$formattedHotels->count().' formatted hotels');
+            // Log::info('getHotels: Returning '.$formattedHotels->count().' formatted hotels');
 
             return response()->json($formattedHotels->values());
         } catch (\Exception $e) {
