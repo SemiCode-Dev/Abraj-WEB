@@ -585,7 +585,7 @@ class HotelController extends Controller
             $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
                 ->orderBy('hotels_count', 'desc')
-                ->limit(400) // Reverted to 400 as requested
+                ->limit(50) // Reduced from 400 to 50 for stability
                 ->pluck('code')
                 ->toArray();
 
@@ -594,8 +594,7 @@ class HotelController extends Controller
             }
 
             // Split into Initial Batch and Remaining
-            // User requested to load ALL hotels at once.
-            $initialBatchSize = 500; // Increased to cover all cities
+            $initialBatchSize = 100; // Reduced from 500
             $initialCityCodes = array_slice($allCityCodes, 0, $initialBatchSize);
             $remainingCityCodes = array_slice($allCityCodes, $initialBatchSize);
 
@@ -615,7 +614,7 @@ class HotelController extends Controller
                         $response = $this->hotelApi->getHotelsFromMultipleCities(
                             $initialCityCodes,
                             true,
-                            30, // Increased from 20 to 30 to get more hotels
+                            10, // Reduced from 30 to 10 for stability
                             $apiLang
                         );
 

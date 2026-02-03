@@ -38,9 +38,10 @@ class AvailabilityService
 
         $hotelIdsStr = is_array($hotelIds) ? implode(',', $hotelIds) : $hotelIds;
         
-        // Include $isDetailed in cache key to avoid mixing modes
+        // Include $isDetailed AND locale in cache key to avoid mixing modes or languages
+        $language = app()->getLocale();
         $detailSuffix = $isDetailed ? 'detailed' : 'standard';
-        $cacheKey = $this->buildCacheKey($hotelIdsStr, $checkIn, $checkOut, $paxRooms, $guestNationality) . ":$detailSuffix";
+        $cacheKey = $this->buildCacheKey($hotelIdsStr, $checkIn, $checkOut, $paxRooms, $guestNationality) . ":$detailSuffix:$language";
 
         return Cache::remember($cacheKey, now()->addMinutes(30), function () use (
             $hotelIdsStr, $checkIn, $checkOut, $paxRooms, $guestNationality, $isDetailed
@@ -150,9 +151,10 @@ class AvailabilityService
 
         // 1. Resolve as many as possible from cache
         foreach ($hotelIds as $hotelId) {
-            // Include $isDetailed in cache key to avoid mixing modes
+            // Include $isDetailed AND locale in cache key to avoid mixing modes or languages
+            $language = app()->getLocale();
             $detailSuffix = $isDetailed ? 'detailed' : 'standard';
-            $key = $this->buildCacheKey($hotelId, $checkIn, $checkOut, $paxRooms, $guestNationality) . ":$detailSuffix";
+            $key = $this->buildCacheKey($hotelId, $checkIn, $checkOut, $paxRooms, $guestNationality) . ":$detailSuffix:$language";
             $cacheKeys[$hotelId] = $key;
             
             $cached = Cache::get($key);

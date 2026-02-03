@@ -550,6 +550,12 @@ class HotelController extends Controller
     {
         try {
             $lang = $request->header('Accept-Language', 'en');
+            if (str_contains(strtolower($lang), 'ar')) {
+                app()->setLocale('ar');
+            } else {
+                app()->setLocale('en');
+            }
+            $language = app()->getLocale();
             $user = auth('sanctum')->user();
 
             $bookingCode = $request->input('booking_code');

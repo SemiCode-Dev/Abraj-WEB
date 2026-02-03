@@ -50,7 +50,6 @@ Route::post('/packages/book', [PackageController::class, 'store']);
 // Flight Booking
 Route::post('/flights/book', [FlightController::class, 'store']);
 
-
 // Car Rental Booking
 Route::post('/car-rentals/book', [CarRentalController::class, 'store']);
 
