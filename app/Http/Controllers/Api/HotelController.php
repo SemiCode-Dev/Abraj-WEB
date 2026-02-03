@@ -595,6 +595,21 @@ class HotelController extends Controller
                 }
             }
 
+            // Fallback: If not found in search results, verify directly via PreBook
+            if (! $roomResult) {
+                try {
+                    $preBookResponse = $this->hotelApi->preBook($bookingCode);
+                    if (isset($preBookResponse['Status']['Code']) && $preBookResponse['Status']['Code'] == 200) {
+                        $roomResult = $preBookResponse['HotelResult'][0]['Rooms'][0] ?? null;
+                        if (isset($preBookResponse['BookingCode'])) {
+                            $bookingCode = $preBookResponse['BookingCode'];
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Review fallback PreBook failed: ' . $e->getMessage());
+                }
+            }
+
             if (! $roomResult) {
                 return $this->errorResponse(__('Room details could not be verified. Please search again.'), 400);
             }
