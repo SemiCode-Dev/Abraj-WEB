@@ -46,7 +46,7 @@ class HotelController extends Controller
      */
     public function index(Request $request)
     {
-        // set_time_limit(600);
+        set_time_limit(120);
 
         // 1. Localization (Header ONLY)
         $lang = $request->header('Accept-Language');
@@ -66,7 +66,7 @@ class HotelController extends Controller
             $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
                 ->orderBy('hotels_count', 'desc')
-                ->limit(100)
+                ->limit(300) // Broadened from 100 to 300 cities to cast a wider net
                 ->pluck('code')
                 ->toArray();
 
@@ -84,7 +84,7 @@ class HotelController extends Controller
                     $response = $this->hotelApi->getHotelsFromMultipleCities(
                         $allCityCodes,
                         true,
-                        50,
+                        100, // Increased to 100 for massive volume (30,000 candidates potential)
                         $language
                     );
                     $h = $response['Hotels'] ?? [];
@@ -148,8 +148,8 @@ class HotelController extends Controller
 
             $codesToCheck = array_column($candidates, 'HotelCode');
 
-            // Process in Chunks to avoid massive payload fail
-            $chunks = array_chunk($codesToCheck, 50);
+            // Process in Chunks (Larger chunks now handled concurrently by service)
+            $chunks = array_chunk($codesToCheck, 250);
             $availableData = [];
 
             foreach ($chunks as $chunkCodes) {

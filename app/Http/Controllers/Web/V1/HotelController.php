@@ -585,7 +585,7 @@ class HotelController extends Controller
             $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
                 ->orderBy('hotels_count', 'desc')
-                ->limit(100) // Restored from 50 to 100 for volume
+                ->limit(300) // Broadened to 300 cities for maximum volume
                 ->pluck('code')
                 ->toArray();
 
@@ -614,7 +614,7 @@ class HotelController extends Controller
                         $response = $this->hotelApi->getHotelsFromMultipleCities(
                             $initialCityCodes,
                             true,
-                            50, // Restored from 10 to 50 for volume
+                            100, // Increased to 100 for maximum results volume
                             $apiLang
                         );
 
@@ -727,8 +727,8 @@ class HotelController extends Controller
                         // Check ALL hotels for availability (no limit)
                         $hotelsToCheck = $hotels;
 
-                        // Process hotels in batches of 25 (Increased from 12 to improve speed, still safer than 50)
-                        $batchSize = 25;
+                        // Process in larger batches (Service now handles concurrency internally)
+                        $batchSize = 250;
                         $hotelBatches = array_chunk($hotelsToCheck, $batchSize);
                         $availableHotels = [];
 

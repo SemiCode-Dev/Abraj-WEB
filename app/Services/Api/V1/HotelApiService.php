@@ -2,8 +2,8 @@
 
 namespace App\Services\Api\V1;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\Pool;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class HotelApiService
@@ -79,11 +79,11 @@ class HotelApiService
             ],
         ];
 
-        if (!empty($data['HotelCodes'])) {
+        if (! empty($data['HotelCodes'])) {
             $payload['HotelCodes'] = (string) $data['HotelCodes'];
         }
 
-        if (!empty($data['CityCode'])) {
+        if (! empty($data['CityCode'])) {
             $payload['CityCode'] = (string) $data['CityCode'];
         }
 
@@ -203,8 +203,8 @@ class HotelApiService
     public function getHotelsConcurrent(array $cityCodes, bool $detailed = true, ?int $maxHotelsPerCity = null, string $language = 'en', int $maxPages = 1): array
     {
         $allHotels = [];
-        // Chunk city codes to avoid overwhelming the API or exceeding connection limits
-        $chunks = array_chunk($cityCodes, 10);
+        // Chunk city codes to 25 to reduce sequential batches (was 10)
+        $chunks = array_chunk($cityCodes, 25);
 
         foreach ($chunks as $chunk) {
             try {
@@ -213,14 +213,15 @@ class HotelApiService
                     foreach ($chunk as $cityCode) {
                         $requests[] = $pool->asJson()
                             ->withBasicAuth($this->username, $this->password)
-                            ->timeout(20)
+                            ->timeout(25) // Increased timeout slightly
                             ->post(rtrim($this->baseUrl, '/').'/TBOHotelCodeList', [
-                                'CityCode' => (string)$cityCode,
+                                'CityCode' => (string) $cityCode,
                                 'IsDetailedResponse' => $detailed ? 'true' : 'false',
                                 'PageNo' => 1,
                                 'Language' => $language,
                             ]);
                     }
+
                     return $requests;
                 });
 
@@ -228,18 +229,18 @@ class HotelApiService
                     if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
                         $data = $response->json();
                         $hotels = $data['Hotels'] ?? [];
-                        if (!empty($hotels) && is_array($hotels)) {
+                        if (! empty($hotels) && is_array($hotels)) {
                             if ($maxHotelsPerCity !== null) {
                                 $hotels = array_slice($hotels, 0, $maxHotelsPerCity);
                             }
                             $allHotels = array_merge($allHotels, $hotels);
                         }
                     } elseif ($response instanceof \Exception) {
-                        Log::warning('Concurrent hotel fetch exception: ' . $response->getMessage());
+                        Log::warning('Concurrent hotel fetch exception: '.$response->getMessage());
                     }
                 }
             } catch (\Exception $e) {
-                Log::error('Guzzle Pool Error: ' . $e->getMessage());
+                Log::error('Guzzle Pool Error: '.$e->getMessage());
             }
         }
 
@@ -251,6 +252,54 @@ class HotelApiService
             'Hotels' => $allHotels,
             'TotalHotels' => count($allHotels),
             'CitiesProcessed' => count($cityCodes),
+        ];
+    }
+
+    /**
+     * Concurrent Search for multiple hotel batches (Availability)
+     */
+    public function searchHotelConcurrent(array $batchedHotelCodes, array $params): array
+    {
+        $allResults = [];
+
+        // Process 20 batches concurrently at a time (increased from 10 to handle 3000+ candidates)
+        $groups = array_chunk($batchedHotelCodes, 20);
+
+        foreach ($groups as $group) {
+            try {
+                $responses = Http::pool(function (Pool $pool) use ($group, $params) {
+                    $requests = [];
+                    foreach ($group as $idsString) {
+                        $payload = array_merge($params, [
+                            'HotelCodes' => (string) $idsString,
+                        ]);
+
+                        $requests[] = $pool->asJson()
+                            ->withBasicAuth($this->username, $this->password)
+                            ->timeout(30)
+                            ->post(rtrim($this->baseUrl, '/').'/Search', $payload);
+                    }
+
+                    return $requests;
+                });
+
+                foreach ($responses as $response) {
+                    if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
+                        $resData = $response->json();
+                        $hResults = $resData['HotelResult'] ?? $resData['Hotels'] ?? [];
+                        if (! empty($hResults)) {
+                            $allResults = array_merge($allResults, $hResults);
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('Concurrent Availability Search Error: '.$e->getMessage());
+            }
+        }
+
+        return [
+            'Status' => ['Code' => 200],
+            'HotelResult' => $allResults,
         ];
     }
 
@@ -357,7 +406,7 @@ class HotelApiService
                 'Content-Type' => 'application/json',
             ])
             ->get($url, [
-                'Language' => $language
+                'Language' => $language,
             ])
             ->json();
     }
@@ -391,7 +440,7 @@ class HotelApiService
     {
         $payload = [
             'BookingCode' => $bookingCode,
-            'PaymentMode' => 'Limit'
+            'PaymentMode' => 'Limit',
         ];
 
         return $this->sendRequest('PreBook', $payload);

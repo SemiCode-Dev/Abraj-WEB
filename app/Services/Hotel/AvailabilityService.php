@@ -151,7 +151,6 @@ class AvailabilityService
 
         // 1. Resolve as many as possible from cache
         foreach ($hotelIds as $hotelId) {
-            // Include $isDetailed AND locale in cache key to avoid mixing modes or languages
             $language = app()->getLocale();
             $detailSuffix = $isDetailed ? 'detailed' : 'standard';
             $key = $this->buildCacheKey($hotelId, $checkIn, $checkOut, $paxRooms, $guestNationality) . ":$detailSuffix:$language";
@@ -165,16 +164,34 @@ class AvailabilityService
             }
         }
 
-        // 2. Fetch missing hotels in ONE BATCH call
+        // 2. Fetch missing hotels in CONCURRENT BATCHES
         if (!empty($missingIds)) {
-            Log::debug("AvailabilityService - Fetching batch from TBO", [
-                "count" => count($missingIds),
+            Log::debug("AvailabilityService - Fetching concurrent batches from TBO", [
+                "total_missing" => count($missingIds),
                 "mode" => $isDetailed ? 'detailed' : 'standard'
             ]);
             
-            // Join IDs into comma-separated string for TBO
-            $idsString = implode(',', $missingIds);
-            $batchResults = $this->fetchBatchAvailability($idsString, $checkIn, $checkOut, $paxRooms, $guestNationality, $isDetailed);
+            // Split into chunks of 50 for TBO batches
+            $chunks = array_chunk($missingIds, 50);
+            $batchedIdsStrings = array_map(fn($chunk) => implode(',', $chunk), $chunks);
+            
+            $params = [
+                'CheckIn' => $checkIn,
+                'CheckOut' => $checkOut,
+                'GuestNationality' => $guestNationality,
+                'PaxRooms' => $paxRooms,
+                'ResponseTime' => $isDetailed ? 28 : 20,
+                'IsDetailedResponse' => $isDetailed,
+                'Language' => app()->getLocale() === 'ar' ? 'ar' : 'en',
+                'Filters' => [
+                    'Refundable' => false,
+                    'NoOfRooms' => count($paxRooms),
+                    'MealType' => 'All',
+                ],
+            ];
+
+            $concurrentResponse = $this->hotelApi->searchHotelConcurrent($batchedIdsStrings, $params);
+            $batchResults = $this->mapLightweightSearchResponse($concurrentResponse);
             
             foreach ($missingIds as $hotelId) {
                 $result = $batchResults[$hotelId] ?? new AvailabilityResult(
@@ -185,8 +202,8 @@ class AvailabilityService
                     rooms: []
                 );
                 
-                // Cache individual result
-                Cache::put($cacheKeys[$hotelId], $result, now()->addMinutes(30));
+                // Cache individual result (reduced to 15 mins for massive batch to avoid cache bloating)
+                Cache::put($cacheKeys[$hotelId], $result, now()->addMinutes(15));
                 $results[$hotelId] = $result;
             }
         }
