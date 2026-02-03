@@ -61,6 +61,12 @@ Route::get('/visas/countries', [VisaController::class, 'getCountries']);
 Route::get('/visas/cities', [VisaController::class, 'getCities']);
 Route::get('/visas/nationalities', [VisaController::class, 'getNationalities']);
 
+// New Dedicated Hotel Endpoint
+Route::get('/hotels', [\App\Http\Controllers\Api\HotelController::class, 'index']);
+Route::get('/hotels/{code}/details', [\App\Http\Controllers\Api\HotelController::class, 'show']);
+Route::post('/hotels/reservation/review', [\App\Http\Controllers\Api\HotelController::class, 'reviewReservation']);
+Route::post('/hotels/reservation/book', [\App\Http\Controllers\Api\HotelController::class, 'bookReservation']);
+
 // ============================================
 // DEVELOPMENT HELPER - Get OTP from Database
 // REMOVE THIS IN PRODUCTION!

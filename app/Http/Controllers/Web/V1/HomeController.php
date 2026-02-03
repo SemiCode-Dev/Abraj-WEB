@@ -31,7 +31,7 @@ class HomeController extends Controller
 
         // Major cities focus (Riyadh, Makkah, Madinah, Jeddah, Dammam)
         $majorCityNames = ['Riyadh', 'Makkah/Mecca', 'Madinah', 'Jeddah', 'Dammam', 'Al Khobar'];
-        
+
         $cityCodes = City::whereIn('name', $majorCityNames)
             ->whereNotNull('code')
             ->where('code', '!=', '')
@@ -76,12 +76,12 @@ class HomeController extends Controller
                     // Apply robust Hotel Name Translation if Arabic
                     if ($language === 'ar') {
                         try {
-                            $translator = new \App\Services\HotelTranslationService();
+                            $translator = new \App\Services\HotelTranslationService;
                             if (isset($response['Hotels']) && is_array($response['Hotels'])) {
                                 $response['Hotels'] = $translator->translateHotels($response['Hotels'], 20);
                             }
                         } catch (\Exception $e) {
-                           Log::warning('Homepage translation failed: ' . $e->getMessage());
+                            Log::warning('Homepage translation failed: '.$e->getMessage());
                         }
                     }
 
@@ -142,10 +142,11 @@ class HomeController extends Controller
                 if (app()->getLocale() === 'ar' && ! empty($countryData)) {
                     $countryData = $this->translateCountries($countryData);
                 }
-                
+
                 return $countryData;
             } catch (\Exception $e) {
                 Log::error('Failed to fetch countries from TBO API: '.$e->getMessage());
+
                 return [];
             }
         });

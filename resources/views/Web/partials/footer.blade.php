@@ -119,11 +119,6 @@
             <!-- Tourism Authority Logos (Side by side) -->
             <div
                 class="flex items-center justify-center md:justify-start space-x-4 {{ app()->getLocale() === 'ar' ? 'space-x-reverse' : '' }} order-3 md:order-1">
-                <img src="{{ asset('images/footer/ministry-of-tourism.png') }}" alt="{{ __('Ministry of Tourism') }}"
-                    class="h-11 w-auto">
-                <img src="{{ asset('images/footer/saudi-tourism-authority.png') }}"
-                    alt="{{ __('Saudi Tourism Authority') }}"
-                    class="h-11 w-auto dark:invert dark:hue-rotate-180 dark:brightness-200">
             </div>
 
             <!-- Copyright and Logo (Centered) -->
