@@ -165,7 +165,7 @@ class AvailabilityService
 
         // 2. Fetch missing hotels in ONE BATCH call
         if (!empty($missingIds)) {
-            Log::info("AvailabilityService - Fetching batch from TBO", [
+            Log::debug("AvailabilityService - Fetching batch from TBO", [
                 "count" => count($missingIds),
                 "mode" => $isDetailed ? 'detailed' : 'standard'
             ]);
@@ -280,7 +280,7 @@ class AvailabilityService
                 }
             }
 
-            Log::info("AvailabilityService Batch - Mapped results", [
+            Log::debug("AvailabilityService Batch - Mapped results", [
                 "found_in_response" => count($hotelResults) + count($hotels),
                 "successfully_mapped" => count($mappedResults)
             ]);
@@ -348,7 +348,7 @@ class AvailabilityService
             return $rooms;
         }
 
-        Log::info('AvailabilityService - Local bookings found', [
+        Log::debug('AvailabilityService - Local bookings found', [
             'hotel_id' => $hotelId,
             'reserved_rooms' => $reservedRoomCounts,
         ]);

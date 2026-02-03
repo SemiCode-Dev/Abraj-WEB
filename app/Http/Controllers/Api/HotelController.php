@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\HotelBookingRequest;
 use App\Http\Requests\Api\ReservationReviewRequest;
-use App\Models\DiscountCode;
 use App\Models\City;
-use App\Services\Api\V1\HotelApiService;
 use App\Services\Api\V1\BookingService;
+use App\Services\Api\V1\HotelApiService;
 use App\Services\Api\V1\PaymentService;
 use App\Services\Hotel\AvailabilityService;
-use App\Http\Requests\Api\HotelBookingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -29,7 +28,7 @@ class HotelController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => $message,
-            'data' => $data
+            'data' => $data,
         ], $status);
     }
 
@@ -37,7 +36,7 @@ class HotelController extends Controller
     {
         return response()->json([
             'status' => 'error',
-            'message' => $message
+            'message' => $message,
         ], $status);
     }
 
@@ -47,8 +46,8 @@ class HotelController extends Controller
      */
     public function index(Request $request)
     {
-        set_time_limit(600);
-        
+        // set_time_limit(600);
+
         // 1. Localization (Header ONLY)
         $lang = $request->header('Accept-Language');
         if ($lang && str_contains(strtolower($lang), 'ar')) {
@@ -60,35 +59,36 @@ class HotelController extends Controller
 
         try {
             // 2. Resolve Candidate Hotels (Scope)
-            // If search param exists, we might search specifically? 
+            // If search param exists, we might search specifically?
             // The prompt implies a "List Page" logic, which usually defaults to "All Hotels" (Top Cities) if no specific scope.
             // We'll filter by name later if provided.
-            
+
             $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
                 ->orderBy('hotels_count', 'desc')
-                ->limit(100)
+                ->limit(20) // Reduced from 100 to 20 to prevent 504 timeouts
                 ->pluck('code')
                 ->toArray();
-                
+
             if (empty($allCityCodes)) {
                 return response()->json([
                     'data' => [],
-                    'pagination' => $this->emptyPagination()
+                    'pagination' => $this->emptyPagination(),
                 ]);
             }
 
             // Fetch Candidate Hotels (Lightweight)
-            $cacheKey = 'api_hotels_candidates_' . $language . '_' . md5(json_encode($allCityCodes));
-            $candidates = Cache::remember($cacheKey, 3600, function () use ($allCityCodes, $language) {
+            $cacheKey = 'api_hotels_candidates_'.$language.'_'.md5(json_encode($allCityCodes));
+            $candidates = Cache::remember($cacheKey, 86400, function () use ($allCityCodes, $language) {
                 try {
                     $response = $this->hotelApi->getHotelsFromMultipleCities(
                         $allCityCodes,
                         true,
-                        50, // Limit per city to get good spread
+                        10, // Reduced from 50 to 10 candidates per city for "All Hotels" view to prevent timeouts
                         $language
                     );
                     $h = $response['Hotels'] ?? [];
+
                     return is_array($h) ? $h : json_decode(json_encode($h), true);
                 } catch (\Exception $e) {
                     return [];
@@ -98,16 +98,17 @@ class HotelController extends Controller
             if (empty($candidates)) {
                 return response()->json([
                     'data' => [],
-                    'pagination' => $this->emptyPagination()
+                    'pagination' => $this->emptyPagination(),
                 ]);
             }
 
             // 3. Pre-Filter Candidates (Metadata)
             // Name Search
-            if ($request->has('search') && !empty($request->input('search'))) {
+            if ($request->has('search') && ! empty($request->input('search'))) {
                 $search = mb_strtolower(trim($request->input('search')));
-                $candidates = array_filter($candidates, function($h) use ($search) {
+                $candidates = array_filter($candidates, function ($h) use ($search) {
                     $name = mb_strtolower($h['HotelName'] ?? $h['Name'] ?? '');
+
                     return str_contains($name, $search);
                 });
             }
@@ -115,19 +116,20 @@ class HotelController extends Controller
             // Stars Filter
             if ($request->has('stars')) {
                 $stars = (array) $request->input('stars');
-                if (!empty($stars)) {
-                    $candidates = array_filter($candidates, function($h) use ($stars) {
+                if (! empty($stars)) {
+                    $candidates = array_filter($candidates, function ($h) use ($stars) {
                         $rating = (int) ($h['HotelRating'] ?? $h['Rating'] ?? 0);
+
                         return in_array($rating, $stars);
                     });
                 }
             }
-            
+
             // If candidates list is empty after filter, return empty
             if (empty($candidates)) {
                 return response()->json([
-                     'data' => [],
-                     'pagination' => $this->emptyPagination()
+                    'data' => [],
+                    'pagination' => $this->emptyPagination(),
                 ]);
             }
 
@@ -136,16 +138,16 @@ class HotelController extends Controller
             // Default Dates if not provided (Tomorrow -> +1 Day)
             $checkIn = \Carbon\Carbon::tomorrow()->format('Y-m-d');
             $checkOut = \Carbon\Carbon::tomorrow()->addDay()->format('Y-m-d');
-            
+
             // Default Pax (2 Adults)
             $paxRooms = [[
                 'Adults' => 2,
                 'Children' => 0,
-                'ChildrenAges' => []
+                'ChildrenAges' => [],
             ]];
 
             $codesToCheck = array_column($candidates, 'HotelCode');
-            
+
             // Process in Chunks to avoid massive payload fail
             $chunks = array_chunk($codesToCheck, 50);
             $availableData = [];
@@ -165,7 +167,7 @@ class HotelController extends Controller
                     if ($result->isAvailable() && $result->minPrice > 0) {
                         $availableData[$code] = [
                             'min_price' => $result->minPrice,
-                            'currency' => $result->currency
+                            'currency' => $result->currency,
                         ];
                     }
                 }
@@ -193,12 +195,12 @@ class HotelController extends Controller
             // Cache details aggressively.
 
             $reqFacilities = $request->input('facilities', []);
-            $shouldFilterFacilities = !empty($reqFacilities) && is_array($reqFacilities);
+            $shouldFilterFacilities = ! empty($reqFacilities) && is_array($reqFacilities);
 
             // Fetch Details for ALL Valid Hotels (needed for Facilities output anyway)
             // If list is huge (e.g. 200), this might be slow, but it's required for strict filtering "list page style".
             // We'll cache the details map.
-            
+
             $validHotelCodes = array_column($validHotels, 'HotelCode');
             // Chunk detail fetching
             $detailChunks = array_chunk($validHotelCodes, 50);
@@ -206,20 +208,25 @@ class HotelController extends Controller
 
             foreach ($detailChunks as $dChunk) {
                 $cStr = implode(',', $dChunk);
-                $dCacheKey = 'api_details_map_' . $language . '_' . md5($cStr);
-                $dMap = Cache::remember($dCacheKey, 86400, function() use ($cStr, $language) {
+                $dCacheKey = 'api_details_map_'.$language.'_'.md5($cStr);
+                $dMap = Cache::remember($dCacheKey, 86400, function () use ($cStr, $language) {
                     try {
                         $resp = $this->hotelApi->getHotelDetails($cStr, $language);
                         $list = $resp['HotelDetails'] ?? $resp['HotelResult'] ?? [];
                         $m = [];
-                         if (is_array($list)) {
-                             foreach ($list as $item) {
-                                 $id = $item['HotelCode'] ?? $item['Code'] ?? '';
-                                 if($id) $m[$id] = $item;
-                             }
-                         }
-                         return $m;
-                    } catch(\Exception $e) { return []; }
+                        if (is_array($list)) {
+                            foreach ($list as $item) {
+                                $id = $item['HotelCode'] ?? $item['Code'] ?? '';
+                                if ($id) {
+                                    $m[$id] = $item;
+                                }
+                            }
+                        }
+
+                        return $m;
+                    } catch (\Exception $e) {
+                        return [];
+                    }
                 });
                 $detailsMap += $dMap;
             }
@@ -229,10 +236,10 @@ class HotelController extends Controller
             foreach ($validHotels as $h) {
                 $code = $h['HotelCode'] ?? '';
                 $details = $detailsMap[$code] ?? [];
-                
+
                 // Merge Details
                 $fullHotel = array_merge($h, $details);
-                
+
                 // Normalize Facilities
                 $facilities = $this->normalizeFacilities($fullHotel);
                 $fullHotel['normalized_facilities'] = $facilities;
@@ -246,18 +253,20 @@ class HotelController extends Controller
                             break;
                         }
                     }
-                    if (!$match) continue;
+                    if (! $match) {
+                        continue;
+                    }
                 }
-                
+
                 $finalList[] = $fullHotel;
             }
 
             // 7. Sorting
             $sort = $request->input('sort');
             if ($sort === 'price_asc') {
-                usort($finalList, fn($a, $b) => ($a['MinPrice'] ?? 0) <=> ($b['MinPrice'] ?? 0));
+                usort($finalList, fn ($a, $b) => ($a['MinPrice'] ?? 0) <=> ($b['MinPrice'] ?? 0));
             } elseif ($sort === 'price_desc') {
-                usort($finalList, fn($a, $b) => ($b['MinPrice'] ?? 0) <=> ($a['MinPrice'] ?? 0));
+                usort($finalList, fn ($a, $b) => ($b['MinPrice'] ?? 0) <=> ($a['MinPrice'] ?? 0));
             }
 
             // 8. Pagination
@@ -265,12 +274,12 @@ class HotelController extends Controller
             $perPage = (int) $request->input('per_page', 10); // user said per_page defaults? example showed 10.
             $total = count($finalList);
             $lastPage = (int) ceil($total / $perPage);
-            
+
             $offset = ($page - 1) * $perPage;
             $items = array_slice($finalList, $offset, $perPage);
 
             // 9. Format Response
-            $data = array_map(function($h) {
+            $data = array_map(function ($h) {
                 return [
                     'hotel_code' => (string) ($h['HotelCode'] ?? ''),
                     'hotel_name' => (string) ($h['HotelName'] ?? $h['Name'] ?? ''),
@@ -278,7 +287,7 @@ class HotelController extends Controller
                     'min_price' => (float) ($h['MinPrice'] ?? 0),
                     'currency' => (string) ($h['Currency'] ?? 'USD'),
                     'source' => 'tbo',
-                    'facilities' => $h['normalized_facilities']
+                    'facilities' => $h['normalized_facilities'],
                 ];
             }, $items);
 
@@ -288,242 +297,254 @@ class HotelController extends Controller
                     'current_page' => $page,
                     'per_page' => $perPage,
                     'total' => $total,
-                    'last_page' => $lastPage
-                ]
+                    'last_page' => $lastPage,
+                ],
             ]);
 
         } catch (\Exception $e) {
-            Log::error('API Hotel Error: ' . $e->getMessage());
+            Log::error('API Hotel Error: '.$e->getMessage());
+
             return response()->json([
                 'error' => 'Server Error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
 
-    private function emptyPagination() {
+    private function emptyPagination()
+    {
         return [
             'current_page' => 1,
             'per_page' => 10,
             'total' => 0,
-            'last_page' => 1
+            'last_page' => 1,
         ];
     }
 
-    private function normalizeFacilities($hotel) {
+    private function normalizeFacilities($hotel)
+    {
         $raw = $hotel['HotelFacilities'] ?? $hotel['Facilities'] ?? [];
-        if (is_string($raw)) $raw = explode(',', $raw);
-        $rawStr = is_array($raw) ? implode(' ', array_map(function($f){
-            return is_array($f) ? ($f['Name']??'') : $f;
+        if (is_string($raw)) {
+            $raw = explode(',', $raw);
+        }
+        $rawStr = is_array($raw) ? implode(' ', array_map(function ($f) {
+            return is_array($f) ? ($f['Name'] ?? '') : $f;
         }, $raw)) : '';
-        
+
         $rawLower = mb_strtolower($rawStr);
-        
+
         return [
             'free_wifi' => str_contains($rawLower, 'wifi') || str_contains($rawLower, 'internet'),
             'pool' => str_contains($rawLower, 'pool') || str_contains($rawLower, 'swim'),
             'restaurant' => str_contains($rawLower, 'restaurant') || str_contains($rawLower, 'dining'),
             'spa' => str_contains($rawLower, 'spa') || str_contains($rawLower, 'sauna') || str_contains($rawLower, 'massage'),
             'gym' => str_contains($rawLower, 'gym') || str_contains($rawLower, 'fitness'),
-            'parking' => str_contains($rawLower, 'park') || str_contains($rawLower, 'valet')
+            'parking' => str_contains($rawLower, 'park') || str_contains($rawLower, 'valet'),
         ];
     }
+
     /**
      * Get Hotel Details & Live Availability
      */
     public function show(Request $request, $code)
     {
-         set_time_limit(120);
+        set_time_limit(120);
 
-         // 1. Localization
-         $lang = $request->header('Accept-Language');
-         if ($lang && str_contains(strtolower($lang), 'ar')) {
-             app()->setLocale('ar');
-         } else {
-             app()->setLocale('en');
-         }
-         $language = app()->getLocale();
+        // 1. Localization
+        $lang = $request->header('Accept-Language');
+        if ($lang && str_contains(strtolower($lang), 'ar')) {
+            app()->setLocale('ar');
+        } else {
+            app()->setLocale('en');
+        }
+        $language = app()->getLocale();
 
-         try {
-             // 2. Fetch Static Hotel Details
-             $cacheKey = "api_hotel_details_{$code}_{$language}";
-             // We cache static details heavily (24h)
-             $details = Cache::remember($cacheKey, 86400, function () use ($code, $language) {
-                 try {
-                     $response = $this->hotelApi->getHotelDetails($code, $language);
-                     // Allow for variations in TBO response structure
-                     $d = $response['HotelDetails'] ?? $response['HotelResult'] ?? []; 
-                     return is_array($d) ? ($d[0] ?? $d) : $d;
-                 } catch (\Exception $e) {
-                     return null;
-                 }
-             });
+        try {
+            // 2. Fetch Static Hotel Details
+            $cacheKey = "api_hotel_details_{$code}_{$language}";
+            // We cache static details heavily (24h)
+            $details = Cache::remember($cacheKey, 86400, function () use ($code, $language) {
+                try {
+                    $response = $this->hotelApi->getHotelDetails($code, $language);
+                    // Allow for variations in TBO response structure
+                    $d = $response['HotelDetails'] ?? $response['HotelResult'] ?? [];
 
-             if (!$details || empty($details)) {
-                 return response()->json([
-                     'error' => 'Not Found',
-                     'message' => 'Hotel not found'
-                 ], 404);
-             }
+                    return is_array($d) ? ($d[0] ?? $d) : $d;
+                } catch (\Exception $e) {
+                    return null;
+                }
+            });
 
-             // 3. Live Availability Check
-             // Params
-             $checkIn = $request->input('check_in', $request->input('check in'));
-             $checkOut = $request->input('check_out', $request->input('check out'));
-             $roomsCount = (int) $request->input('rooms', 1);
-             $adults = (int) $request->input('adults', 1);
-             $children = (int) $request->input('children', 0);
-             $childrenAges = $request->input('children_ages', []);
-             if (!is_array($childrenAges)) $childrenAges = [];
+            if (! $details || empty($details)) {
+                return response()->json([
+                    'error' => 'Not Found',
+                    'message' => 'Hotel not found',
+                ], 404);
+            }
 
-             $availableRooms = [];
-             $availabilityStatus = "available";
+            // 3. Live Availability Check
+            // Params
+            $checkIn = $request->input('check_in', $request->input('check in'));
+            $checkOut = $request->input('check_out', $request->input('check out'));
+            $roomsCount = (int) $request->input('rooms', 1);
+            $adults = (int) $request->input('adults', 1);
+            $children = (int) $request->input('children', 0);
+            $childrenAges = $request->input('children_ages', []);
+            if (! is_array($childrenAges)) {
+                $childrenAges = [];
+            }
 
-             if (!empty($checkIn) && !empty($checkOut)) {
-                 // Pax Validation & Cleanup
-                 if ($adults < $roomsCount) {
-                     $adults = $roomsCount;
-                 }
-                 
-                 // Normalize Children Ages Input
-                 if (empty($childrenAges)) {
-                     $childrenAges = $request->input('children_age') 
-                         ?? $request->input('children.age') 
-                         ?? $request->input('child_ages') 
-                         ?? [];
-                 }
-                 if (!is_array($childrenAges)) {
-                     if (is_string($childrenAges) && str_contains($childrenAges, ',')) {
-                         $childrenAges = explode(',', $childrenAges);
-                     } else {
-                         $childrenAges = [$childrenAges];
-                     }
-                 }
-                 $childrenAges = array_values(array_filter($childrenAges, fn($a) => is_numeric($a)));
+            $availableRooms = [];
+            $availabilityStatus = 'available';
 
-                 // 3. Prepare Pax Logic (Distribution)
-                 $paxRooms = [];
-                 for ($i = 0; $i < $roomsCount; $i++) {
-                     $roomAdults = (int) ceil($adults / $roomsCount);
-                     $roomChildren = (int) ceil($children / $roomsCount);
-                     
-                     $roomChildAges = [];
-                     if ($roomChildren > 0) {
-                         for($k=0; $k<$roomChildren; $k++) {
-                             // Take from list or empty (will be filled by cleanup logic)
-                             $val = array_shift($childrenAges);
-                             if ($val !== null) $roomChildAges[] = $val;
-                         }
-                     }
-                     
-                     $paxRooms[] = [
-                         'Adults' => $roomAdults, 
-                         'Children' => $roomChildren,
-                         'ChildrenAges' => $roomChildAges
-                     ];
-                 }
+            if (! empty($checkIn) && ! empty($checkOut)) {
+                // Pax Validation & Cleanup
+                if ($adults < $roomsCount) {
+                    $adults = $roomsCount;
+                }
 
-                 // 4. CLEANING LOGIC (COPIED FROM WEB CONTROLLER)
-                 $cleanedPaxRooms = [];
-                 foreach ($paxRooms as $room) {
-                     $adultsP = filter_var($room['Adults'] ?? 1, FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
-                     $childrenP = filter_var($room['Children'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['default' => 0, 'min_range' => 0]]);
+                // Normalize Children Ages Input
+                if (empty($childrenAges)) {
+                    $childrenAges = $request->input('children_age')
+                        ?? $request->input('children.age')
+                        ?? $request->input('child_ages')
+                        ?? [];
+                }
+                if (! is_array($childrenAges)) {
+                    if (is_string($childrenAges) && str_contains($childrenAges, ',')) {
+                        $childrenAges = explode(',', $childrenAges);
+                    } else {
+                        $childrenAges = [$childrenAges];
+                    }
+                }
+                $childrenAges = array_values(array_filter($childrenAges, fn ($a) => is_numeric($a)));
 
-                     $childrenAgesP = $room['ChildrenAges'] ?? [];
-                     if (!is_array($childrenAgesP)) {
-                         $childrenAgesP = [];
-                     }
+                // 3. Prepare Pax Logic (Distribution)
+                $paxRooms = [];
+                for ($i = 0; $i < $roomsCount; $i++) {
+                    $roomAdults = (int) ceil($adults / $roomsCount);
+                    $roomChildren = (int) ceil($children / $roomsCount);
 
-                     // Cast ages to integers and clamp to 0-12 (matching client requirements)
-                     $childrenAgesP = array_map(function ($age) {
-                         $ageInt = (int) $age;
-                         return max(0, min(12, $ageInt));
-                     }, $childrenAgesP);
+                    $roomChildAges = [];
+                    if ($roomChildren > 0) {
+                        for ($k = 0; $k < $roomChildren; $k++) {
+                            // Take from list or empty (will be filled by cleanup logic)
+                            $val = array_shift($childrenAges);
+                            if ($val !== null) {
+                                $roomChildAges[] = $val;
+                            }
+                        }
+                    }
 
-                     if ($childrenP > count($childrenAgesP)) {
-                         for ($i = count($childrenAgesP); $i < $childrenP; $i++) {
-                             $childrenAgesP[] = 0; // Default 0
-                         }
-                     } elseif ($childrenP < count($childrenAgesP)) {
-                         $childrenAgesP = array_slice($childrenAgesP, 0, $childrenP);
-                     }
+                    $paxRooms[] = [
+                        'Adults' => $roomAdults,
+                        'Children' => $roomChildren,
+                        'ChildrenAges' => $roomChildAges,
+                    ];
+                }
 
-                     $cleanedPaxRooms[] = [
-                         'Adults' => $adultsP,
-                         'Children' => $childrenP,
-                         'ChildrenAges' => $childrenAgesP,
-                     ];
-                 }
-                 $paxRooms = $cleanedPaxRooms;
-                 
-                 // Availability Call
-                 $availability = $this->availabilityService->checkAvailability(
-                     $code,
-                     $checkIn,
-                     $checkOut,
-                     $paxRooms,
-                     'SA'
-                 );
+                // 4. CLEANING LOGIC (COPIED FROM WEB CONTROLLER)
+                $cleanedPaxRooms = [];
+                foreach ($paxRooms as $room) {
+                    $adultsP = filter_var($room['Adults'] ?? 1, FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
+                    $childrenP = filter_var($room['Children'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['default' => 0, 'min_range' => 0]]);
 
-                 if ($availability->isAvailable()) {
-                     $availableRooms = $availability->rooms;
-                 } else {
-                     $availabilityStatus = "no_rooms";
-                 }
-             } else {
-                 $availabilityStatus = "no_search_criteria";
-             }
-             
-             // 4. Format Rooms
-             $formattedRooms = [];
-             foreach ($availableRooms as $room) {
-                 $formattedRooms[] = [
-                     'room_code' => (string) ($room['BookingCode'] ?? uniqid()),
-                     'room_name' => (string) ($room['Name'][0] ?? $room['Name'] ?? 'Room'),
-                     'image' => null, // TBO rooms often don't have specific images, use hotel image or placeholder
-                     'price' => [
-                         'amount' => (float) ($room['TotalFare'] ?? 0),
-                         'currency' => (string) ($room['Currency'] ?? 'USD')
-                     ],
-                     'refundable' => !($room['NonRefundable'] ?? false),
-                     'available' => true
-                 ];
-             }
+                    $childrenAgesP = $room['ChildrenAges'] ?? [];
+                    if (! is_array($childrenAgesP)) {
+                        $childrenAgesP = [];
+                    }
 
-             // 5. Format Response
-             $response = [
-                 'hotel' => [
-                     'hotel_code' => (string) ($details['HotelCode'] ?? $code),
-                     'name' => (string) ($details['HotelName'] ?? $details['Name'] ?? ''),
-                     'address' => (string) ($details['Address'] ?? ''),
-                     'rating' => (int) ($details['HotelRating'] ?? $details['Rating'] ?? 0),
-                     'source' => 'tbo',
-                     'contact' => [
-                         'phone' => (string) ($details['PhoneNumber'] ?? ''),
-                         'email' => (string) ($details['Email'] ?? '') // TBO often empty
-                     ]
-                 ],
-                 'about_hotel' => (string) ($details['Description'] ?? ''),
-                 'facilities' => $this->normalizeFacilitiesList($details),
-                 'images' => (array) ($details['Images'] ?? []),
-                 'rooms' => $formattedRooms
-             ];
-             
-             if (empty($formattedRooms)) {
-                 $response['availability_status'] = $availabilityStatus; // 'no_rooms' or 'no_search_criteria'
-             }
+                    // Cast ages to integers and clamp to 0-12 (matching client requirements)
+                    $childrenAgesP = array_map(function ($age) {
+                        $ageInt = (int) $age;
 
-             return response()->json($response);
+                        return max(0, min(12, $ageInt));
+                    }, $childrenAgesP);
 
-         } catch (\Exception $e) {
-             Log::error('API Hotel Details Error: ' . $e->getMessage());
-             return response()->json([
-                 'error' => 'Server Error',
-                 'message' => $e->getMessage()
-             ], 500);
-         }
+                    if ($childrenP > count($childrenAgesP)) {
+                        for ($i = count($childrenAgesP); $i < $childrenP; $i++) {
+                            $childrenAgesP[] = 0; // Default 0
+                        }
+                    } elseif ($childrenP < count($childrenAgesP)) {
+                        $childrenAgesP = array_slice($childrenAgesP, 0, $childrenP);
+                    }
+
+                    $cleanedPaxRooms[] = [
+                        'Adults' => $adultsP,
+                        'Children' => $childrenP,
+                        'ChildrenAges' => $childrenAgesP,
+                    ];
+                }
+                $paxRooms = $cleanedPaxRooms;
+
+                // Availability Call
+                $availability = $this->availabilityService->checkAvailability(
+                    $code,
+                    $checkIn,
+                    $checkOut,
+                    $paxRooms,
+                    'SA'
+                );
+
+                if ($availability->isAvailable()) {
+                    $availableRooms = $availability->rooms;
+                } else {
+                    $availabilityStatus = 'no_rooms';
+                }
+            } else {
+                $availabilityStatus = 'no_search_criteria';
+            }
+
+            // 4. Format Rooms
+            $formattedRooms = [];
+            foreach ($availableRooms as $room) {
+                $formattedRooms[] = [
+                    'room_code' => (string) ($room['BookingCode'] ?? uniqid()),
+                    'room_name' => (string) ($room['Name'][0] ?? $room['Name'] ?? 'Room'),
+                    'image' => null, // TBO rooms often don't have specific images, use hotel image or placeholder
+                    'price' => [
+                        'amount' => (float) ($room['TotalFare'] ?? 0),
+                        'currency' => (string) ($room['Currency'] ?? 'USD'),
+                    ],
+                    'refundable' => ! ($room['NonRefundable'] ?? false),
+                    'available' => true,
+                ];
+            }
+
+            // 5. Format Response
+            $response = [
+                'hotel' => [
+                    'hotel_code' => (string) ($details['HotelCode'] ?? $code),
+                    'name' => (string) ($details['HotelName'] ?? $details['Name'] ?? ''),
+                    'address' => (string) ($details['Address'] ?? ''),
+                    'rating' => (int) ($details['HotelRating'] ?? $details['Rating'] ?? 0),
+                    'source' => 'tbo',
+                    'contact' => [
+                        'phone' => (string) ($details['PhoneNumber'] ?? ''),
+                        'email' => (string) ($details['Email'] ?? ''), // TBO often empty
+                    ],
+                ],
+                'about_hotel' => (string) ($details['Description'] ?? ''),
+                'facilities' => $this->normalizeFacilitiesList($details),
+                'images' => (array) ($details['Images'] ?? []),
+                'rooms' => $formattedRooms,
+            ];
+
+            if (empty($formattedRooms)) {
+                $response['availability_status'] = $availabilityStatus; // 'no_rooms' or 'no_search_criteria'
+            }
+
+            return response()->json($response);
+
+        } catch (\Exception $e) {
+            Log::error('API Hotel Details Error: '.$e->getMessage());
+
+            return response()->json([
+                'error' => 'Server Error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
-
 
     public function reviewReservation(ReservationReviewRequest $request)
     {
@@ -543,9 +564,9 @@ class HotelController extends Controller
                     'Adults' => $adults,
                     'Children' => $children,
                     'ChildrenAges' => array_fill(0, $children, 0), // Default to 0 for review step if not provided
-                ]
+                ],
             ];
-            
+
             // 1. Validate Room Availability & Price (using AvailabilityService for normalization)
             $availability = $this->availabilityService->checkAvailability(
                 $hotelId,
@@ -555,7 +576,7 @@ class HotelController extends Controller
                 'SA'
             );
 
-            if (!$availability->isAvailable()) {
+            if (! $availability->isAvailable()) {
                 return $this->errorResponse(__('Room is no longer available. Please search again.'), 400);
             }
 
@@ -568,19 +589,20 @@ class HotelController extends Controller
                 }
             }
 
-            if (!$roomResult) {
+            if (! $roomResult) {
                 return $this->errorResponse(__('Room details could not be verified. Please search again.'), 400);
             }
-            
+
             // 2. Fetch Hotel Details for display (Image, Name, Address)
             // ... (rest of the logic remains the same)
             $hotelDetails = Cache::remember("hotel_details_{$hotelId}_{$lang}", 86400, function () use ($hotelId, $lang) {
-                 $details = $this->hotelApi->getHotelDetails($hotelId, $lang);
-                 return $details['HotelDetails'] ?? null;
+                $details = $this->hotelApi->getHotelDetails($hotelId, $lang);
+
+                return $details['HotelDetails'] ?? null;
             });
 
-            if (!$hotelDetails) {
-                 return $this->errorResponse(__('Failed to load hotel details.'), 500);
+            if (! $hotelDetails) {
+                return $this->errorResponse(__('Failed to load hotel details.'), 500);
             }
 
             // 3. Calculate Prices & Comission
@@ -603,13 +625,13 @@ class HotelController extends Controller
 
             if ($discountCode) {
                 $coupon = \App\Models\DiscountCode::where('code', $discountCode)->first();
-                
+
                 if ($coupon && $coupon->isValid()) {
                     // Calculate discount
                     // Assuming percentage discount based on model
                     $discountPercent = $coupon->discount_percentage; // e.g. 10.0
                     $discountAmount = ($finalPrice * $discountPercent) / 100;
-                    
+
                     // Cap discount if needed? Model doesn't have cap, so we trust percentage.
                     $couponStatus = 'valid';
                     $couponMessage = __('Coupon applied successfully.');
@@ -631,7 +653,7 @@ class HotelController extends Controller
                 'notes' => $request->input('notes', ''),
             ];
 
-                // 6. Formatting Response
+            // 6. Formatting Response
             $response = [
                 'hotel' => [
                     'id' => $hotelId,
@@ -662,22 +684,23 @@ class HotelController extends Controller
                 'coupon' => [
                     'code' => $discountCode,
                     'status' => $couponStatus,
-                    'message' => $couponMessage
+                    'message' => $couponMessage,
                 ],
                 'guest' => $guestData,
                 'cancellation_policies' => $roomResult['CancellationPolicies'] ?? [],
-                'terms_conditions' => $roomResult['TermsAndConditions'] ?? $roomResult['Conditions'] ?? [], 
+                'terms_conditions' => $roomResult['TermsAndConditions'] ?? $roomResult['Conditions'] ?? [],
             ];
 
             return $this->successResponse($response);
 
         } catch (\Exception $e) {
-            Log::error('Review Reservation Error: ' . $e->getMessage(), [
+            Log::error('Review Reservation Error: '.$e->getMessage(), [
                 'exception' => $e,
                 'trace' => $e->getTraceAsString(),
-                'input' => $request->all()
+                'input' => $request->all(),
             ]);
-            return $this->errorResponse(__('An error occurred while reviewing the reservation.') . ' ' . $e->getMessage(), 500);
+
+            return $this->errorResponse(__('An error occurred while reviewing the reservation.').' '.$e->getMessage(), 500);
         }
     }
 
@@ -701,22 +724,23 @@ class HotelController extends Controller
             $validated = $request->validated();
             $bookingCode = $validated['booking_code'];
             $hotelId = $validated['hotel_id'];
-            
+
             // 2. Server-Side Price Calculation (Using PreBook for absolute freshness)
             // We call PreBook directly to get the final price from TBO
             $preBookResponse = $this->hotelApi->preBook($bookingCode);
 
             if (
-                !isset($preBookResponse['Status']['Code']) || 
+                ! isset($preBookResponse['Status']['Code']) ||
                 $preBookResponse['Status']['Code'] !== 200 ||
-                !isset($preBookResponse['HotelResult'][0]['Rooms'][0])
+                ! isset($preBookResponse['HotelResult'][0]['Rooms'][0])
             ) {
                 $msg = $preBookResponse['Status']['Description'] ?? __('Room is no longer available. Please search again.');
+
                 return $this->errorResponse($msg, 400);
             }
 
             $roomResult = $preBookResponse['HotelResult'][0]['Rooms'][0];
-            
+
             // TBO's preBook price can be in several places
             $basePrice = 0;
             if (isset($roomResult['TotalFare'])) {
@@ -730,7 +754,7 @@ class HotelController extends Controller
             }
 
             if ($basePrice <= 0) {
-                 return $this->errorResponse(__('Room price could not be verified. Please try again.'), 400);
+                return $this->errorResponse(__('Room price could not be verified. Please try again.'), 400);
             }
 
             $currency = $roomResult['Price']['Currency'] ?? $roomResult['Currency'] ?? $preBookResponse['Currency'] ?? 'USD';
@@ -741,7 +765,7 @@ class HotelController extends Controller
             // Handle Discount
             $discountAmount = 0;
             $discountCodeId = null;
-            if (!empty($validated['discount_code'])) {
+            if (! empty($validated['discount_code'])) {
                 $coupon = \App\Models\DiscountCode::where('code', $validated['discount_code'])->first();
                 if ($coupon && $coupon->isValid()) {
                     $discountPercent = $coupon->discount_percentage;
@@ -753,13 +777,13 @@ class HotelController extends Controller
             $priceAfterDiscount = $finalPrice - $discountAmount;
 
             // 3. Fetch Localized Details for Enrichment
-            $hotelDetails = Cache::remember("api_hotel_details_{$hotelId}_{$language}", 86400, fn() => $this->hotelApi->getHotelDetails($hotelId, $language)['HotelDetails'] ?? null);
+            $hotelDetails = Cache::remember("api_hotel_details_{$hotelId}_{$language}", 86400, fn () => $this->hotelApi->getHotelDetails($hotelId, $language)['HotelDetails'] ?? null);
 
             $hotelName = $hotelDetails['HotelName'] ?? $hotelDetails['Name'] ?? ($language === 'ar' ? 'فندق' : 'Hotel');
-            
+
             // For DB storage we still might want both names or just use the current localized one as both for consistency in old fields
-            $hotelNameAr = ($language === 'ar') ? $hotelName : (Cache::remember("hotel_details_{$hotelId}_ar", 86400, fn() => $this->hotelApi->getHotelDetails($hotelId, 'ar')['HotelDetails'] ?? null)['HotelName'] ?? $hotelName);
-            $hotelNameEn = ($language === 'en') ? $hotelName : (Cache::remember("hotel_details_{$hotelId}_en", 86400, fn() => $this->hotelApi->getHotelDetails($hotelId, 'en')['HotelDetails'] ?? null)['HotelName'] ?? $hotelName);
+            $hotelNameAr = ($language === 'ar') ? $hotelName : (Cache::remember("hotel_details_{$hotelId}_ar", 86400, fn () => $this->hotelApi->getHotelDetails($hotelId, 'ar')['HotelDetails'] ?? null)['HotelName'] ?? $hotelName);
+            $hotelNameEn = ($language === 'en') ? $hotelName : (Cache::remember("hotel_details_{$hotelId}_en", 86400, fn () => $this->hotelApi->getHotelDetails($hotelId, 'en')['HotelDetails'] ?? null)['HotelName'] ?? $hotelName);
 
             // Room name
             $roomName = $roomResult['Name'][0] ?? $roomResult['Name'] ?? ($language === 'ar' ? 'غرفة' : 'Room');
@@ -770,7 +794,7 @@ class HotelController extends Controller
             $nights = $checkInDate->diffInDays($checkOutDate);
 
             // Update validated data with SERVER-CALCULATED values
-            $validated['room_code'] = $bookingCode; 
+            $validated['room_code'] = $bookingCode;
             $validated['hotel_code'] = $hotelId;
             $validated['hotel_name_ar'] = $hotelNameAr;
             $validated['hotel_name_en'] = $hotelNameEn;
@@ -779,7 +803,7 @@ class HotelController extends Controller
             $validated['currency'] = $currency;
             $validated['discount_amount'] = round($discountAmount, 2);
             $validated['discount_code_id'] = $discountCodeId;
-            
+
             // Map guest fields
             $validated['guest_name'] = $validated['name'] ?? '';
             $validated['guest_email'] = $validated['email'] ?? '';
@@ -825,8 +849,8 @@ class HotelController extends Controller
             ], __('Booking initiated successfully.'));
 
         } catch (\Exception $e) {
-            Log::error('API Hotel Booking Error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            Log::error('API Hotel Booking Error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $message = $e->getMessage();
@@ -840,13 +864,16 @@ class HotelController extends Controller
         }
     }
 
-    private function normalizeFacilitiesList($hotel) {
+    private function normalizeFacilitiesList($hotel)
+    {
         $raw = $hotel['HotelFacilities'] ?? $hotel['Facilities'] ?? [];
-        if (is_string($raw)) $raw = explode(',', $raw);
-        $rawStr = is_array($raw) ? implode(' ', array_map(function($f){
-            return is_array($f) ? ($f['Name']??'') : $f;
+        if (is_string($raw)) {
+            $raw = explode(',', $raw);
+        }
+        $rawStr = is_array($raw) ? implode(' ', array_map(function ($f) {
+            return is_array($f) ? ($f['Name'] ?? '') : $f;
         }, $raw)) : '';
-        
+
         $rawLower = mb_strtolower($rawStr);
         $result = [];
         $isAr = app()->getLocale() === 'ar';
@@ -869,6 +896,7 @@ class HotelController extends Controller
                 }
             }
         }
+
         return $result;
     }
 }
