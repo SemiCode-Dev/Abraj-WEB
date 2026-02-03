@@ -65,6 +65,7 @@ Route::get('/hotels', [\App\Http\Controllers\Api\HotelController::class, 'index'
 Route::get('/hotels/{code}/details', [\App\Http\Controllers\Api\HotelController::class, 'show']);
 Route::post('/hotels/reservation/review', [\App\Http\Controllers\Api\HotelController::class, 'reviewReservation']);
 Route::post('/hotels/reservation/book', [\App\Http\Controllers\Api\HotelController::class, 'bookReservation']);
+Route::post('/hotels/reservation/payment-callback', [\App\Http\Controllers\Api\HotelController::class, 'paymentCallback']);
 
 // ============================================
 // DEVELOPMENT HELPER - Get OTP from Database

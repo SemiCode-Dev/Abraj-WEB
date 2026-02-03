@@ -585,7 +585,7 @@ class HotelController extends Controller
             $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
                 ->orderBy('hotels_count', 'desc')
-                ->limit(50) // Reduced from 400 to 50 for stability
+                ->limit(100) // Restored from 50 to 100 for volume
                 ->pluck('code')
                 ->toArray();
 
@@ -614,7 +614,7 @@ class HotelController extends Controller
                         $response = $this->hotelApi->getHotelsFromMultipleCities(
                             $initialCityCodes,
                             true,
-                            10, // Reduced from 30 to 10 for stability
+                            50, // Restored from 10 to 50 for volume
                             $apiLang
                         );
 

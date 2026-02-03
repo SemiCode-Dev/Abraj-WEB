@@ -66,7 +66,7 @@ class HotelController extends Controller
             $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
                 ->orderBy('hotels_count', 'desc')
-                ->limit(20) // Reduced from 100 to 20 to prevent 504 timeouts
+                ->limit(100)
                 ->pluck('code')
                 ->toArray();
 
@@ -84,7 +84,7 @@ class HotelController extends Controller
                     $response = $this->hotelApi->getHotelsFromMultipleCities(
                         $allCityCodes,
                         true,
-                        10, // Reduced from 50 to 10 candidates per city for "All Hotels" view to prevent timeouts
+                        50,
                         $language
                     );
                     $h = $response['Hotels'] ?? [];
@@ -606,7 +606,7 @@ class HotelController extends Controller
                         }
                     }
                 } catch (\Exception $e) {
-                    Log::warning('Review fallback PreBook failed: ' . $e->getMessage());
+                    Log::warning('Review fallback PreBook failed: '.$e->getMessage());
                 }
             }
 
@@ -723,6 +723,68 @@ class HotelController extends Controller
 
             return $this->errorResponse(__('An error occurred while reviewing the reservation.').' '.$e->getMessage(), 500);
         }
+    }
+
+    /**
+     * Handle payment callback from Amazon Payment Services (APS)
+     * Mirrors web callback logic but returns JSON
+     */
+    public function paymentCallback(Request $request)
+    {
+        set_time_limit(180);
+        $data = $request->all();
+
+        Log::info('API APS Callback Received', ['data' => $data]);
+
+        // 1. Verify Signature
+        $receivedSignature = $data['signature'] ?? null;
+        $tempData = $data;
+        unset($tempData['signature']);
+
+        $generatedSignature = $this->paymentService->apsSignature($tempData, config('services.aps.sha_response'));
+
+        if ($receivedSignature !== $generatedSignature) {
+            Log::error('API APS Callback Signature Mismatch', [
+                'received' => $receivedSignature,
+                'generated' => $generatedSignature,
+            ]);
+
+            return $this->errorResponse('Invalid signature — payment not trusted', 403);
+        }
+
+        $merchantReference = $data['merchant_reference'] ?? '';
+        $status = $data['status'] ?? '';
+
+        // 2. Handle Hotel Bookings
+        if (str_starts_with(strtoupper($merchantReference), 'BK-')) {
+            $booking = \App\Models\HotelBooking::where('booking_reference', $merchantReference)->first();
+
+            if (! $booking) {
+                Log::error('Booking not found for Reference: '.$merchantReference);
+
+                return $this->errorResponse('Booking not found', 404);
+            }
+
+            if ($status == '14') { // Success
+                $success = $this->bookingService->completeBooking($booking, $data);
+
+                if ($success) {
+                    return $this->successResponse([
+                        'booking_reference' => $booking->booking_reference,
+                        'tbo_booking_id' => $booking->tbo_booking_id,
+                        'confirmation_number' => $booking->confirmation_number,
+                    ], __('Payment successful! Your booking has been confirmed.'));
+                } else {
+                    return $this->errorResponse(__('Payment successful, but room booking failed. Our team will contact you for a refund.'), 500);
+                }
+            } else { // Failure
+                $this->bookingService->cancelBooking($booking, $data['response_message'] ?? 'Payment failed');
+
+                return $this->errorResponse(__('Payment failed: ').($data['response_message'] ?? 'Unknown error'), 400);
+            }
+        }
+
+        return $this->errorResponse('Unsupported payment reference', 400);
     }
 
     /**
