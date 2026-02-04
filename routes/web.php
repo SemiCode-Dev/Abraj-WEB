@@ -52,6 +52,7 @@ Route::group([
     Route::get('/cookies', [HomeController::class, 'cookies'])->name('cookies');
     Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
     Route::post('/aps/callback', [PaymentController::class, 'apsCallback'])->name('aps.callback');
+    Route::get('/currency/{currency}', [\App\Http\Controllers\Web\V1\CurrencyController::class, 'switchCurrency'])->name('currency.switch');
 
     // Hotels
 

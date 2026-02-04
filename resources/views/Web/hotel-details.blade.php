@@ -275,41 +275,44 @@
             @php
                 $hotel = $hotelDetails['HotelDetails'][0] ?? null;
                 $images = [];
-                
+
                 // Check all possible image sources (not using elseif to check all)
                 if ($hotel) {
                     // Check ImageUrls first (most common format)
                     if (isset($hotel['ImageUrls']) && is_array($hotel['ImageUrls']) && !empty($hotel['ImageUrls'])) {
                         foreach ($hotel['ImageUrls'] as $img) {
-                            $imgUrl = is_array($img) ? ($img['ImageUrl'] ?? '') : $img;
+                            $imgUrl = is_array($img) ? $img['ImageUrl'] ?? '' : $img;
                             if (!empty($imgUrl)) {
                                 $images[] = is_array($img) ? $img : ['ImageUrl' => $imgUrl];
                             }
                         }
                     }
-                    
+
                     // Check Images array if ImageUrls didn't provide images
-                    if (empty($images) && isset($hotel['Images']) && is_array($hotel['Images']) && !empty($hotel['Images'])) {
-                        foreach ($hotel['Images'] as $imgUrl) {
-                            if (!empty($imgUrl)) {
-                                $images[] = ['ImageUrl' => is_array($imgUrl) ? ($imgUrl['ImageUrl'] ?? '') : $imgUrl];
-                            }
-                        }
-                    }
-                    
-                    // Check single Image field if still no images
-                    if (empty($images) && isset($hotel['Image']) && !empty($hotel['Image'])) {
-                        $images[] = ['ImageUrl' => $hotel['Image']];
-                    }
-                }
-                
-                // Only add default image if NO valid images found from API
-                $defaultHotelImage = asset('images/default.jpg');
-                $hasValidImages = !empty($images);
-                if (!$hasValidImages) {
-                    $images = [
-                        ['ImageUrl' => $defaultHotelImage]
-                    ];
+    if (
+        empty($images) &&
+        isset($hotel['Images']) &&
+        is_array($hotel['Images']) &&
+        !empty($hotel['Images'])
+    ) {
+        foreach ($hotel['Images'] as $imgUrl) {
+            if (!empty($imgUrl)) {
+                $images[] = ['ImageUrl' => is_array($imgUrl) ? $imgUrl['ImageUrl'] ?? '' : $imgUrl];
+            }
+        }
+    }
+
+    // Check single Image field if still no images
+    if (empty($images) && isset($hotel['Image']) && !empty($hotel['Image'])) {
+        $images[] = ['ImageUrl' => $hotel['Image']];
+    }
+}
+
+// Only add default image if NO valid images found from API
+$defaultHotelImage = asset('images/default.jpg');
+$hasValidImages = !empty($images);
+if (!$hasValidImages) {
+    $images = [['ImageUrl' => $defaultHotelImage]];
                 }
             @endphp
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="hotelGallery">
@@ -404,7 +407,8 @@
 
                     <!-- Amenities -->
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">{{ __('Facilities and Services') }}</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                            {{ __('Facilities and Services') }}</h2>
                         @php
                             $hotel = $hotelDetails['HotelDetails'][0] ?? null;
                             $facilities = $hotel['HotelFacilities'] ?? [];
@@ -477,7 +481,8 @@
 
                     <!-- Date Selection & Availability Check -->
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">{{ __('Select Dates to View Availability') }}
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                            {{ __('Select Dates to View Availability') }}
                         </h2>
 
                         <form id="availabilityForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -610,8 +615,7 @@
                                                     @php
                                                         $defaultHotelImage = asset('images/default.jpg');
                                                     @endphp
-                                                    <img src="{{ $defaultHotelImage }}"
-                                                        alt="غرفة" 
+                                                    <img src="{{ $defaultHotelImage }}" alt="غرفة"
                                                         class="w-full h-full object-cover rounded-xl"
                                                         onerror="this.onerror=null; this.src='{{ $defaultHotelImage }}';">
                                                 </div>
@@ -620,7 +624,8 @@
                                                 <div class="md:col-span-2">
                                                     <div class="flex items-start justify-between mb-3">
                                                         <div>
-                                                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                                                            <h3
+                                                                class="text-xl font-bold text-gray-900 dark:text-white mb-2">
                                                                 {{ is_array($room['Name']) ? $room['Name'][0] : $room['Name'] }}
                                                             </h3>
                                                             <div class="flex flex-wrap gap-2 mb-3">
@@ -648,15 +653,17 @@
                                                         class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                                                         <div>
                                                             <div class="flex items-baseline">
-                                                                <span class="text-3xl font-extrabold text-orange-600 dark:text-orange-400">
-                                                                    {{ $room['TotalFare'] ?? ($room['Price']['PublishedPrice'] ?? 0) }}
+                                                                <span
+                                                                    class="text-3xl font-extrabold text-orange-600 dark:text-orange-400">
+                                                                    {{ number_format($room['TotalFare'] ?? ($room['Price']['PublishedPrice'] ?? 0), 2) }}
                                                                 </span>
                                                                 <span
                                                                     class="text-gray-500 dark:text-gray-400 text-sm {{ app()->getLocale() === 'ar' ? 'mr-2' : 'ml-2' }}">
-                                                                    {{ isset($currency) ? $currency : request('currency', 'USD') }}
+                                                                    {{ $room['Currency'] ?? \App\Helpers\CurrencyHelper::getSymbol() }}
                                                                 </span>
                                                             </div>
-                                                            <div class="text-xs text-gray-400 dark:text-gray-500">/ {{ __('Total Price') }}
+                                                            <div class="text-xs text-gray-400 dark:text-gray-500">/
+                                                                {{ __('Total Price') }}
                                                                 • {{ __('including taxes') }}</div>
                                                         </div>
                                                         <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&booking_code={{ $room['BookingCode'] ?? '' }}&check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}"
@@ -686,7 +693,8 @@
                     <div class="sticky top-24 space-y-6">
                         <!-- Hotel Quick Info -->
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">{{ __('Hotel Information') }}</h3>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                                {{ __('Hotel Information') }}</h3>
                             @php
                                 $hotel = $hotelDetails['HotelDetails'][0] ?? null;
                             @endphp
@@ -698,7 +706,8 @@
                                         <i class="fas fa-map-marker-alt text-orange-600 dark:text-orange-400"></i>
                                     </div>
                                     <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
-                                        <div class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Location') }}</div>
+                                        <div class="font-semibold text-gray-900 dark:text-white mb-1">
+                                            {{ __('Location') }}</div>
                                         <p class="text-sm text-gray-600 dark:text-gray-300">
                                             @if ($hotel && isset($hotel['Address']))
                                                 {{ $hotel['Address'] }}@if (isset($hotel['PinCode']))
@@ -725,7 +734,8 @@
                                         <i class="fas fa-star text-orange-600 dark:text-orange-400"></i>
                                     </div>
                                     <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
-                                        <div class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Rating') }}</div>
+                                        <div class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Rating') }}
+                                        </div>
                                         <div class="flex items-center">
                                             <div
                                                 class="flex text-yellow-500 dark:text-yellow-400 text-sm {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}">
@@ -733,7 +743,8 @@
                                                     <i class="fas fa-star"></i>
                                                 @endfor
                                             </div>
-                                            <span class="text-sm text-gray-600 dark:text-gray-300">{{ $hotel['HotelRating'] ?? '4.8' }}
+                                            <span
+                                                class="text-sm text-gray-600 dark:text-gray-300">{{ $hotel['HotelRating'] ?? '4.8' }}
                                                 @if (isset($hotel['HotelRating']))
                                                     {{ __('Stars') }}
                                                 @endif
@@ -767,11 +778,13 @@
 
                         <!-- Hotel Policies -->
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">{{ __('Hotel Policies') }}</h3>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">{{ __('Hotel Policies') }}
+                            </h3>
 
                             <div class="space-y-4">
                                 <!-- Cancellation Policy -->
-                                <div class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
+                                <div
+                                    class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
                                     <div class="flex items-start">
                                         <i
                                             class="fas fa-check-circle text-orange-600 dark:text-orange-400 text-lg {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }} mt-1"></i>
@@ -785,7 +798,8 @@
                                 </div>
 
                                 <!-- Payment Policy -->
-                                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                                <div
+                                    class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
                                     <div class="flex items-start">
                                         <i
                                             class="fas fa-credit-card text-blue-600 dark:text-blue-400 text-lg {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }} mt-1"></i>
@@ -799,14 +813,17 @@
                                 </div>
 
                                 <!-- Pet Policy -->
-                                <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-4">
+                                <div
+                                    class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-4">
                                     <div class="flex items-start">
                                         <i
                                             class="fas fa-paw text-gray-600 dark:text-gray-400 text-lg {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }} mt-1"></i>
                                         <div>
-                                            <div class="font-semibold text-gray-900 dark:text-white mb-1 text-sm">{{ __('Pet Policy') }}
+                                            <div class="font-semibold text-gray-900 dark:text-white mb-1 text-sm">
+                                                {{ __('Pet Policy') }}
                                             </div>
-                                            <div class="text-xs text-gray-700 dark:text-gray-300">{{ __('Pets are not allowed') }}</div>
+                                            <div class="text-xs text-gray-700 dark:text-gray-300">
+                                                {{ __('Pets are not allowed') }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -815,7 +832,8 @@
 
                         <!-- Contact Hotel -->
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">{{ __('Contact Hotel') }}</h3>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">{{ __('Contact Hotel') }}
+                            </h3>
                             @php
                                 $hotel = $hotelDetails['HotelDetails'][0] ?? null;
                             @endphp
@@ -828,7 +846,8 @@
                                             <i class="fas fa-phone text-orange-600 dark:text-orange-400"></i>
                                         </div>
                                         <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
-                                            <div class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Phone') }}</div>
+                                            <div class="font-semibold text-gray-900 dark:text-white mb-1">
+                                                {{ __('Phone') }}</div>
                                             <p class="text-sm text-gray-600 dark:text-gray-300">
                                                 <a href="tel:{{ $hotel['PhoneNumber'] }}"
                                                     class="hover:text-orange-600 dark:hover:text-orange-400">{{ $hotel['PhoneNumber'] }}</a>
@@ -845,7 +864,8 @@
                                             <i class="fas fa-envelope text-orange-600 dark:text-orange-400"></i>
                                         </div>
                                         <div class="{{ app()->getLocale() === 'ar' ? 'mr-3' : 'ml-3' }}">
-                                            <div class="font-semibold text-gray-900 dark:text-white mb-1">{{ __('Email') }}</div>
+                                            <div class="font-semibold text-gray-900 dark:text-white mb-1">
+                                                {{ __('Email') }}</div>
                                             <p class="text-sm text-gray-600 dark:text-gray-300">
                                                 <a href="mailto:{{ $hotel['Email'] }}"
                                                     class="hover:text-orange-600 dark:hover:text-orange-400 break-all">{{ $hotel['Email'] }}</a>
@@ -872,29 +892,33 @@
         @php
             $hotel = $hotelDetails['HotelDetails'][0] ?? null;
             $apiImages = [];
-            
+
             // Check all possible image sources (not using elseif to check all)
             if ($hotel) {
                 // Check ImageUrls first (most common format)
                 if (isset($hotel['ImageUrls']) && is_array($hotel['ImageUrls']) && !empty($hotel['ImageUrls'])) {
-                    $apiImages = array_slice(array_map(function($img) {
-                        return is_array($img) ? ($img['ImageUrl'] ?? '') : $img;
-                    }, $hotel['ImageUrls']), 0, 5);
+                    $apiImages = array_slice(
+                        array_map(function ($img) {
+                            return is_array($img) ? $img['ImageUrl'] ?? '' : $img;
+                        }, $hotel['ImageUrls']),
+                        0,
+                        5,
+                    );
                     $apiImages = array_filter($apiImages); // Remove empty values
                 }
-                
+
                 // Check Images array if ImageUrls didn't provide images
-                if (empty($apiImages) && isset($hotel['Images']) && is_array($hotel['Images']) && !empty($hotel['Images'])) {
-                    $apiImages = array_filter(array_slice($hotel['Images'], 0, 5));
-                }
-                
-                // Check single Image field if still no images
-                if (empty($apiImages) && isset($hotel['Image']) && !empty($hotel['Image'])) {
-                    $apiImages = [$hotel['Image']];
-                }
-            }
-            
-            $defaultHotelImage = asset('images/default.jpg');
+    if (empty($apiImages) && isset($hotel['Images']) && is_array($hotel['Images']) && !empty($hotel['Images'])) {
+        $apiImages = array_filter(array_slice($hotel['Images'], 0, 5));
+    }
+
+    // Check single Image field if still no images
+    if (empty($apiImages) && isset($hotel['Image']) && !empty($hotel['Image'])) {
+        $apiImages = [$hotel['Image']];
+    }
+}
+
+$defaultHotelImage = asset('images/default.jpg');
             // Only use default image if NO valid images found
             $hotelImagesArray = !empty($apiImages) ? array_values($apiImages) : [$defaultHotelImage];
         @endphp
@@ -1210,7 +1234,8 @@
 
             if (!checkIn || !checkOut) {
                 availabilityMessage.textContent = '{{ __('Please select check-in and check-out dates') }}';
-                availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400';
+                availabilityMessage.className =
+                    'mt-2 p-3 rounded-lg text-sm bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400';
                 availabilityMessage.classList.remove('hidden');
                 return;
             }
@@ -1231,7 +1256,8 @@
             if (roomsList) roomsList.innerHTML = '';
             if (noRoomsMessage) noRoomsMessage.classList.add('hidden');
             availabilityMessage.textContent = '{{ __('Searching for availability...') }}';
-            availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400';
+            availabilityMessage.className =
+                'mt-2 p-3 rounded-lg text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400';
             availabilityMessage.classList.remove('hidden');
 
             const searchData = {
@@ -1266,7 +1292,8 @@
             } catch (err) {
                 console.error(err);
                 availabilityMessage.textContent = '{{ __('No rooms available for these dates.') }}';
-                availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
+                availabilityMessage.className =
+                    'mt-2 p-3 rounded-lg text-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
                 if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
                 if (roomsList) roomsList.classList.add('hidden');
             } finally {
@@ -1296,7 +1323,8 @@
                 if (noRoomsMessage) noRoomsMessage.classList.remove('hidden');
                 if (roomsList) roomsList.classList.add('hidden');
                 availabilityMessage.textContent = '{{ __('No rooms available.') }}';
-                availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
+                availabilityMessage.className =
+                    'mt-2 p-3 rounded-lg text-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
                 return;
             }
 
@@ -1310,7 +1338,8 @@
             });
 
             availabilityMessage.textContent = `{{ __('Found') }} ${allRooms.length} {{ __('Available Rooms') }}`;
-            availabilityMessage.className = 'mt-2 p-3 rounded-lg text-sm bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400';
+            availabilityMessage.className =
+                'mt-2 p-3 rounded-lg text-sm bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400';
 
             // Update summary
             const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (86400000));
@@ -1356,11 +1385,15 @@
                         <div class="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
                             <div>
                                 <div class="flex items-baseline">
-                                    <span class="text-3xl font-extrabold text-orange-600 dark:text-orange-400">${perNight}</span>
-                                    <span class="text-gray-500 dark:text-gray-400 text-sm ml-2">${currency}</span>
+                                    <span class="text-3xl font-extrabold text-orange-600 dark:text-orange-400">
+                                        ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(perNight)}
+                                    </span>
+                                    <span class="text-gray-500 dark:text-gray-400 text-sm ml-2">
+                                        ${currency === 'SAR' ? 'SAR' : 'USD'}
+                                    </span>
                                 </div>
                                 <div class="text-xs text-gray-400 dark:text-gray-500">{{ __('per night') }}</div>
-                                ${nights > 1 ? `<div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('Total') }}: ${price.toFixed(2)} ${currency}</div>` : ''}
+                                ${nights > 1 ? `<div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('Total') }}: ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price)} ${currency === 'SAR' ? 'SAR' : 'USD'}</div>` : ''}
                             </div>
                             <a href="{{ route('reservation') }}?hotel_id={{ $hotelId }}&CheckIn=${checkIn}&CheckOut=${checkOut}&guests=${guests}${paxParams}&booking_code=${encodeURIComponent(room.BookingCode || '')}&total_fare=${price}&currency=${currency}&room_name=${encodeURIComponent(roomName)}"
                                class="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-700 transition shadow-lg">

@@ -27,7 +27,7 @@
                                 @if ($package->price)
                                     <div
                                         class="absolute top-4 {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} bg-orange-500 text-white px-4 py-2 rounded-lg font-bold">
-                                        {{ number_format($package->price, 2) }} {{ __('USD') }}
+                                        {{ \App\Helpers\CurrencyHelper::format($package->price) }}
                                     </div>
                                 @endif
                             </div>

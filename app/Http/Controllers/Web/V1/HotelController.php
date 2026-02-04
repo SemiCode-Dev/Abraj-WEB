@@ -128,10 +128,22 @@ class HotelController extends Controller
                 $roomsByHotel[$hCode][] = $room;
             }
 
+            $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
             foreach ($roomsByHotel as $hCode => $hRooms) {
+                // Convert prices for each room
+                foreach ($hRooms as &$room) {
+                    if (isset($room['TotalFare'])) {
+                        $room['TotalFare'] = \App\Helpers\CurrencyHelper::convert($room['TotalFare'], $targetCurrency);
+                    }
+                    if (isset($room['Price']['PublishedPrice'])) {
+                        $room['Price']['PublishedPrice'] = \App\Helpers\CurrencyHelper::convert($room['Price']['PublishedPrice'], $targetCurrency);
+                    }
+                }
+                unset($room);
+
                 $hotelResults[] = [
                     'HotelCode' => $hCode,
-                    'Currency' => $availability->currency,
+                    'Currency' => $targetCurrency,
                     'Rooms' => $hRooms
                 ];
             }
@@ -751,13 +763,14 @@ class HotelController extends Controller
                                     );
 
                                     // Merge availability into hotel data
+                                    $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
                                     foreach ($batch as $hotel) {
                                         $hotelCode = $hotel['HotelCode'];
                                         $result = $availabilityResults[$hotelCode] ?? null;
 
                                         if ($result && $result->isAvailable()) {
-                                            $hotel['MinPrice'] = $result->minPrice;
-                                            $hotel['Currency'] = $result->currency;
+                                            $hotel['MinPrice'] = \App\Helpers\CurrencyHelper::convert($result->minPrice, $targetCurrency);
+                                            $hotel['Currency'] = $targetCurrency;
                                             $availableHotels[] = $hotel;
                                         }
                                     }
@@ -921,10 +934,17 @@ class HotelController extends Controller
                 false // Lightweight mode (Standard Search)
             );
 
-            // Convert to response format
+            // Convert to response format and apply currency conversion
             $results = [];
+            $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
             foreach ($availabilityResults as $hotelId => $result) {
-                $results[$hotelId] = $result->toArray();
+                $data = $result->toArray();
+                if ($result->isAvailable()) {
+                    // Convert from USD base
+                    $data['amount'] = \App\Helpers\CurrencyHelper::convert($result->minPrice, $targetCurrency);
+                    $data['currency'] = $targetCurrency;
+                }
+                $results[$hotelId] = $data;
             }
 
             return response()->json($results);
@@ -1102,6 +1122,18 @@ class HotelController extends Controller
                     Log::warning('Failed to translate room names: '.$e->getMessage());
                 }
             }
+            // Convert rooms currency and prices
+            $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
+            foreach ($availableRooms as &$room) {
+                if (isset($room['TotalFare'])) {
+                    $room['TotalFare'] = \App\Helpers\CurrencyHelper::convert($room['TotalFare'], $targetCurrency);
+                }
+                if (isset($room['Price']['PublishedPrice'])) {
+                    $room['Price']['PublishedPrice'] = \App\Helpers\CurrencyHelper::convert($room['Price']['PublishedPrice'], $targetCurrency);
+                }
+                $room['Currency'] = $targetCurrency;
+            }
+            unset($room);
 
 
             // Log response for debugging
@@ -1234,10 +1266,16 @@ class HotelController extends Controller
                     );
 
                     if ($availability->isAvailable()) {
+                        $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
                         foreach ($availability->rooms as $room) {
                             if (isset($room['BookingCode']) && $room['BookingCode'] === $bookingCode) {
                                 $roomData = $room;
-                                $roomData['Currency'] = $availability->currency;
+                                // Convert all price fields to target currency
+                                $roomData['TotalFare'] = \App\Helpers\CurrencyHelper::convert($room['TotalFare'], $targetCurrency);
+                                if (isset($roomData['NetPrice'])) {
+                                    $roomData['NetPrice'] = \App\Helpers\CurrencyHelper::convert($room['NetPrice'], $targetCurrency);
+                                }
+                                $roomData['Currency'] = $targetCurrency;
                                 break;
                             }
                         }
@@ -1442,7 +1480,9 @@ class HotelController extends Controller
                             $basePrice = (float) ($foundRoom['Price']['PublishedPrice'] ?? $foundRoom['TotalFare'] ?? 0);
                             $roomData = $foundRoom;
                             $roomData['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission($basePrice);
-                            $roomData['Currency'] = $searchResponse['HotelResult'][0]['Currency'] ?? 'USD';
+                            $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
+                            $roomData['TotalFare'] = \App\Helpers\CurrencyHelper::convert($roomData['TotalFare'], $targetCurrency);
+                            $roomData['Currency'] = $targetCurrency;
 
                             // Final safety check: ensure no local confirmed booking exists for this room/dates
                             $roomName = is_array($roomData['Name']) ? ($roomData['Name'][0] ?? '') : ($roomData['Name'] ?? '');
@@ -1477,7 +1517,9 @@ class HotelController extends Controller
                             if (isset($preBookResponse['HotelResult'][0]['Rooms'][0]['TotalFare'])) {
                                 $basePrice = (float) $preBookResponse['HotelResult'][0]['Rooms'][0]['TotalFare'];
                                 $roomData['TotalFare'] = \App\Helpers\CommissionHelper::applyCommission($basePrice);
-                                $roomData['Currency'] = $preBookResponse['HotelResult'][0]['Currency'] ?? ($roomData['Currency'] ?? 'USD');
+                                $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
+                                $roomData['TotalFare'] = \App\Helpers\CurrencyHelper::convert($roomData['TotalFare'], $targetCurrency);
+                                $roomData['Currency'] = $targetCurrency;
 
                                 if (isset($roomData['Price'])) {
                                     $roomData['Price']['PublishedPrice'] = $roomData['TotalFare'];

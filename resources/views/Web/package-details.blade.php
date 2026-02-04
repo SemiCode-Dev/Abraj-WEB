@@ -11,7 +11,7 @@
         <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
             <h1 class="text-4xl md:text-5xl font-extrabold mb-2">{{ $package->locale_title }}</h1>
             @if ($package->price)
-                <p class="text-2xl font-bold text-orange-400">{{ number_format($package->price, 2) }} {{ __('USD') }}</p>
+                <p class="text-2xl font-bold text-orange-400">{{ \App\Helpers\CurrencyHelper::format($package->price) }}</p>
             @endif
         </div>
     </section>

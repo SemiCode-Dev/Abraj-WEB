@@ -5,10 +5,21 @@
             <!-- Logo -->
             <div class="flex-shrink-0">
                 <style>
-                    .logo-light { display: block !important; }
-                    .logo-dark { display: none !important; }
-                    .dark .logo-light { display: none !important; }
-                    .dark .logo-dark { display: block !important; }
+                    .logo-light {
+                        display: block !important;
+                    }
+
+                    .logo-dark {
+                        display: none !important;
+                    }
+
+                    .dark .logo-light {
+                        display: none !important;
+                    }
+
+                    .dark .logo-dark {
+                        display: block !important;
+                    }
                 </style>
                 <a href="{{ route('home') }}" class="flex items-center">
                     <img src="/images/abraj-stay-logo.png" alt="ABRAJ STAY" class="h-6 md:h-8 w-auto logo-light">
@@ -52,6 +63,17 @@
                     @else
                         <img src="https://flagcdn.com/w20/sa.png" alt="العربية" class="w-5 h-4 md:w-6 md:h-5 rounded">
                     @endif
+                </a>
+
+                <!-- Currency Switcher -->
+                @php
+                    $currentCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
+                    $targetCurrency = $currentCurrency === 'SAR' ? 'USD' : 'SAR';
+                @endphp
+                <a href="{{ route('currency.switch', ['currency' => $targetCurrency]) }}"
+                    class="flex items-center text-xs md:text-sm font-bold text-gray-700 dark:text-gray-200 hover:text-orange-500 transition px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md"
+                    title="{{ __('Switch to') }} {{ $targetCurrency }}">
+                    {{ $currentCurrency === 'SAR' ? 'SAR' : 'USD' }}
                 </a>
 
                 <!-- Theme Toggle - Desktop & Mobile -->

@@ -173,14 +173,16 @@ class HotelController extends Controller
                 }
             }
 
-            // 5. Build Valid Hotel List
+            // 5. Build Valid Hotel List and Convert Currency
             $validHotels = [];
+            $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
             foreach ($candidates as $h) {
                 $code = $h['HotelCode'] ?? '';
                 if (isset($availableData[$code])) {
-                    // Update with real price
-                    $h['MinPrice'] = $availableData[$code]['min_price'];
-                    $h['Currency'] = $availableData[$code]['currency'];
+                    // Update with real price and convert from USD base
+                    $priceInUsd = $availableData[$code]['min_price'];
+                    $h['MinPrice'] = \App\Helpers\CurrencyHelper::convert($priceInUsd, $targetCurrency);
+                    $h['Currency'] = $targetCurrency;
                     $validHotels[] = $h;
                 }
             }
@@ -503,8 +505,8 @@ class HotelController extends Controller
                     'room_name' => (string) ($room['Name'][0] ?? $room['Name'] ?? 'Room'),
                     'image' => null, // TBO rooms often don't have specific images, use hotel image or placeholder
                     'price' => [
-                        'amount' => (float) ($room['TotalFare'] ?? 0),
-                        'currency' => (string) ($room['Currency'] ?? 'USD'),
+                        'amount' => \App\Helpers\CurrencyHelper::convert((float) ($room['TotalFare'] ?? 0)),
+                        'currency' => \App\Helpers\CurrencyHelper::getCurrentCurrency(),
                     ],
                     'refundable' => ! ($room['NonRefundable'] ?? false),
                     'available' => true,
@@ -627,9 +629,10 @@ class HotelController extends Controller
             }
 
             // 3. Calculate Prices & Comission
-            // AvailabilityService already applied commission to TotalFare and Price fields
-            $finalPrice = (float) ($roomResult['TotalFare'] ?? 0);
-            $currency = $roomResult['Currency'] ?? $availability->currency;
+            $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
+            $finalPriceInUsd = (float) ($roomResult['TotalFare'] ?? 0);
+            $finalPrice = \App\Helpers\CurrencyHelper::convert($finalPriceInUsd, $targetCurrency);
+            $currency = $targetCurrency;
 
             // No need to apply commission again here as AvailabilityService does it
             // but we might want to know the base price for the response breakdown?

@@ -86,8 +86,7 @@
                                                     </div>
                                                     <div class="flex items-center">
                                                         <i class="fas fa-money-bill-wave text-orange-600 mr-2 w-4"></i>
-                                                        <span><strong>{{ number_format($booking->total_price, 2) }}
-                                                                {{ $booking->currency }}</strong></span>
+                                                        <span><strong>{{ \App\Helpers\CurrencyHelper::format($booking->total_price, \App\Helpers\CurrencyHelper::getCurrentCurrency()) }}</strong></span>
                                                     </div>
                                                     <div class="flex items-center">
                                                         <i class="fas fa-credit-card text-orange-600 mr-2 w-4"></i>
