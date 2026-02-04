@@ -46,7 +46,7 @@ class HotelController extends Controller
      */
     public function index(Request $request)
     {
-        set_time_limit(120);
+        set_time_limit(600); // Match Web Controller (600s)
 
         // 1. Localization (Header ONLY)
         $lang = $request->header('Accept-Language');
@@ -59,14 +59,10 @@ class HotelController extends Controller
 
         try {
             // 2. Resolve Candidate Hotels (Scope)
-            // If search param exists, we might search specifically?
-            // The prompt implies a "List Page" logic, which usually defaults to "All Hotels" (Top Cities) if no specific scope.
-            // We'll filter by name later if provided.
-
             $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
                 ->orderBy('hotels_count', 'desc')
-                ->limit(300) // Broadened from 100 to 300 cities to cast a wider net
+                ->limit(100) // Reduced from 300 to 100 to match Web controller scale
                 ->pluck('code')
                 ->toArray();
 
@@ -84,7 +80,7 @@ class HotelController extends Controller
                     $response = $this->hotelApi->getHotelsFromMultipleCities(
                         $allCityCodes,
                         true,
-                        100, // Increased to 100 for massive volume (30,000 candidates potential)
+                        100, // Candidates from TBO
                         $language
                     );
                     $h = $response['Hotels'] ?? [];
@@ -116,16 +112,15 @@ class HotelController extends Controller
             // Stars Filter
             if ($request->has('stars')) {
                 $stars = (array) $request->input('stars');
-                if (! empty($stars)) {
+                if (!empty($stars)) {
                     $candidates = array_filter($candidates, function ($h) use ($stars) {
-                        $rating = (int) ($h['HotelRating'] ?? $h['Rating'] ?? 0);
-
+                        // $rating = ($h['HotelRating'] ?? $h['Rating'] ?? 0);
+                        $rating = $this->getHotelRating($h['HotelRating']);
                         return in_array($rating, $stars);
                     });
                 }
             }
 
-            // If candidates list is empty after filter, return empty
             if (empty($candidates)) {
                 return response()->json([
                     'data' => [],
@@ -134,7 +129,6 @@ class HotelController extends Controller
             }
 
             // 4. Availability Check (STRICT)
-            // We must check availability for ALL candidates to ensure "Min Price" is real.
             // Default Dates if not provided (Tomorrow -> +1 Day)
             $checkIn = \Carbon\Carbon::tomorrow()->format('Y-m-d');
             $checkOut = \Carbon\Carbon::tomorrow()->addDay()->format('Y-m-d');
@@ -148,18 +142,17 @@ class HotelController extends Controller
 
             $codesToCheck = array_column($candidates, 'HotelCode');
 
-            // Process in Chunks (Larger chunks now handled concurrently by service)
+            // Process in Chunks
             $chunks = array_chunk($codesToCheck, 250);
             $availableData = [];
 
             foreach ($chunks as $chunkCodes) {
-                // Batch Check
                 $batchResults = $this->availabilityService->checkBatchAvailability(
                     $chunkCodes,
                     $checkIn,
                     $checkOut,
                     $paxRooms,
-                    'SA', // Default Nationality
+                    'SA',
                     false // Lightweight
                 );
 
@@ -179,7 +172,6 @@ class HotelController extends Controller
             foreach ($candidates as $h) {
                 $code = $h['HotelCode'] ?? '';
                 if (isset($availableData[$code])) {
-                    // Update with real price and convert from USD base
                     $priceInUsd = $availableData[$code]['min_price'];
                     $h['MinPrice'] = \App\Helpers\CurrencyHelper::convert($priceInUsd, $targetCurrency);
                     $h['Currency'] = $targetCurrency;
@@ -187,31 +179,47 @@ class HotelController extends Controller
                 }
             }
 
-            // 6. Facilities Filter (Requires Details)
-            // If facilities filter is requested, we MUST verify them.
-            // But we don't have facilities in candidates usually.
-            // We need to fetch details for the valid list.
-            // To be efficient, we only fetch for the PAGED result IF no facility filter.
-            // BUT if facility filter exists, we must fetch for ALL valid hotels to filter them. THIS IS HEAVY.
-            // Compromise: Fetch details for all Valid candidates (limit is implicit by valid counts).
-            // Cache details aggressively.
+            // 5a. Facilities Filter (Apply before sorting and pagination)
+            $reqFacilities = $request->input('facilities');
+            if (!empty($reqFacilities) && is_array($reqFacilities)) {
+                $validHotels = array_values(array_filter($validHotels, function ($h) use ($reqFacilities) {
+                    $normalized = $this->normalizeFacilities($h);
+                    foreach ($reqFacilities as $facility) {
+                        // Check if the requested facility exists in our normalized list and is true
+                        if (empty($normalized[$facility])) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }));
+            }
 
-            $reqFacilities = $request->input('facilities', []);
-            $shouldFilterFacilities = ! empty($reqFacilities) && is_array($reqFacilities);
+            // 6. Sorting
+            $sort = $request->input('sort');
+            if ($sort === 'price_asc') {
+                usort($validHotels, fn ($a, $b) => ($a['MinPrice'] ?? 0) <=> ($b['MinPrice'] ?? 0));
+            } elseif ($sort === 'price_desc') {
+                usort($validHotels, fn ($a, $b) => ($b['MinPrice'] ?? 0) <=> ($a['MinPrice'] ?? 0));
+            }
 
-            // Fetch Details for ALL Valid Hotels (needed for Facilities output anyway)
-            // If list is huge (e.g. 200), this might be slow, but it's required for strict filtering "list page style".
-            // We'll cache the details map.
+            // 7. Pagination (IMPORTANT: Before heavy detail fetching)
+            $page = (int) $request->input('page', 1);
+            $perPage = (int) $request->input('per_page', 10);
+            $total = count($validHotels);
+            $lastPage = (int) ceil($total / $perPage);
 
-            $validHotelCodes = array_column($validHotels, 'HotelCode');
-            // Chunk detail fetching
-            $detailChunks = array_chunk($validHotelCodes, 50);
+            $offset = ($page - 1) * $perPage;
+            $items = array_slice($validHotels, $offset, $perPage);
+
+            // 8. Fetch Details ONLY for the Paginated Results
+            // This is the CRITICAL optimization to avoid sequential API timeouts.
+            $pagedCodes = array_column($items, 'HotelCode');
             $detailsMap = [];
 
-            foreach ($detailChunks as $dChunk) {
-                $cStr = implode(',', $dChunk);
-                $dCacheKey = 'api_details_map_'.$language.'_'.md5($cStr);
-                $dMap = Cache::remember($dCacheKey, 86400, function () use ($cStr, $language) {
+            if (!empty($pagedCodes)) {
+                $cStr = implode(',', $pagedCodes);
+                $dCacheKey = 'api_details_paged_'.$language.'_'.md5($cStr);
+                $detailsMap = Cache::remember($dCacheKey, 86400, function () use ($cStr, $language) {
                     try {
                         $resp = $this->hotelApi->getHotelDetails($cStr, $language);
                         $list = $resp['HotelDetails'] ?? $resp['HotelResult'] ?? [];
@@ -224,72 +232,32 @@ class HotelController extends Controller
                                 }
                             }
                         }
-
                         return $m;
                     } catch (\Exception $e) {
                         return [];
                     }
                 });
-                $detailsMap += $dMap;
             }
 
-            // Hydrate and Filter by Facilities
-            $finalList = [];
-            foreach ($validHotels as $h) {
+            // 9. Format Response with Merged Details
+            $data = array_map(function ($h) use ($detailsMap) {
                 $code = $h['HotelCode'] ?? '';
                 $details = $detailsMap[$code] ?? [];
-
-                // Merge Details
+                
+                // Merge static details if available for facilities
                 $fullHotel = array_merge($h, $details);
-
-                // Normalize Facilities
                 $facilities = $this->normalizeFacilities($fullHotel);
-                $fullHotel['normalized_facilities'] = $facilities;
 
-                // Filter?
-                if ($shouldFilterFacilities) {
-                    $match = true;
-                    foreach ($reqFacilities as $reqF) {
-                        if (empty($facilities[$reqF])) { // Expects boolean true
-                            $match = false;
-                            break;
-                        }
-                    }
-                    if (! $match) {
-                        continue;
-                    }
-                }
-
-                $finalList[] = $fullHotel;
-            }
-
-            // 7. Sorting
-            $sort = $request->input('sort');
-            if ($sort === 'price_asc') {
-                usort($finalList, fn ($a, $b) => ($a['MinPrice'] ?? 0) <=> ($b['MinPrice'] ?? 0));
-            } elseif ($sort === 'price_desc') {
-                usort($finalList, fn ($a, $b) => ($b['MinPrice'] ?? 0) <=> ($a['MinPrice'] ?? 0));
-            }
-
-            // 8. Pagination
-            $page = (int) $request->input('page', 1);
-            $perPage = (int) $request->input('per_page', 10); // user said per_page defaults? example showed 10.
-            $total = count($finalList);
-            $lastPage = (int) ceil($total / $perPage);
-
-            $offset = ($page - 1) * $perPage;
-            $items = array_slice($finalList, $offset, $perPage);
-
-            // 9. Format Response
-            $data = array_map(function ($h) {
                 return [
                     'hotel_code' => (string) ($h['HotelCode'] ?? ''),
                     'hotel_name' => (string) ($h['HotelName'] ?? $h['Name'] ?? ''),
-                    'rating' => (int) ($h['HotelRating'] ?? $h['Rating'] ?? 0),
+                    'rating' => $this->getHotelRating($h['HotelRating']),
                     'min_price' => (float) ($h['MinPrice'] ?? 0),
                     'currency' => (string) ($h['Currency'] ?? 'USD'),
                     'source' => 'tbo',
-                    'facilities' => $h['normalized_facilities'],
+                    'facilities' => $facilities,
+                    'address' => (string) ($details['Address'] ?? $h['Address'] ?? ''),
+                    'description' => (string) ($details['Description'] ?? ''),
                 ];
             }, $items);
 
@@ -737,7 +705,7 @@ class HotelController extends Controller
         set_time_limit(180);
         $data = $request->all();
 
-        Log::info('API APS Callback Received', ['data' => $data]);
+        // Log::info('API APS Callback Received', ['data' => $data]);
 
         // 1. Verify Signature
         $receivedSignature = $data['signature'] ?? null;
@@ -984,5 +952,17 @@ class HotelController extends Controller
         }
 
         return $result;
+    }
+
+    private function getHotelRating($rating) {
+        $ratingArray = [
+            "All" => "0",
+            "OneStar" => "1",
+            "TwoStar" => "2",
+            "ThreeStar" => "3",
+            "FourStar" => "4",
+            "FiveStar" => "5",
+        ]; 
+        return $ratingArray[$rating];
     }
 }

@@ -51,7 +51,7 @@ Route::group([
     Route::get('/privacy', [HomeController::class, 'privacy'])->name('privacy');
     Route::get('/cookies', [HomeController::class, 'cookies'])->name('cookies');
     Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
-    Route::post('/aps/callback', [PaymentController::class, 'apsCallback'])->name('aps.callback');
+    // Route::post('/aps/callback', [PaymentController::class, 'apsCallback'])->name('aps.callback');
     Route::get('/currency/{currency}', [\App\Http\Controllers\Web\V1\CurrencyController::class, 'switchCurrency'])->name('currency.switch');
 
     // Hotels
@@ -205,7 +205,7 @@ Route::get('/test-email-debug', function () {
             'encryption' => config('mail.mailers.smtp.encryption'),
         ];
 
-        \Illuminate\Support\Facades\Log::info('Test email attempt', $config);
+        // \Illuminate\Support\Facades\Log::info('Test email attempt', $config);
 
         \Illuminate\Support\Facades\Mail::raw('Test OTP email. If you get this, email works!', function ($message) {
             $message->to(config('mail.mailers.smtp.username') ?: 'test@example.com')

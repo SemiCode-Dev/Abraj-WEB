@@ -41,7 +41,7 @@ class PaymentService
 
     public function apsCallback($data)
     {
-        \Log::info('APS Callback Received', ['data' => $data]);
+        // \Log::info('APS Callback Received', ['data' => $data]);
 
         $receivedSignature = $data['signature'] ?? null;
         unset($data['signature']);

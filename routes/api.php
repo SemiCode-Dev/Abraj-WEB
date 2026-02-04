@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\V1\PackageController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\VisaController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Web\V1\PaymentController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -65,8 +67,9 @@ Route::get('/hotels', [\App\Http\Controllers\Api\HotelController::class, 'index'
 Route::get('/hotels/{code}/details', [\App\Http\Controllers\Api\HotelController::class, 'show']);
 Route::post('/hotels/reservation/review', [\App\Http\Controllers\Api\HotelController::class, 'reviewReservation']);
 Route::post('/hotels/reservation/book', [\App\Http\Controllers\Api\HotelController::class, 'bookReservation']);
-Route::post('/hotels/reservation/payment-callback', [\App\Http\Controllers\Api\HotelController::class, 'paymentCallback']);
-
+// Route::post('/hotels/reservation/payment-callback', [\App\Http\Controllers\Api\HotelController::class, 'paymentCallback']);
+// Route::post('/hotels/reservation/payment-callback', [\App\Http\Controllers\Api\HotelController::class, 'paymentCallback']);
+Route::post('/aps/callback', [PaymentController::class, 'apsCallback'])->name('aps.callback');
 // ============================================
 // DEVELOPMENT HELPER - Get OTP from Database
 // REMOVE THIS IN PRODUCTION!

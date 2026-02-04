@@ -177,7 +177,7 @@ class HotelController extends Controller
             $response = $this->hotelApi->getAllCityHotels($cityCode, true, $language);
 
             $hotels = $response['Hotels'] ?? [];
-            Log::info('getHotels: Received '.count($hotels).' hotels from API');
+            // Log::info('getHotels: Received '.count($hotels).' hotels from API');
 
             if (! is_array($hotels)) {
                 $hotels = json_decode(json_encode($hotels), true);
@@ -292,12 +292,12 @@ class HotelController extends Controller
             $checkIn = request('CheckIn') ?? request('check_in');
             $checkOut = request('CheckOut') ?? request('check_out');
 
-            Log::info('getCityHotels: Request parameters', [
-                'CheckIn' => $checkIn,
-                'CheckOut' => $checkOut,
-                'PaxRooms' => request('PaxRooms'),
-                'all_params' => request()->all(),
-            ]);
+            // Log::info('getCityHotels: Request parameters', [
+            //     'CheckIn' => $checkIn,
+            //     'CheckOut' => $checkOut,
+            //     'PaxRooms' => request('PaxRooms'),
+            //     'all_params' => request()->all(),
+            // ]);
 
             // Parse PaxRooms
             $paxRooms = request('PaxRooms');
@@ -357,14 +357,14 @@ class HotelController extends Controller
                     $outDate = \Carbon\Carbon::parse($checkOut);
                     $today = \Carbon\Carbon::today();
 
-                    Log::info('getCityHotels: Availability search params', [
-                        'checkIn' => $checkIn,
-                        'checkOut' => $checkOut,
-                        'paxRooms' => $paxRooms,
-                        'inDate' => $inDate->toDateString(),
-                        'outDate' => $outDate->toDateString(),
-                        'today' => $today->toDateString(),
-                    ]);
+                    // Log::info('getCityHotels: Availability search params', [
+                    //     'checkIn' => $checkIn,
+                    //     'checkOut' => $checkOut,
+                    //     'paxRooms' => $paxRooms,
+                    //     'inDate' => $inDate->toDateString(),
+                    //     'outDate' => $outDate->toDateString(),
+                    //     'today' => $today->toDateString(),
+                    // ]);
 
                     if ($outDate->lte($inDate)) {
                         Log::warning('Search skipped: CheckOut must be after CheckIn');
@@ -372,7 +372,7 @@ class HotelController extends Controller
                     } elseif ($inDate->lt($today)) {
                         Log::warning('Search skipped: CheckIn cannot be in the past');
                     } else {
-                        Log::info('City Availability Search', ['city' => $cityCode, 'in' => $checkIn, 'out' => $checkOut, 'pax' => $paxRooms]);
+                        // Log::info('City Availability Search', ['city' => $cityCode, 'in' => $checkIn, 'out' => $checkOut, 'pax' => $paxRooms]);
 
                         // Filter by availability using AvailabilityService (City Search)
                         try {
@@ -408,7 +408,7 @@ class HotelController extends Controller
                                     }
                                 }
 
-                                Log::info('Search Filter Complete: found '.count($filteredByAvailability).' available hotels out of '.count($allLightweightHotels));
+                                // Log::info('Search Filter Complete: found '.count($filteredByAvailability).' available hotels out of '.count($allLightweightHotels));
                                 $allLightweightHotels = $filteredByAvailability;
                             }
                         } catch (\Exception $e) {
@@ -632,10 +632,10 @@ class HotelController extends Controller
 
                         $hotels = $response['Hotels'] ?? [];
 
-                        Log::info('Initial Hotel Fetch Result:', [
-                            'hotels_found' => count($hotels),
-                            'cities_processed' => $response['CitiesProcessed'] ?? 0,
-                        ]);
+                        // Log::info('Initial Hotel Fetch Result:', [
+                        //     'hotels_found' => count($hotels),
+                        //     'cities_processed' => $response['CitiesProcessed'] ?? 0,
+                        // ]);
 
                         if (! is_array($hotels)) {
                             $hotels = json_decode(json_encode($hotels), true);
@@ -734,7 +734,7 @@ class HotelController extends Controller
                     $today = \Carbon\Carbon::today();
 
                     if ($outDate->gt($inDate) && $inDate->gte($today)) {
-                        Log::info('All Hotels Availability Search', ['in' => $checkIn, 'out' => $checkOut, 'pax' => $paxRooms, 'total_hotels' => count($hotels)]);
+                        // Log::info('All Hotels Availability Search', ['in' => $checkIn, 'out' => $checkOut, 'pax' => $paxRooms, 'total_hotels' => count($hotels)]);
 
                         // Check ALL hotels for availability (no limit)
                         $hotelsToCheck = $hotels;
@@ -785,7 +785,7 @@ class HotelController extends Controller
                             }
                         }
 
-                        Log::info('Availability Filter Complete', ['checked' => count($hotels), 'available' => count($availableHotels), 'is_default' => $isDefaultDates]);
+                        // Log::info('Availability Filter Complete', ['checked' => count($hotels), 'available' => count($availableHotels), 'is_default' => $isDefaultDates]);
 
                         // STRICT FILTER: Only show what is available.
                         $hotels = $availableHotels;
@@ -1075,12 +1075,12 @@ class HotelController extends Controller
                     $availableRooms = $availability->rooms;
                     $currency = $availability->currency;
 
-                    Log::info("Hotel details - Availability check complete", [
-                        'hotel_id' => $id,
-                        'status' => $availability->status,
-                        'rooms_count' => count($availableRooms),
-                        'min_price' => $availability->minPrice
-                    ]);
+                    // Log::info("Hotel details - Availability check complete", [
+                    //     'hotel_id' => $id,
+                    //     'status' => $availability->status,
+                    //     'rooms_count' => count($availableRooms),
+                    //     'min_price' => $availability->minPrice
+                    // ]);
 
                 } catch (\Exception $e) {
                     Log::error('Error fetching room availability: '.$e->getMessage());
@@ -1213,16 +1213,16 @@ class HotelController extends Controller
             $hasBookingCode = ! empty($bookingCode) && $bookingCode !== '';
 
             // Log the validation for debugging
-            Log::info('Reservation validation', [
-                'hotel_id' => $hotelId,
-                'booking_code' => $bookingCode,
-                'check_in' => $checkIn,
-                'check_out' => $checkOut,
-                'has_hotel_id' => $hasHotelId,
-                'has_check_in' => $hasCheckIn,
-                'has_check_out' => $hasCheckOut,
-                'has_booking_code' => $hasBookingCode,
-            ]);
+            // Log::info('Reservation validation', [
+            //     'hotel_id' => $hotelId,
+            //     'booking_code' => $bookingCode,
+            //     'check_in' => $checkIn,
+            //     'check_out' => $checkOut,
+            //     'has_hotel_id' => $hasHotelId,
+            //     'has_check_in' => $hasCheckIn,
+            //     'has_check_out' => $hasCheckOut,
+            //     'has_booking_code' => $hasBookingCode,
+            // ]);
 
             // Only redirect if critical data is missing
             if (! $hasHotelId || ! $hasCheckIn || ! $hasCheckOut) {
@@ -1535,10 +1535,10 @@ class HotelController extends Controller
                                 }
                             }
 
-                            Log::info('PreBook successful in review step', [
-                                'booking_code' => $bookingCode,
-                                'commissioned_price' => $roomData['TotalFare'] ?? 'unchanged',
-                            ]);
+                            // Log::info('PreBook successful in review step', [
+                            //     'booking_code' => $bookingCode,
+                            //     'commissioned_price' => $roomData['TotalFare'] ?? 'unchanged',
+                            // ]);
                         } else {
                             $errorMsg = $preBookResponse['Status']['Description'] ?? 'Room no longer available';
                             Log::warning('PreBook failed in review step: '.$errorMsg);
