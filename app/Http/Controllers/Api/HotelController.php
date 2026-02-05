@@ -258,6 +258,8 @@ class HotelController extends Controller
                     'facilities' => $facilities,
                     'address' => (string) ($details['Address'] ?? $h['Address'] ?? ''),
                     'description' => (string) ($details['Description'] ?? ''),
+                    'image' => (string) ($details['HotelImage'] ?? $details['Image'] ?? ($details['Images'][0] ?? 'https://abrajstay.com/images/default.jpg')),
+                    'cancellation_policy' => (string) __('Free Cancellation'),
                 ];
             }, $items);
 
