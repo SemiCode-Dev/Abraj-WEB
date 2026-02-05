@@ -471,7 +471,7 @@ class HotelController extends Controller
                 $formattedRooms[] = [
                     'room_code' => (string) ($room['BookingCode'] ?? uniqid()),
                     'room_name' => (string) ($room['Name'][0] ?? $room['Name'] ?? 'Room'),
-                    'image' => null, // TBO rooms often don't have specific images, use hotel image or placeholder
+                    'image' =>"https://abrajstay.com/images/default.jpg", // TBO rooms often don't have specific images, use hotel image or placeholder
                     'price' => [
                         'amount' => \App\Helpers\CurrencyHelper::convert((float) ($room['TotalFare'] ?? 0)),
                         'currency' => \App\Helpers\CurrencyHelper::getCurrentCurrency(),
@@ -652,7 +652,7 @@ class HotelController extends Controller
                     'name' => $hotelDetails['HotelName'] ?? '',
                     'address' => $hotelDetails['Address'] ?? '',
                     'rating' => $hotelDetails['HotelRating'] ?? '0',
-                    'image' => isset($hotelDetails['Images'][0]) ? $hotelDetails['Images'][0] : null,
+                    'image' => isset($hotelDetails['Images'][0]) ? $hotelDetails['Images'][0] : "https://abrajstay.com/images/default.jpg",
                 ],
                 'room' => [
                     'booking_code' => $bookingCode,
