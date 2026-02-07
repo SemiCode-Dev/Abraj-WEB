@@ -330,7 +330,7 @@ class HotelApiService
                         foreach ($chunk as $cityCode) {
                             $requests[] = $pool->asJson()
                                 ->withBasicAuth($this->username, $this->password)
-                                ->timeout(30)
+                                ->timeout(8) // Reduced to 8s to fail fast on slow cities and avoid 504
                                 ->post(rtrim($this->baseUrl, '/').'/TBOHotelCodeList', [
                                     'CityCode' => (string) $cityCode,
                                     'IsDetailedResponse' => $detailed ? 'true' : 'false',

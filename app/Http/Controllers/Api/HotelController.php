@@ -79,12 +79,12 @@ class HotelController extends Controller
             $candidates = Cache::remember($cacheKey, 86400, function () use ($allCityCodes, $language) {
                 try {
                     $response = $this->hotelApi->getHotelsFromMultipleCities(
-                            $allCityCodes,
-                            true,
-                            null,
-                            $language,
-                            2 // Optimized to 2 pages for extremely fast initial surge
-                        );
+                        $allCityCodes,
+                        true,
+                        null,
+                        $language,
+                        2 // Optimized to 2 pages for extremely fast initial surge
+                    );
                     $h = $response['Hotels'] ?? [];
 
                     return is_array($h) ? $h : json_decode(json_encode($h), true);
@@ -114,10 +114,11 @@ class HotelController extends Controller
             // Stars Filter
             if ($request->has('stars')) {
                 $stars = (array) $request->input('stars');
-                if (!empty($stars)) {
+                if (! empty($stars)) {
                     $candidates = array_filter($candidates, function ($h) use ($stars) {
                         // $rating = ($h['HotelRating'] ?? $h['Rating'] ?? 0);
                         $rating = $this->getHotelRating($h['HotelRating']);
+
                         return in_array($rating, $stars);
                     });
                 }
@@ -157,7 +158,7 @@ class HotelController extends Controller
             // 5. Build Valid Hotel List and Convert Currency
             // Use local cache for the ENTIRE result set to make pagination/sorting instant
             $finalCacheKey = 'api_hotels_final_'.$language.'_'.md5(json_encode($request->all()).$checkIn.$checkOut);
-            $validHotels = Cache::remember($finalCacheKey, 600, function() use ($candidates, $availableData) {
+            $validHotels = Cache::remember($finalCacheKey, 600, function () use ($candidates, $availableData) {
                 $hList = [];
                 $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
                 foreach ($candidates as $h) {
@@ -172,12 +173,13 @@ class HotelController extends Controller
                         }
                     }
                 }
+
                 return $hList;
             });
 
             // 5a. Facilities Filter
             $reqFacilities = $request->input('facilities');
-            if (!empty($reqFacilities) && is_array($reqFacilities)) {
+            if (! empty($reqFacilities) && is_array($reqFacilities)) {
                 $validHotels = array_values(array_filter($validHotels, function ($h) use ($reqFacilities) {
                     $normalized = $this->normalizeFacilities($h);
                     foreach ($reqFacilities as $facility) {
@@ -186,6 +188,7 @@ class HotelController extends Controller
                             return false;
                         }
                     }
+
                     return true;
                 }));
             }
@@ -212,7 +215,7 @@ class HotelController extends Controller
             $pagedCodes = array_column($items, 'HotelCode');
             $detailsMap = [];
 
-            if (!empty($pagedCodes)) {
+            if (! empty($pagedCodes)) {
                 $cStr = implode(',', $pagedCodes);
                 $dCacheKey = 'api_details_paged_'.$language.'_'.md5($cStr);
                 $detailsMap = Cache::remember($dCacheKey, 86400, function () use ($cStr, $language) {
@@ -228,6 +231,7 @@ class HotelController extends Controller
                                 }
                             }
                         }
+
                         return $m;
                     } catch (\Exception $e) {
                         return [];
@@ -242,7 +246,7 @@ class HotelController extends Controller
             $data = array_map(function ($h) use ($detailsMap, $checkIn, $checkOut) {
                 $code = $h['HotelCode'] ?? '';
                 $details = $detailsMap[$code] ?? [];
-                
+
                 // Merge static details if available for facilities
                 $fullHotel = array_merge($h, $details);
                 $facilities = $this->normalizeFacilities($fullHotel);
@@ -286,7 +290,7 @@ class HotelController extends Controller
 
     private function calculatePricePerNight(float $totalPrice, ?string $checkIn, ?string $checkOut): float
     {
-        if (!$checkIn || !$checkOut || $totalPrice <= 0) {
+        if (! $checkIn || ! $checkOut || $totalPrice <= 0) {
             return $totalPrice; // Fallback or return 0
         }
 
@@ -294,8 +298,10 @@ class HotelController extends Controller
             $in = \Carbon\Carbon::parse($checkIn);
             $out = \Carbon\Carbon::parse($checkOut);
             $nights = $in->diffInDays($out);
-            
-            if ($nights < 1) $nights = 1;
+
+            if ($nights < 1) {
+                $nights = 1;
+            }
 
             return round($totalPrice / $nights, 2);
         } catch (\Exception $e) {
@@ -471,7 +477,7 @@ class HotelController extends Controller
 
                 // Availability Call
                 try {
-                     $availability = $this->availabilityService->checkAvailability(
+                    $availability = $this->availabilityService->checkAvailability(
                         $code,
                         $checkIn,
                         $checkOut,
@@ -486,8 +492,8 @@ class HotelController extends Controller
                         $availabilityStatus = 'no_rooms';
                     }
                 } catch (\Exception $e) {
-                     Log::error('Availability Check Error: '.$e->getMessage());
-                     $availabilityStatus = 'error';
+                    Log::error('Availability Check Error: '.$e->getMessage());
+                    $availabilityStatus = 'error';
                 }
             } else {
                 $availabilityStatus = 'no_search_criteria';
@@ -498,11 +504,11 @@ class HotelController extends Controller
             foreach ($availableRooms as $room) {
                 // Ensure room price is converted
                 $amount = \App\Helpers\CurrencyHelper::convert((float) ($room['TotalFare'] ?? $room['Price']['PublishedPrice'] ?? 0));
-                
+
                 $formattedRooms[] = [
                     'room_code' => (string) ($room['BookingCode'] ?? uniqid()),
                     'room_name' => (string) ($room['Name'][0] ?? $room['Name'] ?? 'Room'),
-                    'image' => "https://abrajstay.com/images/default.jpg", // TBO rooms often don't have specific images
+                    'image' => 'https://abrajstay.com/images/default.jpg', // TBO rooms often don't have specific images
                     'price' => [
                         'amount' => $amount,
                         'currency' => \App\Helpers\CurrencyHelper::getCurrentCurrency(),
@@ -510,7 +516,7 @@ class HotelController extends Controller
                     'room_price_per_night' => $this->calculatePricePerNight($amount, $checkIn, $checkOut),
                     'tags' => [
                         'room_only' => true, // Default for TBO standard search
-                        'refundable' => !($room['NonRefundable'] ?? false),
+                        'refundable' => ! ($room['NonRefundable'] ?? false),
                     ],
                     'refundable' => ! ($room['NonRefundable'] ?? false),
                     'available' => true,
@@ -685,7 +691,7 @@ class HotelController extends Controller
                     'name' => $hotelDetails['HotelName'] ?? '',
                     'address' => $hotelDetails['Address'] ?? '',
                     'rating' => $hotelDetails['HotelRating'] ?? '0',
-                    'image' => isset($hotelDetails['Images'][0]) ? $hotelDetails['Images'][0] : "https://abrajstay.com/images/default.jpg",
+                    'image' => isset($hotelDetails['Images'][0]) ? $hotelDetails['Images'][0] : 'https://abrajstay.com/images/default.jpg',
                 ],
                 'room' => [
                     'booking_code' => $bookingCode,
@@ -992,15 +998,17 @@ class HotelController extends Controller
         return $result;
     }
 
-    private function getHotelRating($rating) {
+    private function getHotelRating($rating)
+    {
         $ratingArray = [
-            "All" => "0",
-            "OneStar" => "1",
-            "TwoStar" => "2",
-            "ThreeStar" => "3",
-            "FourStar" => "4",
-            "FiveStar" => "5",
-        ]; 
+            'All' => '0',
+            'OneStar' => '1',
+            'TwoStar' => '2',
+            'ThreeStar' => '3',
+            'FourStar' => '4',
+            'FiveStar' => '5',
+        ];
+
         return $ratingArray[$rating];
     }
 }
