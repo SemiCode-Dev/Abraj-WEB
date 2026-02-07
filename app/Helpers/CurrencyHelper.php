@@ -3,8 +3,8 @@
 namespace App\Helpers;
 
 use App\Models\Setting;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Session;
 
 class CurrencyHelper
 {
@@ -15,9 +15,9 @@ class CurrencyHelper
     {
         // For API, check header. For Web, check session.
         $request = request();
-        
+
         if ($request->is('api/*') || $request->expectsJson()) {
-            return strtoupper($request->header('Accept-Currency', 'USD'));
+            return strtoupper($request->header('Accept-Currency', $request->input('currency', 'USD')));
         }
 
         return Session::get('currency', 'USD');
@@ -52,12 +52,12 @@ class CurrencyHelper
     {
         $currency = $currency ?? self::getCurrentCurrency();
         $amount = $shouldConvert ? self::convert($amount, $currency) : $amount;
-        
+
         if ($currency === 'SAR') {
-            return App::getLocale() === 'ar' ? number_format($amount, 2) . ' SAR' : 'SAR ' . number_format($amount, 2);
+            return App::getLocale() === 'ar' ? number_format($amount, 2).' SAR' : 'SAR '.number_format($amount, 2);
         }
 
-        return App::getLocale() === 'ar' ? number_format($amount, 2) . ' USD' : 'USD ' . number_format($amount, 2);
+        return App::getLocale() === 'ar' ? number_format($amount, 2).' USD' : 'USD '.number_format($amount, 2);
     }
 
     /**
@@ -66,6 +66,7 @@ class CurrencyHelper
     public static function getSymbol(?string $currency = null): string
     {
         $currency = $currency ?? self::getCurrentCurrency();
+
         return $currency === 'SAR' ? (App::getLocale() === 'ar' ? 'ر.س' : 'SAR') : '$';
     }
 }

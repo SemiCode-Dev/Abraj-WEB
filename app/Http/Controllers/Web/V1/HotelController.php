@@ -596,8 +596,9 @@ class HotelController extends Controller
             // OPTIMIZED CITY FETCHING: Fetch more cities but process them incrementally
             $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
+                ->orderByRaw('CASE WHEN country_id = 151 THEN 0 ELSE 1 END') // Prioritize Saudi cities
                 ->orderBy('hotels_count', 'desc')
-                ->limit(300) // Broadened to 300 cities for maximum volume
+                ->limit(500) // Increased for exhaustive search
                 ->pluck('code')
                 ->toArray();
 
@@ -605,29 +606,25 @@ class HotelController extends Controller
                 $allCityCodes = City::whereNotNull('code')->limit(10)->pluck('code')->toArray();
             }
 
-            // Split into Initial Batch and Remaining
-            $initialBatchSize = 100; // Reduced from 500
-            $initialCityCodes = array_slice($allCityCodes, 0, $initialBatchSize);
-            $remainingCityCodes = array_slice($allCityCodes, $initialBatchSize);
-
             $language = app()->getLocale();
             $hotels = [];
 
-            if (! empty($initialCityCodes)) {
-                // Cache key for the initial batch
-                $cacheKey = 'hotels_initial_batch_v2_'.$language.'_'.md5(json_encode($initialCityCodes));
+            if (! empty($allCityCodes)) {
+                // Cache key for the exhaustive list
+                $cacheKey = 'hotels_exhaustive_list_v4_'.$language.'_'.md5(json_encode($allCityCodes));
                 $hotels = Cache::get($cacheKey);
 
                 if (! $hotels) {
                     try {
                         $apiLang = $language === 'ar' ? 'ar' : 'en';
 
-                        // Fetch initial batch
+                        // Fetch EVERYTHING for these 500 cities
                         $response = $this->hotelApi->getHotelsFromMultipleCities(
-                            $initialCityCodes,
+                            $allCityCodes, // Process the whole list (removed the 100-city split)
                             true,
-                            100, // Increased to 100 for maximum results volume
-                            $apiLang
+                            null, // All hotels per city
+                            $apiLang,
+                            2 // Balanced at 2 pages for extremely fast but comprehensive search
                         );
 
                         $hotels = $response['Hotels'] ?? [];
@@ -734,60 +731,38 @@ class HotelController extends Controller
                     $today = \Carbon\Carbon::today();
 
                     if ($outDate->gt($inDate) && $inDate->gte($today)) {
-                        // Log::info('All Hotels Availability Search', ['in' => $checkIn, 'out' => $checkOut, 'pax' => $paxRooms, 'total_hotels' => count($hotels)]);
+                        
+                        // Use local cache for final result set to make it snappy
+                        $finalCacheKey = 'web_hotels_all_final_'.$language.'_'.md5(json_encode($request->all()).$checkIn.$checkOut);
+                        $availableHotels = Cache::remember($finalCacheKey, 600, function() use ($hotels, $checkIn, $checkOut, $paxRooms) {
+                            
+                            $codesToCheck = array_values(array_unique(array_column($hotels, 'HotelCode')));
+                            $availabilityService = app(\App\Services\Hotel\AvailabilityService::class);
+                            
+                            $availabilityResults = $availabilityService->checkBatchAvailability(
+                                $codesToCheck,
+                                $checkIn,
+                                $checkOut,
+                                $paxRooms,
+                                'SA',
+                                false // Lightweight
+                            );
 
-                        // Check ALL hotels for availability (no limit)
-                        $hotelsToCheck = $hotels;
-
-                        // Process in larger batches (Service now handles concurrency internally)
-                        $batchSize = 250;
-                        $hotelBatches = array_chunk($hotelsToCheck, $batchSize);
-                        $availableHotels = [];
-
-                        // Use AvailabilityService for consistent availability checking
-                        $availabilityService = app(\App\Services\Hotel\AvailabilityService::class);
-
-                        foreach ($hotelBatches as $batchIndex => $batch) {
-                            $batchCodes = array_column($batch, 'HotelCode');
-
-                            if (! empty($batchCodes)) {
-                                try {
-                                    // Check availability for this batch
-                                    $availabilityResults = $availabilityService->checkBatchAvailability(
-                                        $batchCodes,
-                                        $checkIn,
-                                        $checkOut,
-                                        $paxRooms,
-                                        request('GuestNationality', 'SA'),
-                                        false // Lightweight mode (Standard Search)
-                                    );
-
-                                    // Merge availability into hotel data
-                                    $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
-                                    foreach ($batch as $hotel) {
-                                        $hotelCode = $hotel['HotelCode'];
-                                        $result = $availabilityResults[$hotelCode] ?? null;
-
-                                        if ($result && $result->isAvailable()) {
-                                            $hotel['MinPrice'] = \App\Helpers\CurrencyHelper::convert($result->minPrice, $targetCurrency);
-                                            $hotel['Currency'] = $targetCurrency;
-                                            $availableHotels[] = $hotel;
-                                        }
-                                    }
-                                } catch (\Exception $e) {
-                                    Log::error('Batch '.$batchIndex.' Availability Search Failed: '.$e->getMessage());
+                            $aList = [];
+                            $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
+                            
+                            foreach ($hotels as $hotel) {
+                                $code = $hotel['HotelCode'];
+                                $res = $availabilityResults[$code] ?? null;
+                                if ($res && $res->isAvailable()) {
+                                    $hotel['MinPrice'] = \App\Helpers\CurrencyHelper::convert($res->minPrice, $targetCurrency);
+                                    $hotel['Currency'] = $targetCurrency;
+                                    $aList[] = $hotel;
                                 }
                             }
+                            return $aList;
+                        });
 
-                            // Add small delay between batches to avoid overwhelming API
-                            if ($batchIndex < count($hotelBatches) - 1) {
-                                usleep(100000); // 100ms delay
-                            }
-                        }
-
-                        // Log::info('Availability Filter Complete', ['checked' => count($hotels), 'available' => count($availableHotels), 'is_default' => $isDefaultDates]);
-
-                        // STRICT FILTER: Only show what is available.
                         $hotels = $availableHotels;
 
                         // SORTING LOGIC
@@ -802,7 +777,7 @@ class HotelController extends Controller
                         }
                     }
                 } catch (\Exception $e) {
-                    Log::warning('Date parsing error in getAllHotels: '.$e->getMessage());
+                    Log::warning('Availability processing error in getAllHotels: '.$e->getMessage());
                 }
             }
             // -------------------------------------------------------------------------

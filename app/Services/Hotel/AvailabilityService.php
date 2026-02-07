@@ -171,8 +171,8 @@ class AvailabilityService
                 "mode" => $isDetailed ? 'detailed' : 'standard'
             ]);
             
-            // Split into chunks of 50 for TBO batches
-            $chunks = array_chunk($missingIds, 50);
+            // Split into chunks of 100 for TBO batches (TBO Limit)
+            $chunks = array_chunk($missingIds, 100);
             $batchedIdsStrings = array_map(fn($chunk) => implode(',', $chunk), $chunks);
             
             $params = [

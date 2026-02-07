@@ -31,8 +31,8 @@ class HotelApiService
             \Log::debug("TBO API Request to $endpoint", ['url' => $url, 'payload' => $payload]);
         }
 
-        $response = Http::timeout(50)
-            ->retry(1, 200)
+        $response = Http::timeout(60)
+            ->retry(1, 100)
             ->withBasicAuth($this->username, $this->password)
             ->withHeaders([
                 'Content-Type' => 'application/json',
@@ -213,7 +213,7 @@ class HotelApiService
                     foreach ($chunk as $cityCode) {
                         $requests[] = $pool->asJson()
                             ->withBasicAuth($this->username, $this->password)
-                            ->timeout(25) // Increased timeout slightly
+                            ->timeout(45) // Increased timeout for larger lists
                             ->post(rtrim($this->baseUrl, '/').'/TBOHotelCodeList', [
                                 'CityCode' => (string) $cityCode,
                                 'IsDetailedResponse' => $detailed ? 'true' : 'false',
@@ -262,38 +262,42 @@ class HotelApiService
     {
         $allResults = [];
 
-        // Process 20 batches concurrently at a time (increased from 10 to handle 3000+ candidates)
-        $groups = array_chunk($batchedHotelCodes, 20);
+        // STRATEGY: Process ALL batches in ONE single parallel surge (Pool)
+        // This is significantly faster than sequential groups of parallel requests.
+        $responses = Http::pool(function (Pool $pool) use ($batchedHotelCodes, $params) {
+            $requests = [];
+            foreach ($batchedHotelCodes as $idsString) {
+                $payload = array_merge($params, [
+                    'HotelCodes' => (string) $idsString,
+                ]);
 
-        foreach ($groups as $group) {
-            try {
-                $responses = Http::pool(function (Pool $pool) use ($group, $params) {
-                    $requests = [];
-                    foreach ($group as $idsString) {
-                        $payload = array_merge($params, [
-                            'HotelCodes' => (string) $idsString,
-                        ]);
+                $requests[] = $pool->asJson()
+                    ->withBasicAuth($this->username, $this->password)
+                    ->timeout(60)
+                    ->post(rtrim($this->baseUrl, '/').'/Search', $payload);
+            }
+            return $requests;
+        });
 
-                        $requests[] = $pool->asJson()
-                            ->withBasicAuth($this->username, $this->password)
-                            ->timeout(30)
-                            ->post(rtrim($this->baseUrl, '/').'/Search', $payload);
-                    }
+        foreach ($responses as $response) {
+            if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
+                $resData = $response->json();
+                
+                $hResults = [];
+                if (isset($resData['HotelResult']) && is_array($resData['HotelResult'])) {
+                    $hResults = $resData['HotelResult'];
+                } elseif (isset($resData['Hotels']) && is_array($resData['Hotels'])) {
+                    $hResults = $resData['Hotels'];
+                }
 
-                    return $requests;
-                });
-
-                foreach ($responses as $response) {
-                    if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
-                        $resData = $response->json();
-                        $hResults = $resData['HotelResult'] ?? $resData['Hotels'] ?? [];
-                        if (! empty($hResults)) {
-                            $allResults = array_merge($allResults, $hResults);
+                if (!empty($hResults)) {
+                    foreach ($hResults as $h) {
+                        $code = $h['HotelCode'] ?? $h['Code'] ?? '';
+                        if ($code) {
+                            $allResults[] = $h;
                         }
                     }
                 }
-            } catch (\Exception $e) {
-                Log::error('Concurrent Availability Search Error: '.$e->getMessage());
             }
         }
 
@@ -307,91 +311,117 @@ class HotelApiService
      * Get hotels from multiple cities using TBOHotelCodeList
      * This replaces the random city approach with a comprehensive approach
      */
-    public function getHotelsFromMultipleCities(array $cityCodes, bool $detailed = true, ?int $maxHotelsPerCity = null, string $language = 'en', int $maxPages = 1): array
+    public function getHotelsFromMultipleCities(array $cityCodes, bool $detailed = true, ?int $maxHotelsPerCity = null, string $language = 'en', int $maxPages = 5): array
     {
-        // For better performance, use the concurrent version if only 1 page is requested
-        if ($maxPages === 1) {
-            return $this->getHotelsConcurrent($cityCodes, $detailed, $maxHotelsPerCity, $language);
-        }
+        $cacheKey = 'hotels_raw_candidates_'.$language.'_'.md5(json_encode($cityCodes).$maxPages);
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function() use ($cityCodes, $detailed, $maxHotelsPerCity, $language, $maxPages) {
+            
+            // Limit maxPages to 5 for real-time performance
+            $maxPages = min($maxPages, 5);
+            $allHotels = []; // Keyed by HotelCode for deduplication
+            $totalPagesFetched = 0;
 
-        $allHotels = [];
-        $totalPagesFetched = 0;
-
-        foreach ($cityCodes as $cityCode) {
-            try {
-                $cityHotels = [];
-                $page = 1;
-                // Use passed maxPages for control
-                $maxPagesToFetch = $maxPages;
-
-                do {
-                    $response = $detailed
-                        ? $this->getCityHotels($cityCode, $page, $language)
-                        : $this->getHotels($cityCode, $page, $language);
-
-                    // Check if request was successful
-                    if (isset($response['Status']) && $response['Status']['Code'] !== 200) {
-                        break;
-                    }
-
-                    $hotels = $response['Hotels'] ?? [];
-
-                    if (empty($hotels) || ! is_array($hotels)) {
-                        break;
-                    }
-
-                    $cityHotels = array_merge($cityHotels, $hotels);
-                    $totalPagesFetched++;
-
-                    // Check if we have enough hotels from this city
-                    if ($maxHotelsPerCity !== null && count($cityHotels) >= $maxHotelsPerCity) {
-                        $cityHotels = array_slice($cityHotels, 0, $maxHotelsPerCity);
-                        break;
-                    }
-
-                    // Check if there are more pages
-                    $totalPages = $response['TotalPages'] ?? $response['TotalPageCount'] ?? null;
-
-                    if ($totalPages !== null) {
-                        if ($page >= $totalPages) {
-                            break;
+            // 1. Fetch Page 1 for ALL cities concurrently in large chunks
+            $chunks = array_chunk($cityCodes, 150); // Increased from 60 to 150 for massive surge
+            foreach ($chunks as $chunk) {
+                try {
+                    $responses = Http::pool(function (Pool $pool) use ($chunk, $detailed, $language) {
+                        $requests = [];
+                        foreach ($chunk as $cityCode) {
+                            $requests[] = $pool->asJson()
+                                ->withBasicAuth($this->username, $this->password)
+                                ->timeout(30)
+                                ->post(rtrim($this->baseUrl, '/').'/TBOHotelCodeList', [
+                                    'CityCode' => (string) $cityCode,
+                                    'IsDetailedResponse' => $detailed ? 'true' : 'false',
+                                    'PageNo' => 1,
+                                    'Language' => $language,
+                                ]);
                         }
-                    } else {
-                        // If no pagination info, check if we got empty results
-                        if (count($hotels) === 0) {
-                            break;
+                        return $requests;
+                    });
+
+                    $citiesToFetchMore = [];
+
+                    foreach ($responses as $index => $response) {
+                        $cityCode = $chunk[$index];
+                        if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
+                            $data = $response->json();
+                            $hotels = $data['Hotels'] ?? [];
+                            if (!empty($hotels) && is_array($hotels)) {
+                                foreach ($hotels as $h) {
+                                    $code = $h['HotelCode'] ?? $h['Code'] ?? '';
+                                    if ($code) $allHotels[$code] = $h;
+                                }
+                                $totalPagesFetched++;
+
+                                // Check if more pages exist
+                                $totalPages = (int)($data['TotalPages'] ?? $data['TotalPageCount'] ?? 1);
+                                if ($totalPages > 1 && $maxPages > 1) {
+                                    $citiesToFetchMore[] = [
+                                        'code' => $cityCode,
+                                        'total' => min($totalPages, $maxPages)
+                                    ];
+                                }
+                            }
                         }
                     }
 
-                    $page++;
+                    // 2. Fetch remaining pages concurrently
+                    if (!empty($citiesToFetchMore)) {
+                        $pageRequests = [];
+                        foreach ($citiesToFetchMore as $city) {
+                            for ($p = 2; $p <= $city['total']; $p++) {
+                                $pageRequests[] = ['code' => $city['code'], 'page' => $p];
+                            }
+                        }
 
-                    // Safety check
-                    if ($page > $maxPagesToFetch) {
-                        break;
+                        $pageChunks = array_chunk($pageRequests, 60);
+                        foreach ($pageChunks as $pChunk) {
+                            $pResponses = Http::pool(function (Pool $pool) use ($pChunk, $detailed, $language) {
+                                $reqs = [];
+                                foreach ($pChunk as $item) {
+                                    $reqs[] = $pool->asJson()
+                                        ->withBasicAuth($this->username, $this->password)
+                                        ->timeout(30)
+                                        ->post(rtrim($this->baseUrl, '/').'/TBOHotelCodeList', [
+                                            'CityCode' => (string) $item['code'],
+                                            'IsDetailedResponse' => $detailed ? 'true' : 'false',
+                                            'PageNo' => $item['page'],
+                                            'Language' => $language,
+                                        ]);
+                                }
+                                return $reqs;
+                            });
+
+                            foreach ($pResponses as $pRes) {
+                                if ($pRes instanceof \Illuminate\Http\Client\Response && $pRes->successful()) {
+                                    $pData = $pRes->json();
+                                    $pHotels = $pData['Hotels'] ?? [];
+                                    if (!empty($pHotels) && is_array($pHotels)) {
+                                        foreach ($pHotels as $h) {
+                                            $pCode = $h['HotelCode'] ?? $h['Code'] ?? '';
+                                            if ($pCode) $allHotels[$pCode] = $h;
+                                        }
+                                        $totalPagesFetched++;
+                                    }
+                                }
+                            }
+                        }
                     }
-
-                    // Reduced delay for faster loading (50ms instead of 100ms)
-                    usleep(50000); // 0.05 second
-                } while (true);
-
-                $allHotels = array_merge($allHotels, $cityHotels);
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::warning('Error fetching hotels from city '.$cityCode.': '.$e->getMessage());
-
-                continue; // Continue with next city
+                } catch (\Exception $e) {
+                    Log::error('Exhaustive Hotel Fetch Error: '.$e->getMessage());
+                }
             }
-        }
 
-        return [
-            'Status' => [
-                'Code' => 200,
-                'Description' => 'Success',
-            ],
-            'Hotels' => $allHotels,
-            'TotalHotels' => count($allHotels),
-            'CitiesProcessed' => count($cityCodes),
-            'PagesFetched' => $totalPagesFetched,
-        ];
+            return [
+                'Status' => ['Code' => 200, 'Description' => 'Success'],
+                'Hotels' => array_values($allHotels), // Convert back to indexed array
+                'TotalHotels' => count($allHotels),
+                'CitiesProcessed' => count($cityCodes),
+                'PagesFetched' => $totalPagesFetched,
+            ];
+        });
     }
 
     public function getCountries(string $language = 'en')

@@ -61,16 +61,17 @@ class HotelController extends Controller
             // 2. Resolve Candidate Hotels (Scope)
             $allCityCodes = City::whereNotNull('code')
                 ->where('code', '!=', '')
+                ->orderByRaw('CASE WHEN country_id = 151 THEN 0 ELSE 1 END') // Prioritize Saudi cities
                 ->orderBy('hotels_count', 'desc')
-                ->limit(100) // Reduced from 300 to 100 to match Web controller scale
+                ->limit(500) // Increased for exhaustive search
                 ->pluck('code')
                 ->toArray();
 
             if (empty($allCityCodes)) {
-                return response()->json([
-                    'data' => [],
+                return $this->successResponse([
+                    'items' => [],
                     'pagination' => $this->emptyPagination(),
-                ]);
+                ], __('No cities found.'));
             }
 
             // Fetch Candidate Hotels (Lightweight)
@@ -78,11 +79,12 @@ class HotelController extends Controller
             $candidates = Cache::remember($cacheKey, 86400, function () use ($allCityCodes, $language) {
                 try {
                     $response = $this->hotelApi->getHotelsFromMultipleCities(
-                        $allCityCodes,
-                        true,
-                        100, // Candidates from TBO
-                        $language
-                    );
+                            $allCityCodes,
+                            true,
+                            null,
+                            $language,
+                            2 // Optimized to 2 pages for extremely fast initial surge
+                        );
                     $h = $response['Hotels'] ?? [];
 
                     return is_array($h) ? $h : json_decode(json_encode($h), true);
@@ -92,10 +94,10 @@ class HotelController extends Controller
             });
 
             if (empty($candidates)) {
-                return response()->json([
-                    'data' => [],
+                return $this->successResponse([
+                    'items' => [],
                     'pagination' => $this->emptyPagination(),
-                ]);
+                ], __('No hotels found matching criteria.'));
             }
 
             // 3. Pre-Filter Candidates (Metadata)
@@ -122,10 +124,10 @@ class HotelController extends Controller
             }
 
             if (empty($candidates)) {
-                return response()->json([
-                    'data' => [],
+                return $this->successResponse([
+                    'items' => [],
                     'pagination' => $this->emptyPagination(),
-                ]);
+                ], __('No hotels found after filtering.'));
             }
 
             // 4. Availability Check (STRICT)
@@ -140,46 +142,40 @@ class HotelController extends Controller
                 'ChildrenAges' => [],
             ]];
 
-            $codesToCheck = array_column($candidates, 'HotelCode');
+            $codesToCheck = array_values(array_unique(array_column($candidates, 'HotelCode')));
 
-            // Process in Chunks
-            $chunks = array_chunk($codesToCheck, 250);
-            $availableData = [];
-
-            foreach ($chunks as $chunkCodes) {
-                $batchResults = $this->availabilityService->checkBatchAvailability(
-                    $chunkCodes,
-                    $checkIn,
-                    $checkOut,
-                    $paxRooms,
-                    'SA',
-                    false // Lightweight
-                );
-
-                foreach ($batchResults as $code => $result) {
-                    if ($result->isAvailable() && $result->minPrice > 0) {
-                        $availableData[$code] = [
-                            'min_price' => $result->minPrice,
-                            'currency' => $result->currency,
-                        ];
-                    }
-                }
-            }
+            // One unified availability call for the whole surge
+            $availableData = $this->availabilityService->checkBatchAvailability(
+                $codesToCheck,
+                $checkIn,
+                $checkOut,
+                $paxRooms,
+                'SA',
+                false // Lightweight
+            );
 
             // 5. Build Valid Hotel List and Convert Currency
-            $validHotels = [];
-            $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
-            foreach ($candidates as $h) {
-                $code = $h['HotelCode'] ?? '';
-                if (isset($availableData[$code])) {
-                    $priceInUsd = $availableData[$code]['min_price'];
-                    $h['MinPrice'] = \App\Helpers\CurrencyHelper::convert($priceInUsd, $targetCurrency);
-                    $h['Currency'] = $targetCurrency;
-                    $validHotels[] = $h;
+            // Use local cache for the ENTIRE result set to make pagination/sorting instant
+            $finalCacheKey = 'api_hotels_final_'.$language.'_'.md5(json_encode($request->all()).$checkIn.$checkOut);
+            $validHotels = Cache::remember($finalCacheKey, 600, function() use ($candidates, $availableData) {
+                $hList = [];
+                $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
+                foreach ($candidates as $h) {
+                    $code = $h['HotelCode'] ?? '';
+                    if (isset($availableData[$code])) {
+                        $result = $availableData[$code];
+                        if ($result->isAvailable()) {
+                            $priceInUsd = $result->minPrice;
+                            $h['MinPrice'] = \App\Helpers\CurrencyHelper::convert($priceInUsd, $targetCurrency);
+                            $h['Currency'] = $targetCurrency;
+                            $hList[] = $h;
+                        }
+                    }
                 }
-            }
+                return $hList;
+            });
 
-            // 5a. Facilities Filter (Apply before sorting and pagination)
+            // 5a. Facilities Filter
             $reqFacilities = $request->input('facilities');
             if (!empty($reqFacilities) && is_array($reqFacilities)) {
                 $validHotels = array_values(array_filter($validHotels, function ($h) use ($reqFacilities) {
@@ -240,7 +236,10 @@ class HotelController extends Controller
             }
 
             // 9. Format Response with Merged Details
-            $data = array_map(function ($h) use ($detailsMap) {
+            $checkIn = $request->input('check_in');
+            $checkOut = $request->input('check_out');
+
+            $data = array_map(function ($h) use ($detailsMap, $checkIn, $checkOut) {
                 $code = $h['HotelCode'] ?? '';
                 $details = $detailsMap[$code] ?? [];
                 
@@ -253,8 +252,13 @@ class HotelController extends Controller
                     'hotel_name' => (string) ($h['HotelName'] ?? $h['Name'] ?? ''),
                     'rating' => $this->getHotelRating($h['HotelRating']),
                     'min_price' => (float) ($h['MinPrice'] ?? 0),
+                    'room_price_per_night' => $this->calculatePricePerNight((float) ($h['MinPrice'] ?? 0), $checkIn, $checkOut), // Calculated field
                     'currency' => (string) ($h['Currency'] ?? 'USD'),
                     'source' => 'tbo',
+                    'tags' => [ // Added tags for UI badges
+                        'room_only' => true, // Default for TBO standard search unless meal is specified
+                        'refundable' => false,
+                    ],
                     'facilities' => $facilities,
                     'address' => (string) ($details['Address'] ?? $h['Address'] ?? ''),
                     'description' => (string) ($details['Description'] ?? ''),
@@ -263,23 +267,39 @@ class HotelController extends Controller
                 ];
             }, $items);
 
-            return response()->json([
-                'data' => $data,
+            return $this->successResponse([
+                'items' => $data,
                 'pagination' => [
                     'current_page' => $page,
                     'per_page' => $perPage,
                     'total' => $total,
                     'last_page' => $lastPage,
                 ],
-            ]);
+            ], __('Hotels fetched successfully.'));
 
         } catch (\Exception $e) {
             Log::error('API Hotel Error: '.$e->getMessage());
 
-            return response()->json([
-                'error' => 'Server Error',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse(__('Server Error').': '.$e->getMessage(), 500);
+        }
+    }
+
+    private function calculatePricePerNight(float $totalPrice, ?string $checkIn, ?string $checkOut): float
+    {
+        if (!$checkIn || !$checkOut || $totalPrice <= 0) {
+            return $totalPrice; // Fallback or return 0
+        }
+
+        try {
+            $in = \Carbon\Carbon::parse($checkIn);
+            $out = \Carbon\Carbon::parse($checkOut);
+            $nights = $in->diffInDays($out);
+            
+            if ($nights < 1) $nights = 1;
+
+            return round($totalPrice / $nights, 2);
+        } catch (\Exception $e) {
+            return $totalPrice;
         }
     }
 
@@ -348,10 +368,7 @@ class HotelController extends Controller
             });
 
             if (! $details || empty($details)) {
-                return response()->json([
-                    'error' => 'Not Found',
-                    'message' => 'Hotel not found',
-                ], 404);
+                return $this->errorResponse(__('Hotel not found'), 404);
             }
 
             // 3. Live Availability Check
@@ -449,19 +466,28 @@ class HotelController extends Controller
                 }
                 $paxRooms = $cleanedPaxRooms;
 
-                // Availability Call
-                $availability = $this->availabilityService->checkAvailability(
-                    $code,
-                    $checkIn,
-                    $checkOut,
-                    $paxRooms,
-                    'SA'
-                );
+                // Clean up Pax Structure
+                $paxRooms = array_values($paxRooms);
 
-                if ($availability->isAvailable()) {
-                    $availableRooms = $availability->rooms;
-                } else {
-                    $availabilityStatus = 'no_rooms';
+                // Availability Call
+                try {
+                     $availability = $this->availabilityService->checkAvailability(
+                        $code,
+                        $checkIn,
+                        $checkOut,
+                        $paxRooms,
+                        'SA',
+                        true // IsDetailed
+                    );
+
+                    if ($availability->isAvailable()) {
+                        $availableRooms = $availability->rooms;
+                    } else {
+                        $availabilityStatus = 'no_rooms';
+                    }
+                } catch (\Exception $e) {
+                     Log::error('Availability Check Error: '.$e->getMessage());
+                     $availabilityStatus = 'error';
                 }
             } else {
                 $availabilityStatus = 'no_search_criteria';
@@ -470,13 +496,21 @@ class HotelController extends Controller
             // 4. Format Rooms
             $formattedRooms = [];
             foreach ($availableRooms as $room) {
+                // Ensure room price is converted
+                $amount = \App\Helpers\CurrencyHelper::convert((float) ($room['TotalFare'] ?? $room['Price']['PublishedPrice'] ?? 0));
+                
                 $formattedRooms[] = [
                     'room_code' => (string) ($room['BookingCode'] ?? uniqid()),
                     'room_name' => (string) ($room['Name'][0] ?? $room['Name'] ?? 'Room'),
-                    'image' =>"https://abrajstay.com/images/default.jpg", // TBO rooms often don't have specific images, use hotel image or placeholder
+                    'image' => "https://abrajstay.com/images/default.jpg", // TBO rooms often don't have specific images
                     'price' => [
-                        'amount' => \App\Helpers\CurrencyHelper::convert((float) ($room['TotalFare'] ?? 0)),
+                        'amount' => $amount,
                         'currency' => \App\Helpers\CurrencyHelper::getCurrentCurrency(),
+                    ],
+                    'room_price_per_night' => $this->calculatePricePerNight($amount, $checkIn, $checkOut),
+                    'tags' => [
+                        'room_only' => true, // Default for TBO standard search
+                        'refundable' => !($room['NonRefundable'] ?? false),
                     ],
                     'refundable' => ! ($room['NonRefundable'] ?? false),
                     'available' => true,
@@ -493,7 +527,7 @@ class HotelController extends Controller
                     'source' => 'tbo',
                     'contact' => [
                         'phone' => (string) ($details['PhoneNumber'] ?? ''),
-                        'email' => (string) ($details['Email'] ?? ''), // TBO often empty
+                        'email' => (string) ($details['Email'] ?? ''),
                     ],
                 ],
                 'about_hotel' => (string) ($details['Description'] ?? ''),
@@ -503,18 +537,15 @@ class HotelController extends Controller
             ];
 
             if (empty($formattedRooms)) {
-                $response['availability_status'] = $availabilityStatus; // 'no_rooms' or 'no_search_criteria'
+                $response['availability_status'] = $availabilityStatus;
             }
 
-            return response()->json($response);
+            return $this->successResponse($response, __('Hotel details fetched successfully.'));
 
         } catch (\Exception $e) {
             Log::error('API Hotel Details Error: '.$e->getMessage());
 
-            return response()->json([
-                'error' => 'Server Error',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse(__('Server Error').': '.$e->getMessage(), 500);
         }
     }
 
@@ -817,6 +848,11 @@ class HotelController extends Controller
 
             // Apply Commission
             $finalPrice = \App\Helpers\CommissionHelper::applyCommission($basePrice);
+
+            // Apply Currency Conversion
+            $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
+            $finalPrice = \App\Helpers\CurrencyHelper::convert($finalPrice, $targetCurrency);
+            $currency = $targetCurrency;
 
             // Handle Discount
             $discountAmount = 0;
