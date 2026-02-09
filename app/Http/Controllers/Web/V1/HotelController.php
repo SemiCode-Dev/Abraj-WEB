@@ -400,8 +400,9 @@ class HotelController extends Controller
                                     if (isset($availableHotelsMap[$hotelCode])) {
                                         $result = $availableHotelsMap[$hotelCode];
                                         if ($result->isAvailable() && $result->minPrice > 0) {
-                                            $hotel['MinPrice'] = $result->minPrice;
-                                            $hotel['Currency'] = $result->currency;
+                                            $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
+                                            $hotel['MinPrice'] = \App\Helpers\CurrencyHelper::convert($result->minPrice, $targetCurrency);
+                                            $hotel['Currency'] = $targetCurrency;
                                             $hotel['IsSearchResult'] = true;
                                             $filteredByAvailability[] = $hotel;
                                         }
@@ -520,8 +521,18 @@ class HotelController extends Controller
                 foreach ($pagedHotels as &$hotel) {
                     $code = $hotel['HotelCode'] ?? $hotel['Code'] ?? '';
                     if (isset($detailedHotelsMap[$code])) {
+                        $minPrice = $hotel['MinPrice'] ?? null;
+                        $currency = $hotel['Currency'] ?? null;
+                        
                         // Merge detailed info (Images, Facilities, Description)
                         $hotel = array_merge($hotel, $detailedHotelsMap[$code]);
+
+                        if ($minPrice !== null) {
+                            $hotel['MinPrice'] = $minPrice;
+                        }
+                        if ($currency !== null) {
+                            $hotel['Currency'] = $currency;
+                        }
                     }
                 }
                 unset($hotel); // break reference

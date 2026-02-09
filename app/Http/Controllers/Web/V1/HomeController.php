@@ -69,9 +69,9 @@ class HomeController extends Controller
                         'Hotels' => [],
                     ];
                 } else {
-                    // Get all hotels from each city for Featured Hotels section (no limit per city, multiple pages)
+                    // Get all hotels from each city for Featured Hotels section (limit per city, single page)
                     $language = app()->getLocale() === 'ar' ? 'ar' : 'en';
-                    $response = $this->hotelApi->getHotelsFromMultipleCities($cityCodes, true, null, $language, 5);
+                    $response = $this->hotelApi->getHotelsFromMultipleCities($cityCodes, true, 20, $language, 1);
 
                     // Apply robust Hotel Name Translation if Arabic
                     if ($language === 'ar') {
@@ -81,14 +81,14 @@ class HomeController extends Controller
                                 $response['Hotels'] = $translator->translateHotels($response['Hotels'], 20);
                             }
                         } catch (\Exception $e) {
-                            Log::warning('Homepage translation failed: '.$e->getMessage());
+                            // Log::warning('Homepage translation failed: '.$e->getMessage());
                         }
                     }
 
                     return $response;
                 }
             } catch (\Exception $e) {
-                Log::error('Failed to fetch featured hotels: '.$e->getMessage());
+                // Log::error('Failed to fetch featured hotels: '.$e->getMessage());
 
                 return [
                     'Status' => [
@@ -145,7 +145,7 @@ class HomeController extends Controller
 
                 return $countryData;
             } catch (\Exception $e) {
-                Log::error('Failed to fetch countries from TBO API: '.$e->getMessage());
+                // Log::error('Failed to fetch countries from TBO API: '.$e->getMessage());
 
                 return [];
             }
