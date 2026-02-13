@@ -42,11 +42,11 @@ class HotelController extends Controller
 
     /**
      * Dedicated API Endpoint for Hotel Search
-     * Strict Availability Logic.
+     * Supports filtering by Country, City, Dates, and Guests.
      */
     public function index(Request $request)
     {
-        set_time_limit(600); // Match Web Controller (600s)
+        set_time_limit(600); // 10 minutes timeout for heavy searches
 
         // 1. Localization (Header ONLY)
         $lang = $request->header('Accept-Language');
@@ -58,49 +58,181 @@ class HotelController extends Controller
         $language = app()->getLocale();
 
         try {
-            // 2. Resolve Candidate Hotels (Scope)
-            $allCityCodes = City::whereNotNull('code')
+            // -------------------------------------------------------------------------
+            // 1. Resolve Location (City / Country)
+            // -------------------------------------------------------------------------
+            $cityId = $request->input('city_id') ?? $request->input('city');
+            $countryId = $request->input('country_id') ?? $request->input('country');
+
+            // If user provides inputs, we skip the default "Top Cities" search
+            $targetCityCodes = [];
+
+            if ($cityId) {
+                // Determine if ID or Code
+                // We prioritize Code for TBO. If numeric, check if it's an ID in our local DB to get Code,
+                // or assume it's the valid TBO Code directly.
+                $city = City::where('id', $cityId)->orWhere('code', $cityId)->first();
+                if ($city && $city->code) {
+                    $targetCityCodes = [$city->code];
+                } else {
+                    // Fallback: assume input is code
+                    $targetCityCodes = [$cityId];
+                }
+            } elseif ($countryId) {
+                // Fetch all cities for this country
+                $targetCityCodes = City::whereHas('country', function ($q) use ($countryId) {
+                    $q->where('id', $countryId)->orWhere('code', $countryId);
+                })
+                ->whereNotNull('code')
                 ->where('code', '!=', '')
-                ->orderByRaw('CASE WHEN country_id = 151 THEN 0 ELSE 1 END') // Prioritize Saudi cities
-                ->orderBy('hotels_count', 'desc')
-                ->limit(500) // Increased for exhaustive search
                 ->pluck('code')
                 ->toArray();
+            } else {
+                // -------------------------------------------------------------------------
+                // Fallback: Default Browse Mode (Top Cities)
+                // -------------------------------------------------------------------------
+                $targetCityCodes = City::whereNotNull('code')
+                    ->where('code', '!=', '')
+                    ->orderByRaw('CASE WHEN country_id = 151 THEN 0 ELSE 1 END') // Prioritize Saudi cities
+                    ->orderBy('hotels_count', 'desc') // Most popular standard
+                    ->limit(500)
+                    ->pluck('code')
+                    ->toArray();
 
-            if (empty($allCityCodes)) {
+                Log::info('API Fallback Mode: Fetched Top Cities', ['count' => count($targetCityCodes)]);
+            }
+
+            if (empty($targetCityCodes)) {
+                Log::warning('API: No cities found. Inputs were invalid or DB empty.', [
+                    'inputs' => $request->all(),
+                    'city_id' => $cityId,
+                    'country_id' => $countryId
+                ]);
                 return $this->successResponse([
                     'items' => [],
                     'pagination' => $this->emptyPagination(),
-                ], __('No cities found.'));
+                ], __('No cities found matching criteria.'));
             }
 
-            // Fetch Candidate Hotels (Lightweight)
-            $cacheKey = 'api_hotels_candidates_'.$language.'_'.md5(json_encode($allCityCodes));
-            $candidates = Cache::remember($cacheKey, 86400, function () use ($allCityCodes, $language) {
+            if (empty($targetCityCodes)) {
+                 // ... return empty ...
+             }
+             
+            // ... (Fetch candidates from cache) ...
+            
+            // STRICT FILTERING (MATCH WEB)
+            // If specific city requested, filter hotels to ensure they actually belong to it (TBO sometimes returns nearby cities)
+
+
+            if (empty($targetCityCodes)) {
+                return $this->successResponse([
+                    'items' => [],
+                    'pagination' => $this->emptyPagination(),
+                ], __('No cities found matching criteria.'));
+            }
+
+            // -------------------------------------------------------------------------
+            // 2. Fetch Candidate Hotels (Lightweight)
+            // -------------------------------------------------------------------------
+            // Optimization: Use meaningful cache key based on inputs
+            // Optimization: Use meaningful cache key based on inputs
+            $cacheKey = 'api_hotels_candidates_v2_'.$language.'_'.md5(json_encode($targetCityCodes));
+            $candidates = Cache::remember($cacheKey, 86400, function () use ($targetCityCodes, $language) {
                 try {
-                    $response = $this->hotelApi->getHotelsFromMultipleCities(
-                        $allCityCodes,
-                        true,
-                        null,
-                        $language,
-                        2 // Optimized to 2 pages for extremely fast initial surge
-                    );
-                    $h = $response['Hotels'] ?? [];
+                    // Fetch from TBO
+                    // If single city, use getAllCityHotels for potentially better optimization on TBO side
+                    if (count($targetCityCodes) === 1) {
+                        // MATCH WEB: Use Lightweight (Standard) initial fetch
+                        $response = $this->hotelApi->getAllCityHotels($targetCityCodes[0], false, $language); 
+                        $h = $response['Hotels'] ?? [];
+                    } else {
+                        $response = $this->hotelApi->getHotelsFromMultipleCities(
+                            $targetCityCodes,
+                            true,
+                            null,
+                            $language,
+                            2 // Max 2 pages per city for bulk search speed
+                        );
+                        $h = $response['Hotels'] ?? [];
+                    }
 
                     return is_array($h) ? $h : json_decode(json_encode($h), true);
                 } catch (\Exception $e) {
+                    Log::error('API Hotel Fetch Error: '.$e->getMessage());
                     return [];
                 }
             });
 
+            // Log::info('API: Initial Candidates Count: ' . count($candidates));
+            
             if (empty($candidates)) {
                 return $this->successResponse([
                     'items' => [],
                     'pagination' => $this->emptyPagination(),
-                ], __('No hotels found matching criteria.'));
+                ], __('No hotels found matching location criteria.'));
             }
 
-            // 3. Pre-Filter Candidates (Metadata)
+            // DEDUPLICATE: Ensure unique hotels by HotelCode
+            // TBO API pagination might return duplicates or overlap
+            $uniqueCandidates = [];
+            foreach ($candidates as $candidate) {
+                $code = $candidate['HotelCode'] ?? $candidate['Code'] ?? '';
+                if ($code && !isset($uniqueCandidates[$code])) {
+                    $uniqueCandidates[$code] = $candidate;
+                }
+            }
+            $candidates = array_values($uniqueCandidates);
+            
+            // STRICT FILTERING (MATCH WEB)
+            // If specific city requested, filter hotels to ensure they actually belong to it (TBO sometimes returns nearby cities)
+            if (count($targetCityCodes) === 1) {
+                 $cityCode = $targetCityCodes[0];
+                 $cityParam = City::where('code', $cityCode)->first();
+                 
+                 if ($cityParam) {
+                     $validNames = [];
+                     if ($cityParam->name_en) $validNames[] = strtolower($cityParam->name_en);
+                     if ($cityParam->name_ar) $validNames[] = strtolower($cityParam->name_ar);
+                     
+                     // Add partials (comma logic)
+                     $extras = [];
+                     foreach ($validNames as $name) {
+                         if (str_contains($name, ',')) {
+                             $parts = explode(',', $name);
+                             $extras[] = trim($parts[0]);
+                         }
+                     }
+                     $validNames = array_merge($validNames, $extras);
+                     
+                     if (!empty($validNames)) {
+                         $filteredCandidates = [];
+                         foreach ($candidates as $cand) {
+                             $cName = strtolower($cand['CityName'] ?? '');
+                             $cAddr = strtolower($cand['Address'] ?? '');
+                             
+                             $match = false;
+                             foreach ($validNames as $vn) {
+                                 if (empty($vn)) continue;
+                                 if (str_contains($cName, $vn) || str_contains($cAddr, $vn)) {
+                                     $match = true;
+                                     break;
+                                 }
+                             }
+                             
+                             if ($match) {
+                                 $filteredCandidates[] = $cand;
+                             }
+                         }
+                         if (!empty($filteredCandidates)) {
+                             $candidates = $filteredCandidates;
+                         }
+                     }
+                 }
+            }
+
+            // -------------------------------------------------------------------------
+            // 3. Pre-Filter Candidates (Static Data)
+            // -------------------------------------------------------------------------
             // Name Search
             if ($request->has('search') && ! empty($request->input('search'))) {
                 $search = mb_strtolower(trim($request->input('search')));
@@ -116,8 +248,7 @@ class HotelController extends Controller
                 $stars = (array) $request->input('stars');
                 if (! empty($stars)) {
                     $candidates = array_filter($candidates, function ($h) use ($stars) {
-                        // $rating = ($h['HotelRating'] ?? $h['Rating'] ?? 0);
-                        $rating = $this->getHotelRating($h['HotelRating']);
+                        $rating = $this->getHotelRating($h['HotelRating'] ?? $h['Rating'] ?? 0);
 
                         return in_array($rating, $stars);
                     });
@@ -131,59 +262,163 @@ class HotelController extends Controller
                 ], __('No hotels found after filtering.'));
             }
 
-            // 4. Availability Check (STRICT)
-            // Default Dates if not provided (Tomorrow -> +1 Day)
-            $checkIn = \Carbon\Carbon::tomorrow()->format('Y-m-d');
-            $checkOut = \Carbon\Carbon::tomorrow()->addDay()->format('Y-m-d');
+            // -------------------------------------------------------------------------
+            // 4. Availability Check (Search Criteria)
+            // -------------------------------------------------------------------------
+            $checkIn = $request->input('check_in');
+            $checkOut = $request->input('check_out');
+            $rooms = (int) $request->input('rooms', 1);
+            $adults = (int) $request->input('adults', 1); // User might pass 'adult' or 'adults'
+            if ($adults <= 0) {
+                $adults = (int) $request->input('adult', 1);
+            }
+            $children = (int) $request->input('children', 0);
+            if ($children < 0) $children = 0;
+            
+            // Handle Children Ages Input (MATCH WEB LOGIC)
+            $childrenAges = $request->input('children_ages', []);
+            if (! is_array($childrenAges)) {
+                if (is_string($childrenAges)) {
+                    $cleanAges = str_replace(['[', ']', '"', "'"], '', $childrenAges);
+                    if (str_contains($cleanAges, ',')) {
+                        $childrenAges = explode(',', $cleanAges);
+                    } elseif (is_numeric($cleanAges)) {
+                         $childrenAges = [$cleanAges];
+                    } else {
+                        $childrenAges = [];
+                    }
+                } else {
+                    $childrenAges = [];
+                }
+            }
+            
+            // Filter/Clamp
+            $childrenAges = array_map(function($a) {
+                return max(0, min(12, (int)$a));
+            }, $childrenAges);
 
-            // Default Pax (2 Adults)
-            $paxRooms = [[
-                'Adults' => 2,
-                'Children' => 0,
-                'ChildrenAges' => [],
-            ]];
+            // Force empty ages if children count is 0
+            if ($children === 0) {
+                $childrenAges = [];
+            }
 
+
+            // MATCH WEB PADDING LOGIC (Strict sync)
+            if ($children > count($childrenAges)) {
+                for ($i = count($childrenAges); $i < $children; $i++) {
+                    $childrenAges[] = 0; // Padding
+                }
+            } elseif ($children < count($childrenAges)) {
+                $childrenAges = array_slice($childrenAges, 0, $children);
+            }
+
+            // Check if Search Mode (Dates provided) or Browse Mode (No dates)
+            $isSearchMode = (! empty($checkIn) && ! empty($checkOut));
+
+            // Setup Dates
+            if ($isSearchMode) {
+                // Validate Dates? Logic inside Service will handle TBO errors, but we can do basic check
+            } else {
+                // Default: Tomorrow for 1 Night
+                $checkIn = \Carbon\Carbon::tomorrow()->format('Y-m-d');
+                $checkOut = \Carbon\Carbon::tomorrow()->addDay()->format('Y-m-d');
+            }
+
+            // Setup Pax (Guest Distribution)
+            $nationality = $request->input('nationality') ?? $request->input('guest_nationality') ?? 'SA';
+            $paxRooms = [];
+
+            // Distribute guests across rooms logic (Reused from show method)
+            if ($rooms > 0) {
+                for ($i = 0; $i < $rooms; $i++) {
+                    $roomAdults = (int) ceil($adults / $rooms);
+                    $roomChildren = (int) ceil($children / $rooms);
+
+                    $roomChildAges = [];
+                    if ($roomChildren > 0) {
+                        for ($k = 0; $k < $roomChildren; $k++) {
+                            $val = array_shift($childrenAges);
+                            if ($val !== null) {
+                                $roomChildAges[] = (int) $val;
+                            } else {
+                                $roomChildAges[] = 0; 
+                            }
+                        }
+                    }
+
+                    $paxRooms[] = [
+                        'Adults' => $roomAdults,
+                        'Children' => $roomChildren,
+                        'ChildrenAges' => $roomChildAges,
+                    ];
+                }
+            } else {
+                // Default fallback
+                $paxRooms[] = [
+                    'Adults' => 2,
+                    'Children' => 0,
+                    'ChildrenAges' => [],
+                ];
+            }
+
+            // -------------------------------------------------------------------------
+            // EXECUTE AVAILABILITY CHECK
+            // -------------------------------------------------------------------------
             $codesToCheck = array_values(array_unique(array_column($candidates, 'HotelCode')));
 
-            // One unified availability call for the whole surge
+            // Note: If Browsing (No dates), we still fetch availability for tomorrow to show realistic "Starting From" price
+            // However, we cache this heavily.
+            // If Searching (Dates provided), we cache specific to those dates.
+
+            $availCacheKey = 'api_hotels_avail_'.$language.'_'.md5(json_encode([
+                'codes' => $codesToCheck,
+                'in' => $checkIn,
+                'out' => $checkOut,
+                'pax' => $paxRooms,
+                'nat' => $nationality,
+            ]));
+
             $availableData = $this->availabilityService->checkBatchAvailability(
                 $codesToCheck,
                 $checkIn,
                 $checkOut,
                 $paxRooms,
-                'SA',
+                $nationality,
                 false // Lightweight
             );
 
+            // -------------------------------------------------------------------------
             // 5. Build Valid Hotel List and Convert Currency
-            // Use local cache for the ENTIRE result set to make pagination/sorting instant
-            $finalCacheKey = 'api_hotels_final_'.$language.'_'.md5(json_encode($request->all()).$checkIn.$checkOut);
-            $validHotels = Cache::remember($finalCacheKey, 600, function () use ($candidates, $availableData) {
-                $hList = [];
-                $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
-                foreach ($candidates as $h) {
-                    $code = $h['HotelCode'] ?? '';
-                    if (isset($availableData[$code])) {
-                        $result = $availableData[$code];
-                        if ($result->isAvailable()) {
-                            $priceInUsd = $result->minPrice;
-                            $h['MinPrice'] = \App\Helpers\CurrencyHelper::convert($priceInUsd, $targetCurrency);
-                            $h['Currency'] = $targetCurrency;
-                            $hList[] = $h;
-                        }
+            // -------------------------------------------------------------------------
+            $validHotels = [];
+            $targetCurrency = \App\Helpers\CurrencyHelper::getCurrentCurrency();
+
+            foreach ($candidates as $h) {
+                $code = $h['HotelCode'] ?? '';
+                if (isset($availableData[$code])) {
+                    $result = $availableData[$code];
+
+                    // IF SEARCH MODE: Strict Availability
+                    // IF BROWSE MODE: Show if available, or maybe show with "Check Availability" (but standard is to show available only)
+                    // We stick to showing available only for consistency
+                    if ($result->isAvailable() && $result->minPrice > 0) {
+                        $priceInUsd = $result->minPrice;
+                        $h['MinPrice'] = \App\Helpers\CurrencyHelper::convert($priceInUsd, $targetCurrency);
+                        $h['Currency'] = $targetCurrency;
+                        $validHotels[] = $h;
                     }
                 }
+            }
 
-                return $hList;
-            });
-
-            // 5a. Facilities Filter
+            // -------------------------------------------------------------------------
+            // 6. Post-Filter (Facilities) & Sorting
+            // -------------------------------------------------------------------------
+            // Facilities Filter
             $reqFacilities = $request->input('facilities');
             if (! empty($reqFacilities) && is_array($reqFacilities)) {
                 $validHotels = array_values(array_filter($validHotels, function ($h) use ($reqFacilities) {
                     $normalized = $this->normalizeFacilities($h);
                     foreach ($reqFacilities as $facility) {
-                        // Check if the requested facility exists in our normalized list and is true
                         if (empty($normalized[$facility])) {
                             return false;
                         }
@@ -193,7 +428,7 @@ class HotelController extends Controller
                 }));
             }
 
-            // 6. Sorting
+            // Sorting
             $sort = $request->input('sort');
             if ($sort === 'price_asc') {
                 usort($validHotels, fn ($a, $b) => ($a['MinPrice'] ?? 0) <=> ($b['MinPrice'] ?? 0));
@@ -201,17 +436,27 @@ class HotelController extends Controller
                 usort($validHotels, fn ($a, $b) => ($b['MinPrice'] ?? 0) <=> ($a['MinPrice'] ?? 0));
             }
 
-            // 7. Pagination (IMPORTANT: Before heavy detail fetching)
+            if (empty($validHotels)) {
+                return $this->successResponse([
+                    'items' => [],
+                    'pagination' => $this->emptyPagination(),
+                ], __('No hotels available for the selected dates.'));
+            }
+
+            // -------------------------------------------------------------------------
+            // 7. Pagination
+            // -------------------------------------------------------------------------
             $page = (int) $request->input('page', 1);
             $perPage = (int) $request->input('per_page', 10);
             $total = count($validHotels);
             $lastPage = (int) ceil($total / $perPage);
-
             $offset = ($page - 1) * $perPage;
+
             $items = array_slice($validHotels, $offset, $perPage);
 
-            // 8. Fetch Details ONLY for the Paginated Results
-            // This is the CRITICAL optimization to avoid sequential API timeouts.
+            // -------------------------------------------------------------------------
+            // 8. Fetch Details (Paginated Only) & Format
+            // -------------------------------------------------------------------------
             $pagedCodes = array_column($items, 'HotelCode');
             $detailsMap = [];
 
@@ -239,15 +484,9 @@ class HotelController extends Controller
                 });
             }
 
-            // 9. Format Response with Merged Details
-            $checkIn = $request->input('check_in');
-            $checkOut = $request->input('check_out');
-
             $data = array_map(function ($h) use ($detailsMap, $checkIn, $checkOut) {
                 $code = $h['HotelCode'] ?? '';
                 $details = $detailsMap[$code] ?? [];
-
-                // Merge static details if available for facilities
                 $fullHotel = array_merge($h, $details);
                 $facilities = $this->normalizeFacilities($fullHotel);
 
@@ -256,11 +495,11 @@ class HotelController extends Controller
                     'hotel_name' => (string) ($h['HotelName'] ?? $h['Name'] ?? ''),
                     'rating' => $this->getHotelRating($h['HotelRating']),
                     'min_price' => (float) ($h['MinPrice'] ?? 0),
-                    'room_price_per_night' => $this->calculatePricePerNight((float) ($h['MinPrice'] ?? 0), $checkIn, $checkOut), // Calculated field
+                    'room_price_per_night' => $this->calculatePricePerNight((float) ($h['MinPrice'] ?? 0), $checkIn, $checkOut),
                     'currency' => (string) ($h['Currency'] ?? 'USD'),
                     'source' => 'tbo',
-                    'tags' => [ // Added tags for UI badges
-                        'room_only' => true, // Default for TBO standard search unless meal is specified
+                    'tags' => [
+                        'room_only' => true,
                         'refundable' => false,
                     ],
                     'facilities' => $facilities,
@@ -282,7 +521,7 @@ class HotelController extends Controller
             ], __('Hotels fetched successfully.'));
 
         } catch (\Exception $e) {
-            Log::error('API Hotel Error: '.$e->getMessage());
+            Log::error('API Hotel Search Error: '.$e->getMessage());
 
             return $this->errorResponse(__('Server Error').': '.$e->getMessage(), 500);
         }

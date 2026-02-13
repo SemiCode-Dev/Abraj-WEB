@@ -6,9 +6,8 @@ use App\Http\Controllers\Api\V1\FlightController;
 use App\Http\Controllers\Api\V1\PackageController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\VisaController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\V1\PaymentController;
-
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,8 +61,14 @@ Route::get('/visas/countries', [VisaController::class, 'getCountries']);
 Route::get('/visas/cities', [VisaController::class, 'getCities']);
 Route::get('/visas/nationalities', [VisaController::class, 'getNationalities']);
 
+// Contact Us
+Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'submit']);
+
+// Homepage Content
+Route::get('/home', [\App\Http\Controllers\Api\HomeController::class, 'index']);
+
 // New Dedicated Hotel Endpoint
-Route::get('/hotels', [\App\Http\Controllers\Api\HotelController::class, 'index']);
+Route::any('/hotels', [\App\Http\Controllers\Api\HotelController::class, 'index']);
 Route::get('/hotels/{code}/details', [\App\Http\Controllers\Api\HotelController::class, 'show']);
 Route::post('/hotels/reservation/review', [\App\Http\Controllers\Api\HotelController::class, 'reviewReservation']);
 Route::post('/hotels/reservation/book', [\App\Http\Controllers\Api\HotelController::class, 'bookReservation']);

@@ -43,6 +43,45 @@
             scrollbar-width: none;
             /* Firefox */
         }
+
+        /* Testimonials Slider Styles */
+        .testimonials-slider-wrapper {
+            max-width: 1400px;
+            /* توسيع الحاوية جداً لتسمح للبطاقات الكبيرة بالظهور بجانب بعضها */
+            margin: 0 auto;
+            padding-right: 40px;
+            /* زيادة الإزاحة لليمين */
+        }
+
+        .testimonials-slider-track {
+            display: flex !important;
+            justify-content: flex-start !important;
+            gap: 2.5rem !important;
+            /* مسافة واضحة بين البطاقات الضخمة */
+        }
+
+        .testimonials-slider-track>div {
+            width: 900px !important;
+            /* تكبير العرض بشكل ملحوظ */
+            min-height: 260px !important;
+            padding: 2rem !important;
+            /* زيادة المسافات الداخلية لراحة العين مع العرض الجديد */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 768px) {
+            .testimonials-slider-track {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .testimonials-slider-track>div {
+                width: 100% !important;
+            }
+        }
     </style>
 
     <section id="home"
@@ -54,22 +93,22 @@
                 <!-- Slide 1 -->
                 <div class="hero-slide active" data-slide="0" aria-label="{{ __('Slide') }} 1">
                     <img src="{{ asset('images/banners/banner1.jpg') }}" alt="{{ __('Luxury Hotel') }}"
-                        class="hero-slide-image" loading="eager">
+                        class="hero-slide-image" fetchpriority="high" loading="eager" width="1920" height="1080">
                 </div>
                 <!-- Slide 2 -->
                 <div class="hero-slide" data-slide="1" aria-label="{{ __('Slide') }} 2">
                     <img src="{{ asset('images/banners/banner2.jpg') }}" alt="{{ __('Modern Hotel Room') }}"
-                        class="hero-slide-image" loading="lazy">
+                        class="hero-slide-image" loading="lazy" width="1920" height="1080">
                 </div>
                 <!-- Slide 3 -->
                 <div class="hero-slide" data-slide="2" aria-label="{{ __('Slide') }} 3">
                     <img src="{{ asset('images/banners/banner3.jpg') }}" alt="{{ __('Hotel Pool') }}"
-                        class="hero-slide-image" loading="lazy">
+                        class="hero-slide-image" loading="lazy" width="1920" height="1080">
                 </div>
                 <!-- Slide 4 -->
                 <div class="hero-slide" data-slide="3" aria-label="{{ __('Slide') }} 4">
                     <img src="{{ asset('images/banners/banner4.jpg') }}" alt="{{ __('Hotel Lobby') }}"
-                        class="hero-slide-image" loading="lazy">
+                        class="hero-slide-image" loading="lazy" width="1920" height="1080">
                 </div>
             </div>
             <!-- Overlay -->
@@ -398,7 +437,7 @@
                                 }
 
                                 /* Mobile styles implicitly handled by removing fixed widths above,
-                                                                                                                                                                                           but we ensure correct stacking */
+                                                                                                                                                                                                                                                           but we ensure correct stacking */
                                 @media (max-width: 767px) {
                                     .flatpickr-months .flatpickr-month {
                                         width: 100% !important;
@@ -529,9 +568,9 @@
                         @endpush
 
                         @push('scripts')
-                            <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+                            <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
                             @if (app()->getLocale() === 'ar')
-                                <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
+                                <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js" defer></script>
                             @endif
                             <script>
                                 document.addEventListener('DOMContentLoaded', function() {
@@ -655,7 +694,7 @@
                 <div class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-2 items-center">
                     <span
                         class="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mr-2">{{ __('Quick Search') }}:</span>
-                    <a href="#"
+                    <a href="#offers"
                         class="px-4 py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-orange-50 dark:hover:bg-orange-900/30 text-gray-600 dark:text-gray-300 hover:text-orange-600 rounded-xl text-xs font-bold transition-all duration-300 flex items-center border border-gray-100 dark:border-gray-700">
                         <i class="fas fa-fire text-orange-500 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
                         {{ __('Today\'s Offers') }}
@@ -711,7 +750,8 @@
     </section>
 
     <!-- Flash Deals with Countdown -->
-    <section id="offers" class="py-16 bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900">
+    <section id="offers"
+        class="py-16 bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between mb-8">
                 <div>
@@ -720,32 +760,43 @@
                         {{ __('Limited time offers - Book before it\'s too late!') }}</p>
                 </div>
                 <div class="hidden md:flex items-center bg-white dark:bg-gray-700 px-6 py-3 rounded-full shadow-lg">
-                    <i class="fas fa-clock text-red-600 dark:text-red-400 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
+                    <i
+                        class="fas fa-clock text-red-600 dark:text-red-400 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>
                     <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{ __('Ends in') }}</span>
                     <span class="text-xl font-bold text-red-600 dark:text-red-400 mr-3" id="countdown">23:45:12</span>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" >
                 @foreach ($hotels as $hotel)
                     <div
                         class="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                         <div class="relative h-56 overflow-hidden">
                             @php
                                 $hotelImage = null;
-                                if (isset($hotel['ImageUrls']) && is_array($hotel['ImageUrls']) && !empty($hotel['ImageUrls'][0]['ImageUrl'])) {
+                                if (
+                                    isset($hotel['ImageUrls']) &&
+                                    is_array($hotel['ImageUrls']) &&
+                                    !empty($hotel['ImageUrls'][0]['ImageUrl'])
+                                ) {
                                     $hotelImage = $hotel['ImageUrls'][0]['ImageUrl'];
                                 } elseif (isset($hotel['Image']) && !empty($hotel['Image'])) {
                                     $hotelImage = $hotel['Image'];
-                                } elseif (isset($hotel['Images']) && is_array($hotel['Images']) && !empty($hotel['Images'][0])) {
-                                    $hotelImage = is_array($hotel['Images'][0]) ? ($hotel['Images'][0]['ImageUrl'] ?? null) : $hotel['Images'][0];
+                                } elseif (
+                                    isset($hotel['Images']) &&
+                                    is_array($hotel['Images']) &&
+                                    !empty($hotel['Images'][0])
+                                ) {
+                                    $hotelImage = is_array($hotel['Images'][0])
+                                        ? $hotel['Images'][0]['ImageUrl'] ?? null
+                                        : $hotel['Images'][0];
                                 }
                                 $defaultHotelImage = asset('images/default.jpg');
                             @endphp
-                            <img src="{{ $hotelImage ?? $defaultHotelImage }}"
-                                alt="{{ $hotel['HotelName'] ?? 'فندق' }}"
+                            <img src="{{ $hotelImage ?? $defaultHotelImage }}" alt="{{ $hotel['HotelName'] ?? 'فندق' }}"
                                 class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
-                                onerror="this.onerror=null; this.src='{{ $defaultHotelImage }}';">
+                                onerror="this.onerror=null; this.src='{{ $defaultHotelImage }}';" loading="lazy"
+                                width="400" height="224">
                             <div
                                 class="absolute top-0 right-0 bg-gradient-to-br from-red-600 to-pink-600 text-white px-4 py-2 rounded-bl-2xl font-bold text-lg shadow-lg">
                                 -40%
@@ -758,8 +809,7 @@
                         </div>
                         <div class="p-6">
                             <div class="flex items-center justify-between mb-3">
-                                <h3
-                                    class="text-xl font-bold text-gray-900 dark:text-white">
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">
                                     {{ Str::limit($hotel['HotelName'], 15) }}
                                 </h3>
                                 <div class="flex items-center bg-yellow-100 dark:bg-yellow-900/30 px-2 py-1 rounded-lg">
@@ -774,11 +824,11 @@
                                         ];
                                         $count = $stars[$hotel['HotelRating']] ?? 5;
                                     @endphp
-                                    <span class="text-xs font-bold text-gray-900 dark:text-gray-100">{{ $count }}</span>
+                                    <span
+                                        class="text-xs font-bold text-gray-900 dark:text-gray-100">{{ $count }}</span>
                                 </div>
                             </div>
-                            <div
-                                class="flex items-center text-xs text-gray-600 dark:text-gray-300 mb-4">
+                            <div class="flex items-center text-xs text-gray-600 dark:text-gray-300 mb-4">
                                 <i class="fas fa-map-marker-alt ml-1"></i>
                                 <span>{{ Str::limit($hotel['Address'], 30) }}</span>
                             </div>
@@ -802,8 +852,10 @@
     <section id="destinations" class="py-16 bg-white dark:bg-gray-900 overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-4xl font-extrabold text-gray-900 dark:text-white mb-3">{{ __('Popular Destinations') }}</h2>
-                <p class="text-gray-600 dark:text-gray-300 text-lg">{{ __('Discover the best tourist destinations with the best prices') }}
+                <h2 class="text-4xl font-extrabold text-gray-900 dark:text-white mb-3">{{ __('Popular Destinations') }}
+                </h2>
+                <p class="text-gray-600 dark:text-gray-300 text-lg">
+                    {{ __('Discover the best tourist destinations with the best prices') }}
                 </p>
             </div>
 
@@ -846,7 +898,8 @@
                             <div
                                 class="relative h-80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
                                 <img src="{{ $destination['image'] }}" alt="{{ $destination['name_ar'] }}"
-                                    class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                                    class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                                    loading="lazy" width="280" height="320">
 
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
                                 </div>
@@ -881,17 +934,21 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between mb-12">
                 <div>
-                    <h2 class="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{{ __('Featured Hotels') }}</h2>
+                    <h2 class="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{{ __('Featured Hotels') }}
+                    </h2>
                     <p class="text-gray-600 dark:text-gray-300">{{ __('Choose from the best recommended hotels') }}</p>
                 </div>
                 <div class="hidden md:flex gap-2">
                     <button id="filter-all"
                         class="px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold transition-all">{{ __('All') }}</button>
-                    <button id="filter-5star" class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">5
+                    <button id="filter-5star"
+                        class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">5
                         {{ __('stars') }}</button>
-                    <button id="filter-4star" class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">4
+                    <button id="filter-4star"
+                        class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">4
                         {{ __('stars') }}</button>
-                    <button id="filter-3star" class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">3
+                    <button id="filter-3star"
+                        class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">3
                         {{ __('stars') }}</button>
                 </div>
             </div>
@@ -914,29 +971,40 @@
                                 ];
                                 $starCount = $stars[$hotel2['HotelRating']] ?? 5;
                             @endphp
-                            <div
-                                class="hotel-card-item bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group"
+                            <div class="hotel-card-item bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group"
                                 data-star-rating="{{ $starCount }}">
                                 <div class="relative h-64 overflow-hidden">
                                     @php
                                         $hotel2Image = null;
-                                        if (isset($hotel2['ImageUrls']) && is_array($hotel2['ImageUrls']) && !empty($hotel2['ImageUrls'][0]['ImageUrl'])) {
+                                        if (
+                                            isset($hotel2['ImageUrls']) &&
+                                            is_array($hotel2['ImageUrls']) &&
+                                            !empty($hotel2['ImageUrls'][0]['ImageUrl'])
+                                        ) {
                                             $hotel2Image = $hotel2['ImageUrls'][0]['ImageUrl'];
                                         } elseif (isset($hotel2['Image']) && !empty($hotel2['Image'])) {
                                             $hotel2Image = $hotel2['Image'];
-                                        } elseif (isset($hotel2['Images']) && is_array($hotel2['Images']) && !empty($hotel2['Images'][0])) {
-                                            $hotel2Image = is_array($hotel2['Images'][0]) ? ($hotel2['Images'][0]['ImageUrl'] ?? null) : $hotel2['Images'][0];
+                                        } elseif (
+                                            isset($hotel2['Images']) &&
+                                            is_array($hotel2['Images']) &&
+                                            !empty($hotel2['Images'][0])
+                                        ) {
+                                            $hotel2Image = is_array($hotel2['Images'][0])
+                                                ? $hotel2['Images'][0]['ImageUrl'] ?? null
+                                                : $hotel2['Images'][0];
                                         }
                                         $defaultHotelImage = asset('images/default.jpg');
                                     @endphp
                                     <img src="{{ $hotel2Image ?? $defaultHotelImage }}"
                                         alt="{{ $hotel2['HotelName'] ?? 'فندق' }}"
                                         class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
-                                        onerror="this.onerror=null; this.src='{{ $defaultHotelImage }}';">
+                                        onerror="this.onerror=null; this.src='{{ $defaultHotelImage }}';" loading="lazy"
+                                        width="400" height="256">
                                     <div class="absolute top-4 left-4 flex gap-2">
                                         <div
                                             class="bg-white dark:bg-gray-700 px-3 py-1 rounded-full text-sm font-bold text-gray-900 dark:text-white shadow-lg">
-                                            <i class="fas fa-star text-yellow-500 dark:text-yellow-400 ml-1"></i> {{ $starCount }}
+                                            <i class="fas fa-star text-yellow-500 dark:text-yellow-400 ml-1"></i>
+                                            {{ $starCount }}
                                         </div>
                                         <div
                                             class="bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
@@ -954,17 +1022,20 @@
                                 <div class="p-6">
                                     <div class="flex items-start justify-between mb-3">
                                         <div>
-                                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">{{ $hotel2['HotelName'] }}
+                                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                                                {{ $hotel2['HotelName'] }}
                                             </h3>
                                             <p class="text-gray-600 dark:text-gray-300 text-sm flex items-center">
-                                                <i class="fas fa-map-marker-alt text-orange-600 dark:text-orange-400 ml-1 text-xs"></i>
+                                                <i
+                                                    class="fas fa-map-marker-alt text-orange-600 dark:text-orange-400 ml-1 text-xs"></i>
                                                 {{ $hotel2['CityName'] }}, {{ $hotel2['CountryName'] }}
                                             </p>
                                         </div>
                                     </div>
 
                                     <div class="flex flex-wrap gap-2 mb-4">
-                                        <span class="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-lg font-semibold">
+                                        <span
+                                            class="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-lg font-semibold">
                                             <i
                                                 class="fas fa-wifi {{ app()->getLocale() === 'ar' ? 'ml-1' : 'mr-1' }}"></i>
                                             {{ __('WiFi') }}
@@ -996,7 +1067,8 @@
                                         </div>
                                     </div>
 
-                                    <div class="flex items-center justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <div
+                                        class="flex items-center justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
                                         <a href="#"
                                             class="bg-gradient-to-r from-orange-600 to-orange-600 px-6 py-2 rounded-xl font-bold hover:from-orange-700 hover:to-orange-700 transition shadow-lg force-button-text w-full text-center">
                                             {{ __('Book Now') }}
@@ -1013,7 +1085,7 @@
     </section>
 
     <!-- Customer Reviews - Enhanced & Professional -->
-    <section class="py-24 relative overflow-hidden bg-slate-900 border-y border-white/5">
+    <section class="py-16 relative overflow-hidden bg-slate-900 border-y border-white/5">
         <!-- Background Image with Overlay -->
         <div class="absolute inset-0 z-0">
             <img src="{{ asset('images/testimonials-bg.png') }}" alt="Testimonials Background"
@@ -1787,15 +1859,17 @@
                 [filterAll, filter5Star, filter4Star, filter3Star].forEach(btn => {
                     if (btn) {
                         btn.classList.remove('bg-orange-600', 'text-white');
-                        btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-200');
+                        btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-gray-700',
+                            'dark:text-gray-200');
                     }
                 });
 
-                const activeButton = starRating === 'all' ? filterAll : 
-                                   starRating === 5 ? filter5Star : 
-                                   starRating === 4 ? filter4Star : filter3Star;
+                const activeButton = starRating === 'all' ? filterAll :
+                    starRating === 5 ? filter5Star :
+                    starRating === 4 ? filter4Star : filter3Star;
                 if (activeButton) {
-                    activeButton.classList.remove('bg-white', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-200');
+                    activeButton.classList.remove('bg-white', 'dark:bg-gray-700', 'text-gray-700',
+                        'dark:text-gray-200');
                     activeButton.classList.add('bg-orange-600', 'text-white');
                 }
             }
@@ -1833,7 +1907,7 @@
             function updateTestimonialsSlider() {
                 const itemsPerView = testimonialsItemsPerView();
                 const maxIndex = Math.max(0, testimonialsItems.length - itemsPerView);
-                
+
                 // Calculate translation based on item width + gap
                 if (testimonialsItems.length > 0 && testimonialsTrack) {
                     const firstItem = testimonialsItems[0];
@@ -1841,7 +1915,7 @@
                     const gap = 32; // 2rem = 32px (gap-8)
                     const translateX = -(testimonialsCurrentIndex * (itemWidth + gap));
                     const isRTL = document.documentElement.dir === 'rtl';
-                    
+
                     testimonialsTrack.style.transform = `translateX(${isRTL ? -translateX : translateX}px)`;
                 } else {
                     // Fallback to percentage if items not available

@@ -149,19 +149,20 @@ class AvailabilityService
         $missingIds = [];
         $cacheKeys = [];
 
-        // 1. Resolve as many as possible from cache
+        // 1. Resolve as many as possible from cache (DISABLED TO FORCE FRESH DATA)
         foreach ($hotelIds as $hotelId) {
             $language = app()->getLocale();
             $detailSuffix = $isDetailed ? 'detailed' : 'standard';
             $key = $this->buildCacheKey($hotelId, $checkIn, $checkOut, $paxRooms, $guestNationality) . ":$detailSuffix:$language";
             $cacheKeys[$hotelId] = $key;
             
-            $cached = Cache::get($key);
-            if ($cached instanceof AvailabilityResult) {
-                $results[$hotelId] = $cached;
-            } else {
+            // Skip cache check to ensure fresh data for API/Web search
+            // $cached = Cache::get($key);
+            // if ($cached instanceof AvailabilityResult) {
+            //     $results[$hotelId] = $cached;
+            // } else {
                 $missingIds[] = $hotelId;
-            }
+            // }
         }
 
         // 2. Fetch missing hotels in CONCURRENT BATCHES
@@ -171,8 +172,8 @@ class AvailabilityService
                 "mode" => $isDetailed ? 'detailed' : 'standard'
             ]);
             
-            // Split into chunks of 100 for TBO batches (TBO Limit)
-            $chunks = array_chunk($missingIds, 100);
+            // Split into chunks of 40 for TBO batches (Optimized for reliability)
+            $chunks = array_chunk($missingIds, 40);
             $batchedIdsStrings = array_map(fn($chunk) => implode(',', $chunk), $chunks);
             
             $params = [

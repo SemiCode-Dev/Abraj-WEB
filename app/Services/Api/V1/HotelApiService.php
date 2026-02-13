@@ -116,30 +116,29 @@ class HotelApiService
         return $this->sendRequest('TBOHotelCodeList', $payload);
     }
 
-    public function getCityHotels($cityCode, int $page = 1, string $language = 'en')
+    public function getCityHotels($cityCode, int $page = 1, string $language = 'en', bool $detailed = true)
     {
         $payload = [
             'CityCode' => $cityCode,
-            'IsDetailedResponse' => 'true',
+            'IsDetailedResponse' => $detailed ? 'true' : 'false',
             'PageNo' => $page,
             'Language' => $language,
         ];
 
         return $this->sendRequest('TBOHotelCodeList', $payload);
     }
+    
+    // ...
 
-    /**
-     * Get all hotels from a city by fetching all pages
-     */
     public function getAllCityHotels(string $cityCode, bool $detailed = true, string $language = 'en'): array
     {
         $allHotels = [];
         $page = 1;
-        $maxPages = 3; // Reduced from 100 to 3 for faster performance
+        $maxPages = 3; 
 
         do {
             try {
-                $response = $this->getCityHotels($cityCode, $page, $language);
+                $response = $this->getCityHotels($cityCode, $page, $language, $detailed);
 
                 // Check if request was successful
                 if (isset($response['Status']) && $response['Status']['Code'] !== 200) {
@@ -258,47 +257,63 @@ class HotelApiService
     /**
      * Concurrent Search for multiple hotel batches (Availability)
      */
+    /**
+     * Concurrent Search for multiple hotel batches (Availability)
+     */
     public function searchHotelConcurrent(array $batchedHotelCodes, array $params): array
     {
         $allResults = [];
+        
+        // Chunk the pool execution to avoid overwhelming the network/API
+        // Process 10 batches (e.g. 10 * 40 = 400 hotels) at a time
+        $chunks = array_chunk($batchedHotelCodes, 10);
 
-        // STRATEGY: Process ALL batches in ONE single parallel surge (Pool)
-        // This is significantly faster than sequential groups of parallel requests.
-        $responses = Http::pool(function (Pool $pool) use ($batchedHotelCodes, $params) {
-            $requests = [];
-            foreach ($batchedHotelCodes as $idsString) {
-                $payload = array_merge($params, [
-                    'HotelCodes' => (string) $idsString,
-                ]);
+        foreach ($chunks as $chunk) {
+            try {
+                $responses = Http::pool(function (Pool $pool) use ($chunk, $params) {
+                    $requests = [];
+                    foreach ($chunk as $idsString) {
+                        $payload = array_merge($params, [
+                            'HotelCodes' => (string) $idsString,
+                        ]);
 
-                $requests[] = $pool->asJson()
-                    ->withBasicAuth($this->username, $this->password)
-                    ->timeout(60)
-                    ->post(rtrim($this->baseUrl, '/').'/Search', $payload);
-            }
-            return $requests;
-        });
+                        $requests[] = $pool->asJson()
+                            ->withBasicAuth($this->username, $this->password)
+                            ->timeout(60)
+                            ->post(rtrim($this->baseUrl, '/').'/Search', $payload);
+                    }
+                    return $requests;
+                });
 
-        foreach ($responses as $response) {
-            if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
-                $resData = $response->json();
-                
-                $hResults = [];
-                if (isset($resData['HotelResult']) && is_array($resData['HotelResult'])) {
-                    $hResults = $resData['HotelResult'];
-                } elseif (isset($resData['Hotels']) && is_array($resData['Hotels'])) {
-                    $hResults = $resData['Hotels'];
-                }
-
-                if (!empty($hResults)) {
-                    foreach ($hResults as $h) {
-                        $code = $h['HotelCode'] ?? $h['Code'] ?? '';
-                        if ($code) {
-                            $allResults[] = $h;
+                foreach ($responses as $response) {
+                    if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
+                        $resData = $response->json();
+                        
+                        $hResults = [];
+                        if (isset($resData['HotelResult']) && is_array($resData['HotelResult'])) {
+                            $hResults = $resData['HotelResult'];
+                        } elseif (isset($resData['Hotels']) && is_array($resData['Hotels'])) {
+                            $hResults = $resData['Hotels'];
                         }
+
+                        if (!empty($hResults)) {
+                            foreach ($hResults as $h) {
+                                $code = $h['HotelCode'] ?? $h['Code'] ?? '';
+                                if ($code) {
+                                    $allResults[] = $h;
+                                }
+                            }
+                        }
+                    } elseif ($response instanceof \Exception) {
+                         Log::warning('Concurrent search batch failed: '.$response->getMessage());
                     }
                 }
+            } catch (\Exception $e) {
+                Log::error('Guzzle Pool Error in Search: '.$e->getMessage());
             }
+            
+            // Small delay between pool chunks to be nice to the API
+            usleep(100000); // 100ms
         }
 
         return [
