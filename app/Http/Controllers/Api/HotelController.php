@@ -1037,6 +1037,92 @@ class HotelController extends Controller
     }
 
     /**
+     * Initiate payment redirect page (for mobile apps to open in WebView)
+     * This endpoint returns an HTML page that auto-submits to the payment gateway
+     */
+    public function initiatePayment(Request $request)
+    {
+        set_time_limit(180);
+
+        // 1. Localization (Header ONLY)
+        $lang = $request->header('Accept-Language');
+        if ($lang && str_contains(strtolower($lang), 'ar')) {
+            app()->setLocale('ar');
+        } else {
+            app()->setLocale('en'); // Default
+        }
+
+        try {
+            // Get booking reference from request
+            $bookingReference = $request->input('booking_reference');
+            
+            if (!$bookingReference) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => __('Booking reference is required'),
+                ], 400);
+            }
+
+            // Find the booking
+            $booking = \App\Models\HotelBooking::where('booking_reference', $bookingReference)->first();
+
+            if (!$booking) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => __('Booking not found'),
+                ], 404);
+            }
+
+            // Check if booking is already paid
+            if ($booking->payment_status === 'paid') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => __('This booking has already been paid'),
+                ], 400);
+            }
+
+            // Generate payment data
+            $paymentData = $this->paymentService->apsPaymentForReservation([
+                'amount' => $booking->total_price,
+                'currency' => $booking->currency,
+                'customer_email' => $booking->guest_email,
+                'merchant_reference' => $booking->booking_reference,
+            ]);
+
+            $paymentUrl = config('services.aps.payment_url');
+
+            // Prepare booking data for display
+            $bookingData = [
+                'booking_reference' => $booking->booking_reference,
+                'hotel' => [
+                    'name' => $booking->hotel_name_ar ?: $booking->hotel_name_en,
+                ],
+                'pricing' => [
+                    'total_price' => $booking->total_price,
+                    'currency' => $booking->currency,
+                ],
+            ];
+
+            // Return HTML view with auto-submit form
+            return view('Api.payment-redirect', [
+                'payment_data' => $paymentData,
+                'payment_url' => $paymentUrl,
+                'booking' => $bookingData,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('API Payment Initiation Error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => __('An error occurred while initiating payment'),
+            ], 500);
+        }
+    }
+
+    /**
      * Final step: Create booking and initiate payment
      */
     public function bookReservation(HotelBookingRequest $request)
@@ -1181,7 +1267,7 @@ class HotelController extends Controller
                     'currency' => $booking->currency,
                 ],
                 'payment_data' => $paymentData,
-                'payment_url' => config('services.aps.payment_url'),
+                'payment_url' => url('/api/v1/hotels/reservation/payment?booking_reference='.$booking->booking_reference),
                 'return_url' => route('aps.callback'),
             ], __('Booking initiated successfully.'));
 

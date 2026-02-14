@@ -72,6 +72,7 @@ Route::any('/hotels', [\App\Http\Controllers\Api\HotelController::class, 'index'
 Route::get('/hotels/{code}/details', [\App\Http\Controllers\Api\HotelController::class, 'show']);
 Route::post('/hotels/reservation/review', [\App\Http\Controllers\Api\HotelController::class, 'reviewReservation']);
 Route::post('/hotels/reservation/book', [\App\Http\Controllers\Api\HotelController::class, 'bookReservation']);
+Route::get('/hotels/reservation/payment', [\App\Http\Controllers\Api\HotelController::class, 'initiatePayment']);
 // Route::post('/hotels/reservation/payment-callback', [\App\Http\Controllers\Api\HotelController::class, 'paymentCallback']);
 // Route::post('/hotels/reservation/payment-callback', [\App\Http\Controllers\Api\HotelController::class, 'paymentCallback']);
 Route::post('/aps/callback', [PaymentController::class, 'apsCallback'])->name('aps.callback');
