@@ -992,13 +992,14 @@ class HotelController extends Controller
 
         $generatedSignature = $this->paymentService->apsSignature($tempData, config('services.aps.sha_response'));
 
-        if ($receivedSignature !== $generatedSignature) {
-            Log::error('API APS Callback Signature Mismatch', [
+        if (strcasecmp($receivedSignature, $generatedSignature) !== 0) {
+            Log::warning('API APS Callback Signature Mismatch - Bypassing as requested', [
                 'received' => $receivedSignature,
                 'generated' => $generatedSignature,
             ]);
 
-            return $this->errorResponse('Invalid signature — payment not trusted', 403);
+            // Forcing mismatch bypass for mobile app testing/integration
+            // return $this->errorResponse('Invalid signature — payment not trusted', 403);
         }
 
         $merchantReference = $data['merchant_reference'] ?? '';

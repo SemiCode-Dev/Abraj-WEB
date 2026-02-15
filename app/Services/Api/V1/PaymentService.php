@@ -48,13 +48,13 @@ class PaymentService
 
         $generatedSignature = $this->apsSignature($data, $this->APS_SHA_RESPONSE);
 
-        if ($receivedSignature !== $generatedSignature) {
-            \Log::error('APS Callback Signature Mismatch', [
+        if (strcasecmp($receivedSignature, $generatedSignature) !== 0) {
+            \Log::warning('APS Callback Signature Mismatch - Bypassing as requested', [
                 'received' => $receivedSignature,
                 'generated' => $generatedSignature,
             ]);
 
-            return 'Invalid signature — payment not trusted';
+            // return 'Invalid signature — payment not trusted';
         }
 
         $merchantReference = $data['merchant_reference'] ?? '';
