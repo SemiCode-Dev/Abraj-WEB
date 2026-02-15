@@ -64,11 +64,11 @@ class PaymentService
         if (str_starts_with(strtoupper($merchantReference), 'BK-')) {
             $booking = \App\Models\HotelBooking::where('booking_reference', $merchantReference)->first();
 
-            if (! $booking) {
-                \Log::error('Booking not found for Reference: '.$merchantReference);
-
-                return redirect()->route('home')->with('error', __('Booking not found.'));
+            if (request()->wantsJson() || request()->is('api/*')) {
+                return response()->json(['status' => 'error', 'message' => __('Booking not found.')], 404);
             }
+            return redirect()->route('home')->with('error', __('Booking not found.'));
+        }
 
             // Re-login user if session was lost (e.g. due to SameSite cookie policy on POST callback)
             // This ensures the user is logged in whether payment succeeded or failed
@@ -81,25 +81,47 @@ class PaymentService
                 $success = $bookingService->completeBooking($booking, $data);
 
                 if ($success) {
+                    if (request()->wantsJson() || request()->is('api/*')) {
+                        return response()->json([
+                            'status' => 'success',
+                            'message' => __('Payment successful! Your booking has been confirmed.'),
+                            'data' => [
+                                'booking_reference' => $booking->booking_reference,
+                                'tbo_booking_id' => $booking->tbo_booking_id
+                            ]
+                        ]);
+                    }
                     return redirect()->route('home')->with('success', __('Payment successful! Your booking has been confirmed.'));
                 } else {
+                    if (request()->wantsJson() || request()->is('api/*')) {
+                        return response()->json(['status' => 'error', 'message' => __('Payment successful, but room booking failed.')], 500);
+                    }
                     return redirect()->route('home')->with('error', __('Payment successful, but room booking failed. Our team will contact you for a refund.'));
                 }
             } else { // Failure
                 $bookingService = app(\App\Services\Api\V1\BookingService::class);
                 $bookingService->cancelBooking($booking, $data['response_message'] ?? 'Payment failed');
 
+                if (request()->wantsJson() || request()->is('api/*')) {
+                    return response()->json(['status' => 'error', 'message' => __('Payment failed: ').($data['response_message'] ?? 'Unknown error')], 400);
+                }
                 return redirect()->route('home')->with('error', __('Payment failed: ').($data['response_message'] ?? 'Unknown error'));
             }
         }
 
         // Default behavior for other types of payments
         if ($status == '14') {
+            if (request()->wantsJson() || request()->is('api/*')) {
+                return response()->json(['status' => 'success', 'message' => 'Payment Successful', 'merchant_reference' => $merchantReference]);
+            }
             session()->flash('success', 'Payment Successful: Order '.$merchantReference);
 
             return redirect()->route('home');
         }
 
+        if (request()->wantsJson() || request()->is('api/*')) {
+            return response()->json(['status' => 'error', 'message' => 'Payment Failed: '.($data['response_message'] ?? '')], 400);
+        }
         session()->flash('error', 'Payment Failed: '.($data['response_message'] ?? ''));
 
         return redirect()->route('home');
