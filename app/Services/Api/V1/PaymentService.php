@@ -39,7 +39,7 @@ class PaymentService
         return $data;
     }
 
-    public function apsCallback($data)
+    public function apsCallback($data, $returnJson = false)
     {
         // \Log::info('APS Callback Received', ['data' => $data]);
 
@@ -65,7 +65,7 @@ class PaymentService
             $booking = \App\Models\HotelBooking::where('booking_reference', $merchantReference)->first();
 
             if (! $booking) {
-                if (request()->wantsJson() || request()->is('api/*')) {
+                if ($returnJson) {
                     return response()->json(['status' => 'failed', 'message' => __('Booking not found.')], 404);
                 }
 
@@ -83,7 +83,7 @@ class PaymentService
                 $success = $bookingService->completeBooking($booking, $data);
 
                 if ($success) {
-                    if (request()->wantsJson() || request()->is('api/*')) {
+                    if ($returnJson) {
                         return response()->json([
                             'status' => 'success',
                             'message' => __('Payment successful! Your booking has been confirmed.'),
@@ -96,7 +96,7 @@ class PaymentService
 
                     return redirect()->route('home')->with('success', __('Payment successful! Your booking has been confirmed.'));
                 } else {
-                    if (request()->wantsJson() || request()->is('api/*')) {
+                    if ($returnJson) {
                         return response()->json([
                             'status' => 'failed',
                             'message' => __('Payment successful, but room booking failed.'),
@@ -109,7 +109,7 @@ class PaymentService
                 $bookingService = app(\App\Services\Api\V1\BookingService::class);
                 $bookingService->cancelBooking($booking, $data['response_message'] ?? 'Payment failed');
 
-                if (request()->wantsJson() || request()->is('api/*')) {
+                if ($returnJson) {
                     return response()->json([
                         'status' => 'failed',
                         'message' => __('Payment failed: ').($data['response_message'] ?? 'Unknown error'),
@@ -122,7 +122,7 @@ class PaymentService
 
         // Default behavior for other types of payments
         if ($status == '14') {
-            if (request()->wantsJson() || request()->is('api/*')) {
+            if ($returnJson) {
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Payment Successful',
@@ -135,7 +135,7 @@ class PaymentService
             return redirect()->route('home');
         }
 
-        if (request()->wantsJson() || request()->is('api/*')) {
+        if ($returnJson) {
             return response()->json([
                 'status' => 'failed',
                 'message' => 'Payment Failed: '.($data['response_message'] ?? ''),

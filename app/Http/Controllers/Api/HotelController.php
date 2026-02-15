@@ -985,56 +985,8 @@ class HotelController extends Controller
 
         // Log::info('API APS Callback Received', ['data' => $data]);
 
-        // 1. Verify Signature
-        $receivedSignature = $data['signature'] ?? null;
-        $tempData = $data;
-        unset($tempData['signature']);
-
-        $generatedSignature = $this->paymentService->apsSignature($tempData, config('services.aps.sha_response'));
-
-        if (strcasecmp($receivedSignature, $generatedSignature) !== 0) {
-            Log::warning('API APS Callback Signature Mismatch - Bypassing as requested', [
-                'received' => $receivedSignature,
-                'generated' => $generatedSignature,
-            ]);
-
-            // Forcing mismatch bypass for mobile app testing/integration
-            // return $this->errorResponse('Invalid signature — payment not trusted', 403);
-        }
-
-        $merchantReference = $data['merchant_reference'] ?? '';
-        $status = $data['status'] ?? '';
-
-        // 2. Handle Hotel Bookings
-        if (str_starts_with(strtoupper($merchantReference), 'BK-')) {
-            $booking = \App\Models\HotelBooking::where('booking_reference', $merchantReference)->first();
-
-            if (! $booking) {
-                Log::error('Booking not found for Reference: '.$merchantReference);
-
-                return $this->errorResponse('Booking not found', 404);
-            }
-
-            if ($status == '14') { // Success
-                $success = $this->bookingService->completeBooking($booking, $data);
-
-                if ($success) {
-                    return $this->successResponse([
-                        'booking_reference' => $booking->booking_reference,
-                        'tbo_booking_id' => $booking->tbo_booking_id,
-                        'confirmation_number' => $booking->confirmation_number,
-                    ], __('Payment successful! Your booking has been confirmed.'));
-                } else {
-                    return $this->errorResponse(__('Payment successful, but room booking failed. Our team will contact you for a refund.'), 500);
-                }
-            } else { // Failure
-                $this->bookingService->cancelBooking($booking, $data['response_message'] ?? 'Payment failed');
-
-                return $this->errorResponse(__('Payment failed: ').($data['response_message'] ?? 'Unknown error'), 400);
-            }
-        }
-
-        return $this->errorResponse('Unsupported payment reference', 400);
+        // Use the shared PaymentService logic, but force JSON response
+        return $this->paymentService->apsCallback($data, true);
     }
 
     /**

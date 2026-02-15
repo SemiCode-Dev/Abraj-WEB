@@ -28,6 +28,8 @@ class PaymentController extends Controller
         set_time_limit(180);
         $data = $request->all();
 
-        return $this->paymentService->apsCallback($data);
+        // Check if the request is coming from an API route or expects JSON
+        $isApi = $request->is('api/*') || $request->wantsJson();
+        return $this->paymentService->apsCallback($data, $isApi);
     }
 }
