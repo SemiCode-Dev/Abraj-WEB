@@ -125,7 +125,16 @@ class BookingService
                 
                 // CRITICAL: Update Price from PreBook response to ensure we match TBO requirements
                 // TBO rejects booking if TotalFare doesn't match the latest PreBook price
-                if (isset($preBookResponse['TotalFare'])) {
+                // Check for TotalFare in HotelResult (Standard TBO structure)
+                if (isset($preBookResponse['HotelResult'][0]['Rooms'][0]['TotalFare'])) {
+                    $newFare = (float)$preBookResponse['HotelResult'][0]['Rooms'][0]['TotalFare'];
+                    if (abs($newFare - $finalTotalFare) > 0.01) {
+                        Log::warning("Price changed during PreBook (HotelResult)! Old: $finalTotalFare, New: $newFare. Updating payload.");
+                        $finalTotalFare = $newFare;
+                    }
+                }
+                // Fallback: Check top-level TotalFare
+                elseif (isset($preBookResponse['TotalFare'])) {
                     $newFare = (float)$preBookResponse['TotalFare'];
                     if (abs($newFare - $finalTotalFare) > 0.01) {
                         Log::warning("Price changed during PreBook! Old: $finalTotalFare, New: $newFare. Updating payload.");
