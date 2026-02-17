@@ -207,7 +207,7 @@ class HomeController extends Controller
                 'country' => $hotel['CountryName'] ?? '',
                 'image' => $hotelImage,
                 'rating' => $starRating,
-                'amenities' => [
+                'facilities' => [
                     ['icon' => 'wifi', 'name' => __('WiFi')],
                     ['icon' => 'utensils', 'name' => __('Restaurant')],
                     ['icon' => 'swimming-pool', 'name' => __('Pool')]
@@ -246,7 +246,7 @@ class HomeController extends Controller
                 'image' => $hotelImage,
                 'rating' => $starRating,
                 'discount' => '60%', // Hardcoded discount badge for offers
-                'amenities' => [
+                'facilities' => [
                     ['icon' => 'wifi', 'name' => __('WiFi')],
                     ['icon' => 'utensils', 'name' => __('Restaurant')],
                     ['icon' => 'swimming-pool', 'name' => __('Pool')]
@@ -280,9 +280,9 @@ class HomeController extends Controller
             'status' => 'success',
             'message' => 'Homepage data fetched successfully',
             'data' => [
-                'selected_offers' => $formattedSelectedOffers,
+                'Amazing Deals' => $formattedSelectedOffers,
                 'featured_destinations' => $featuredDestinations,
-                'featured_stays' => $formattedFeaturedStays,
+                'Hotels That Inspire You' => $formattedFeaturedStays,
                 'testimonials' => $testimonials,
                 'filters_available' => [
                     'stars' => ['all', 3, 4, 5]
