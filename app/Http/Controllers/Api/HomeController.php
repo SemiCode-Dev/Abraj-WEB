@@ -283,7 +283,7 @@ class HomeController extends Controller
                 'Amazing Deals' => $formattedSelectedOffers,
                 'featured_destinations' => $featuredDestinations,
                 'Hotels That Inspire You' => $formattedFeaturedStays,
-                'testimonials' => $testimonials,
+                'Reviews' => $testimonials,
                 'filters_available' => [
                     'stars' => ['all', 3, 4, 5]
                 ]
