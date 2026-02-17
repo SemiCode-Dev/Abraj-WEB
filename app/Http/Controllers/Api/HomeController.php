@@ -207,11 +207,8 @@ class HomeController extends Controller
                 'country' => $hotel['CountryName'] ?? '',
                 'image' => $hotelImage,
                 'rating' => $starRating,
-                'facilities' => [
-                    ['icon' => 'wifi', 'name' => __('WiFi')],
-                    ['icon' => 'utensils', 'name' => __('Restaurant')],
-                    ['icon' => 'swimming-pool', 'name' => __('Pool')]
-                ]
+                'source' => $hotel['Source'] ?? 'tbo',
+                'facilities' => $this->normalizeFacilities($hotel)
             ];
         }, $featuredStays);
 
@@ -246,11 +243,8 @@ class HomeController extends Controller
                 'image' => $hotelImage,
                 'rating' => $starRating,
                 'discount' => '60%', // Hardcoded discount badge for offers
-                'facilities' => [
-                    ['icon' => 'wifi', 'name' => __('WiFi')],
-                    ['icon' => 'utensils', 'name' => __('Restaurant')],
-                    ['icon' => 'swimming-pool', 'name' => __('Pool')]
-                ]
+                'source' => $hotel['Source'] ?? 'tbo',
+                'facilities' => $this->normalizeFacilities($hotel)
             ];
         }, $selectedOffers);
 
@@ -310,5 +304,34 @@ class HomeController extends Controller
         if (str_contains($ratingStr, 'one') || str_contains($ratingStr, '1')) return 1;
 
         return 0;
+    }
+
+    /**
+     * Helper to normalize facilities for Home
+     */
+    private function normalizeFacilities($hotel): array
+    {
+        $raw = $hotel['HotelFacilities'] ?? $hotel['Facilities'] ?? [];
+        if (is_string($raw)) {
+            $raw = explode(',', $raw);
+        }
+        
+        $rawStr = '';
+        if (is_array($raw)) {
+            $rawStr = implode(' ', array_map(function ($f) {
+                if (is_array($f)) {
+                    return $f['Name'] ?? '';
+                }
+                return (string)$f;
+            }, $raw));
+        }
+
+        $rawLower = mb_strtolower($rawStr);
+
+        return [
+            'wifi' => str_contains($rawLower, 'wifi') || str_contains($rawLower, 'internet'),
+            'utensils' => str_contains($rawLower, 'restaurant') || str_contains($rawLower, 'dining') || str_contains($rawLower, 'breakfast') || str_contains($rawLower, 'food'),
+            'swimming-pool' => str_contains($rawLower, 'pool') || str_contains($rawLower, 'swim'),
+        ];
     }
 }
