@@ -34,7 +34,7 @@ class HomeController extends Controller
                 'code' => 'ALG',
                 'country_code' => 'DZ',
                 'hotels_count' => 150,
-                'trending' => true
+                'trending' => true,
             ],
             [
                 'id' => 2,
@@ -43,7 +43,7 @@ class HomeController extends Controller
                 'code' => 'ESC',
                 'country_code' => 'GT',
                 'hotels_count' => 80,
-                'trending' => true
+                'trending' => true,
             ],
             [
                 'id' => 3,
@@ -52,7 +52,7 @@ class HomeController extends Controller
                 'code' => 'DXB',
                 'country_code' => 'AE',
                 'hotels_count' => 500,
-                'trending' => true
+                'trending' => true,
             ],
             [
                 'id' => 4,
@@ -61,7 +61,7 @@ class HomeController extends Controller
                 'code' => 'ESP',
                 'country_code' => 'ES',
                 'hotels_count' => 120,
-                'trending' => true
+                'trending' => true,
             ],
             [
                 'id' => 5,
@@ -70,15 +70,15 @@ class HomeController extends Controller
                 'code' => 'RUH',
                 'country_code' => 'SA',
                 'hotels_count' => 300,
-                'trending' => true
-            ]
+                'trending' => true,
+            ],
         ]);
-         
-         // 3. Fetch Hotels for "Selected Offers" and "Featured Hotels"
-         // Use EXACT same logic as Web Controller
-         $majorCityNames = ['Riyadh', 'Makkah/Mecca', 'Madinah', 'Jeddah', 'Dammam', 'Al Khobar'];
 
-         $cityCodes = City::whereIn('name', $majorCityNames)
+        // 3. Fetch Hotels for "Selected Offers" and "Featured Hotels"
+        // Use EXACT same logic as Web Controller
+        $majorCityNames = ['Riyadh', 'Makkah/Mecca', 'Madinah', 'Jeddah', 'Dammam', 'Al Khobar'];
+
+        $cityCodes = City::whereIn('name', $majorCityNames)
             ->whereNotNull('code')
             ->where('code', '!=', '')
             ->limit(4)
@@ -102,8 +102,8 @@ class HomeController extends Controller
         }
 
         // Cache for 2 hours to improve performance (same as Web)
-        $cacheKey = 'featured_hotels_homepage_' . $language . '_' . md5(implode(',', $cityCodes));
-        
+        $cacheKey = 'featured_hotels_homepage_'.$language.'_'.md5(implode(',', $cityCodes));
+
         $response = Cache::remember($cacheKey, 7200, function () use ($cityCodes, $language) {
             try {
                 if (empty($cityCodes)) {
@@ -133,7 +133,7 @@ class HomeController extends Controller
                     return $response;
                 }
             } catch (\Exception $e) {
-                Log::error('API Home Hotels Fetch Error: ' . $e->getMessage());
+                Log::error('API Home Hotels Fetch Error: '.$e->getMessage());
 
                 return [
                     'Status' => [
@@ -147,7 +147,7 @@ class HomeController extends Controller
 
         $hotelsData = $response['Hotels'] ?? [];
 
-        if (!is_array($hotelsData)) {
+        if (! is_array($hotelsData)) {
             $hotelsData = json_decode(json_encode($hotelsData), true);
         }
 
@@ -155,7 +155,7 @@ class HomeController extends Controller
 
         // Limit for "Selected Offers" (Flash Deals) - 4 items
         $selectedOffers = array_slice($hotelsData, 0, 4);
-        
+
         // The rest for "Featured Stays"
         $featuredStays = array_slice($hotelsData, 4);
 
@@ -168,6 +168,7 @@ class HomeController extends Controller
             $featuredStays = array_filter($featuredStays, function ($hotel) use ($stars) {
                 // TBO returns 'HotelRating' or 'Rating' - normalize to integer
                 $rating = $this->getHotelRating($hotel['HotelRating'] ?? $hotel['Rating'] ?? 0);
+
                 return in_array($rating, array_map('intval', $stars));
             });
             // Re-index
@@ -181,18 +182,18 @@ class HomeController extends Controller
         $formattedFeaturedStays = array_map(function ($hotel) {
             // Extract image
             $hotelImage = null;
-            if (isset($hotel['ImageUrls']) && is_array($hotel['ImageUrls']) && !empty($hotel['ImageUrls'][0]['ImageUrl'])) {
+            if (isset($hotel['ImageUrls']) && is_array($hotel['ImageUrls']) && ! empty($hotel['ImageUrls'][0]['ImageUrl'])) {
                 $hotelImage = $hotel['ImageUrls'][0]['ImageUrl'];
-            } elseif (isset($hotel['Image']) && !empty($hotel['Image'])) {
+            } elseif (isset($hotel['Image']) && ! empty($hotel['Image'])) {
                 $hotelImage = $hotel['Image'];
-            } elseif (isset($hotel['Images']) && is_array($hotel['Images']) && !empty($hotel['Images'][0])) {
-                $hotelImage = is_array($hotel['Images'][0]) 
-                    ? ($hotel['Images'][0]['ImageUrl'] ?? null) 
+            } elseif (isset($hotel['Images']) && is_array($hotel['Images']) && ! empty($hotel['Images'][0])) {
+                $hotelImage = is_array($hotel['Images'][0])
+                    ? ($hotel['Images'][0]['ImageUrl'] ?? null)
                     : $hotel['Images'][0];
             }
-            
+
             // Default image if none found
-            if (!$hotelImage) {
+            if (! $hotelImage) {
                 $hotelImage = asset('images/default.jpg');
             }
 
@@ -208,7 +209,7 @@ class HomeController extends Controller
                 'image' => $hotelImage,
                 'rating' => $starRating,
                 'source' => $hotel['Source'] ?? 'tbo',
-                'facilities' => $this->normalizeFacilities($hotel)
+                'facilities' => $this->normalizeFacilities($hotel),
             ];
         }, $featuredStays);
 
@@ -216,18 +217,18 @@ class HomeController extends Controller
         $formattedSelectedOffers = array_map(function ($hotel) {
             // Extract image
             $hotelImage = null;
-            if (isset($hotel['ImageUrls']) && is_array($hotel['ImageUrls']) && !empty($hotel['ImageUrls'][0]['ImageUrl'])) {
+            if (isset($hotel['ImageUrls']) && is_array($hotel['ImageUrls']) && ! empty($hotel['ImageUrls'][0]['ImageUrl'])) {
                 $hotelImage = $hotel['ImageUrls'][0]['ImageUrl'];
-            } elseif (isset($hotel['Image']) && !empty($hotel['Image'])) {
+            } elseif (isset($hotel['Image']) && ! empty($hotel['Image'])) {
                 $hotelImage = $hotel['Image'];
-            } elseif (isset($hotel['Images']) && is_array($hotel['Images']) && !empty($hotel['Images'][0])) {
-                $hotelImage = is_array($hotel['Images'][0]) 
-                    ? ($hotel['Images'][0]['ImageUrl'] ?? null) 
+            } elseif (isset($hotel['Images']) && is_array($hotel['Images']) && ! empty($hotel['Images'][0])) {
+                $hotelImage = is_array($hotel['Images'][0])
+                    ? ($hotel['Images'][0]['ImageUrl'] ?? null)
                     : $hotel['Images'][0];
             }
-            
+
             // Default image if none found
-            if (!$hotelImage) {
+            if (! $hotelImage) {
                 $hotelImage = asset('images/default.jpg');
             }
 
@@ -244,7 +245,7 @@ class HomeController extends Controller
                 'rating' => $starRating,
                 'discount' => '60%', // Hardcoded discount badge for offers
                 'source' => $hotel['Source'] ?? 'tbo',
-                'facilities' => $this->normalizeFacilities($hotel)
+                'facilities' => $this->normalizeFacilities($hotel),
             ];
         }, $selectedOffers);
 
@@ -257,7 +258,7 @@ class HomeController extends Controller
                 'time_ago' => __('week ago'),
                 'rating' => 5,
                 'review' => __('Review 2 Text'),
-                'verified' => true
+                'verified' => true,
             ],
             [
                 'id' => 2,
@@ -266,22 +267,40 @@ class HomeController extends Controller
                 'time_ago' => __('2 days ago'),
                 'rating' => 5,
                 'review' => __('Great service and huge variety of hotels.'),
-                'verified' => true
-            ]
+                'verified' => true,
+            ],
+        ];
+
+        $sections = [
+            [
+                'type' => 'amazing_deals',
+                'title' => $language === 'ar' ? 'عروض مذهلة' : 'Amazing Deals',
+                'data' => $formattedSelectedOffers,
+            ],
+            [
+                'type' => 'featured_destinations',
+                'title' => $language === 'ar' ? 'وجهات مميزة' : 'Featured Destinations',
+                'data' => $featuredDestinations->values()->toArray(),
+            ],
+            [
+                'type' => 'hotels_inspired',
+                'title' => $language === 'ar' ? 'فنادق تلهمك' : 'Hotels That Inspire You',
+                'data' => $formattedFeaturedStays,
+            ],
+            [
+                'type' => 'reviews',
+                'title' => $language === 'ar' ? 'آراء العملاء' : 'Reviews',
+                'data' => $testimonials,
+            ],
         ];
 
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Homepage data fetched successfully',
-            'data' => [
-                'Amazing Deals' => $formattedSelectedOffers,
-                'featured_destinations' => $featuredDestinations,
-                'Hotels That Inspire You' => $formattedFeaturedStays,
-                'Reviews' => $testimonials,
-                'filters_available' => [
-                    'stars' => ['all', 3, 4, 5]
-                ]
-            ]
+            'data' => $sections,
+            'filters_available' => [
+                'stars' => ['all', 3, 4, 5],
+            ],
         ]);
     }
 
@@ -296,12 +315,22 @@ class HomeController extends Controller
 
         // Handle string formats like "FiveStar", "5 Star", etc.
         $ratingStr = strtolower((string) $rating);
-        
-        if (str_contains($ratingStr, 'five') || str_contains($ratingStr, '5')) return 5;
-        if (str_contains($ratingStr, 'four') || str_contains($ratingStr, '4')) return 4;
-        if (str_contains($ratingStr, 'three') || str_contains($ratingStr, '3')) return 3;
-        if (str_contains($ratingStr, 'two') || str_contains($ratingStr, '2')) return 2;
-        if (str_contains($ratingStr, 'one') || str_contains($ratingStr, '1')) return 1;
+
+        if (str_contains($ratingStr, 'five') || str_contains($ratingStr, '5')) {
+            return 5;
+        }
+        if (str_contains($ratingStr, 'four') || str_contains($ratingStr, '4')) {
+            return 4;
+        }
+        if (str_contains($ratingStr, 'three') || str_contains($ratingStr, '3')) {
+            return 3;
+        }
+        if (str_contains($ratingStr, 'two') || str_contains($ratingStr, '2')) {
+            return 2;
+        }
+        if (str_contains($ratingStr, 'one') || str_contains($ratingStr, '1')) {
+            return 1;
+        }
 
         return 0;
     }
@@ -315,14 +344,15 @@ class HomeController extends Controller
         if (is_string($raw)) {
             $raw = explode(',', $raw);
         }
-        
+
         $rawStr = '';
         if (is_array($raw)) {
             $rawStr = implode(' ', array_map(function ($f) {
                 if (is_array($f)) {
                     return $f['Name'] ?? '';
                 }
-                return (string)$f;
+
+                return (string) $f;
             }, $raw));
         }
 

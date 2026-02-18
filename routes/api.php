@@ -41,6 +41,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // api/v1/profile - User profile
     Route::get('/profile', [ProfileController::class, 'profile']);
     Route::post('/profile', [ProfileController::class, 'updateProfile']);
+
+    // User Requests (My Bookings)
+    Route::get('/requests', [\App\Http\Controllers\Api\RequestController::class, 'index']);
 });
 
 // Packages
